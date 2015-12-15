@@ -1,0 +1,10 @@
+*~
+bin/*
+lib/*
+output/*
+Makefile
+src/config/config.h
+dgfparser.log
+data/sphere/test.cpp
+data/sphere/triceratops.off
+data/sphere/raw_data/count*

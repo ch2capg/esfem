@@ -1,0 +1,6 @@
+Sphere_1.dgf: 126
+Sphere_2.dgf: 516
+Sphere_3.dgf: 2070
+Sphere_4.dgf: 8208
+Sphere_5.dgf: 32682
+Sphere_6.dgf: 130489

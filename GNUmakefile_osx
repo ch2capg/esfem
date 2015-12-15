@@ -1,0 +1,123 @@
+#----------------------------------------------------------------------
+#  makefile template for libraries
+#
+#  Assumption: We have the following folders
+#  bin/ lib/ lib/obj/ src/ test/ (not explicit used)
+#  TODO (doc/)
+#
+#  How to use:
+#  - Enter name for LIB1 and update VERSION1 resp. SUBVERSION1
+#  - Enter filename with relative path of the files containing int main()
+#  - Change compiler flags if needed
+#
+#  Created by Christian Power on 14. Dezember 2015
+#  Copyright (c) 2015 Christian Power.  All rights reserved.
+#----------------------------------------------------------------------
+
+#----------------------------------------------------------------------
+# Interface for the user
+
+#------------------------------------------------------------
+# Name of libraries, programs and test programs
+LIB1 := lib_name
+VERSION1 := 0
+SUBVERSION1 :=  1
+LIBRARIES := ${LIB1}
+
+#--------------------------------------------------
+# Filenamen with relative path (files must have different names!)
+PROG1 := src/2014nonlinear.cpp
+TEST := test/test.cpp
+
+PROGS := ${PROG1} 
+
+#------------------------------------------------------------
+# make commands (appear in .PHONY)
+# TODO: add 'global' resp. 'tags' and 'doxygen' resp. 'doc'
+.PHONY:	all $(basename ${PROGS} ${TEST}) ${LIBRARIES} clean
+# tags doc (doc should depend on tags)
+all: $(basename ${PROGS})
+clean:
+	find {lib,bin} ( -type f -or -type l ) -exec rm -f {} +
+#------------------------------------------------------------
+# more specific 
+$(basename ${PROG1}):	bin/$(basename $(notdir ${PROG1}))
+$(basename ${TEST}):	bin/$(basename $(notdir ${TEST}))
+
+#================================================================================
+# All implementation details
+#----------------------------------------------------------------------
+
+home := $(shell echo ~/)
+DUNE_BASEDIR := ${home}cpp/dune/
+ALU_BASEDIR := ${home}cpp/ALUGrid-1.52/build/
+ALBERTA_BASEDIR := ${home}cpp/alberta-3.0.1/build/
+
+#----------------------------------------------------------------------
+# Compiler and generic flags
+CXX := clang++
+STD_FLAG := -std=c++11
+W_FLAGS := $(addprefix -W, all extra)
+O_FLAG := -O3
+I_FLAGS := $(addprefix -I, src test include src/config)
+D_FLAGS := $(addprefix -D, HAVE_CONFIG_H ENABLE_GMP=1 ALUGRID_SIMPLEX \
+	ALBERTA_DIM=3 ENABLE_ALBERTA ENABLE_ZLIB=1 \
+	GRIDDIM=2 WORLDDIM=3 POLORDER=1)
+DEBUG_FLAGS := -g 
+L_FLAGS := $(addprefix -L, lib ${DUNE_BASEDIR}build/lib ${ALU_BASEDIR}lib \
+	${ALBERTA_BASEDIR}lib)
+
+I_FLAGS += $(addprefix -I${DUNE_BASEDIR}, build/include dune-common dune-geometry \
+	dune-istl dune-localfunctions dune-grid dune-fem dune-alugrid) 
+# I_FLAGS += ${ALBERTA_BASEDIR}include
+
+cxx_cmd := ${CXX} ${STD_FLAG} ${W_FLAGS} ${O_FLAG} ${I_FLAGS} ${L_FLAGS} \
+	${DEBUG_FLAGS} ${D_FLAGS}
+
+#----------------------------------------------------------------------
+# Modify dependencies and add additional flags acoording to your ${PROG1} ${TEST}
+PROG_l_FLAGS := $(addprefix -l, dunecommon dunegeometry dunegrid \
+	dunealugrid dunefem alugrid alugrid_serial dunealbertagrid_3d \
+	lapack blas z m gmp gmpxx)
+bin/$(basename $(notdir ${PROG1})):	${PROG1}
+	${cxx_cmd} ${PROG_l_FLAGS} -MMD -o $@ $<
+-include bin/$(notdir $(PROG1:.cpp=.d))
+
+bin/$(basename $(notdir ${TEST})):	${TEST}
+	${cxx_cmd} -l${LIB1} -MMD -o $@ $<
+-include bin/$(notdir $(TEST:.cpp=.d))
+
+#----------------------------------------------------------------------
+# ${LIB1}
+
+#------------------------------------------------------------
+# files
+
+#--------------------------------------------------
+# source & object files and MMD include
+LIB1_SRC := $(wildcard src/*.cpp)	# Change if LIB2 exists
+lib1_a_obj := $(addprefix lib/obj/, $(LIB1_SRC:.cpp=.o))	
+lib1_dylib_obj := $(addprefix lib/obj/, $(LIB1_SRC:.cpp=_pic.o))
+-include $(patsubst %.o, %.d, ${lib1_dylib.obj} ${lib1_a_obj})
+
+#--------------------------------------------------
+# library files
+lib1_dylib := lib/lib${LIB1}.dylib
+lib1_dylib_v := lib/lib${LIB1}.${VERSION1}.dylib
+lib1_dylib_vv := lib/lib${LIB1}.${VERSION1}.${SUBVERSION1}.dylib
+lib1_a := lib/lib${LIB1}_s.a
+
+#------------------------------------------------------------
+# Rule for ${LIB1}
+${LIB1}: ${lib1_a} ${lib1_dylib_vv}
+${lib1_a}: ${lib1_a_obj}
+	ar -cvr $@ $^
+${lib1_dylib_vv}: ${lib1_dylib_obj}
+	${CXX} -dynamiclib -flat_namespace -o $@ $^; 	ln -sf $(notdir $@) ${lib1_dylib_v}; 	ln -sf $(notdir ${lib1_dylib_v}) ${lib1_dylib}
+
+#----------------------------------------------------------------------
+# pattern rules
+lib/obj/%.o:		%.cpp
+	${cxx_cmd} -MMD -c -o $@ $<
+lib/obj/%_pic.o:	%.cpp
+	${cxx_cmd} -fPIC -MMD -c -o $@ $<

@@ -1,0 +1,64 @@
+fem.verboserank: 0
+fem.solver.verbose: 0
+
+##fem.io.macroGridFile_2d: ../data/E-S_nodes0.2/E-S_nodes0.2.dgf
+##fem.io.macroGridFile_2d: ../data/nodes0.2/E-S_nodes0.2.dgf
+##fem.io.macroGridFile_2d: ../data/genusTwoGrob.dgf
+##fem.io.macroGridFile_2d: ../data/sphere.dgf
+fem.io.macroGridFile_1d: ../data/circle.dgf
+
+fem.prefix: output
+
+fem.io.savestep: 0.1
+
+fem.timeprovider.factor: 1
+
+##CAPG: original parameters
+##heat.timestep: 0.025
+##heat.endtime: 2.0
+##heat.theta: 0.5
+
+heat.starttime: 0.
+heat.endtime: 1.  ## .5
+heat.timestep: .01 ## .001
+heat.bdf: 4
+heat.solvereps: 1e-8
+heat.surface.mass_matrix.regularisation_parameter: 1e-3
+
+## Tumor growth model
+## - a,b,Dᶜ,γ ∈ R for the scalar equation with  γ ∼ vol(Γ).
+## - ε,δ,α ∈ R for the surface equation, where ε and α are small 
+##   regularization parameter.
+
+tumor_growth.heat.init_data.mean_value.u: 1.
+tumor_growth.heat.init_data.variance.u: .01
+tumor_growth.heat.init_data.mean_value.w: .9
+tumor_growth.heat.init_data.variance.w: .009
+
+tumor_growth.heat.a: .1
+tumor_growth.heat.b: .9
+tumor_growth.heat.Dc: 10.
+tumor_growth.heat.gamma: 30. ## 100.
+
+## tumor_growth.heat.a: 1.5
+## tumor_growth.heat.b: 0.
+## tumor_growth.heat.Dc: 10.
+## tumor_growth.heat.gamma: 100.
+
+tumor_growth.surface.epsilon: 1e-2
+tumor_growth.surface.alpha: 0 ##1e-3
+tumor_growth.surface.delta: .4
+
+
+## fem.io.macroGridFile_2d: ../data/sphere/triceratops.dgf
+fem.io.macroGridFile_2d: data/sphere/Sphere_1.dgf
+fem.io.errorFile: output/test/delete_me2.txt
+fem.io.outputName: output/test/Delete_me_Sphere_1-
+tumor_growth.io.u.output_name: cb_test_u_Sphere_1-
+tumor_growth.io.w.output_name: cb_test_w_Sphere_1-
+
+heat.level: 0
+heat.repeats: 0
+
+poisson.level: 0
+poisson.repeats: 2
