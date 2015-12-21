@@ -27,9 +27,10 @@ LIBRARIES := ${LIB1}
 #--------------------------------------------------
 # Filenamen with relative path (files must have different names!)
 PROG1 := src/2014nonlinear.cpp
+PROG2 := src/tumor_reader_main.cpp
 TEST := test/test.cpp
 
-PROGS := ${PROG1} 
+PROGS := ${PROG1} ${PROG2}
 
 #------------------------------------------------------------
 # make commands (appear in .PHONY)
@@ -42,6 +43,7 @@ clean:
 #------------------------------------------------------------
 # more specific 
 $(basename ${PROG1}):	bin/$(basename $(notdir ${PROG1}))
+$(basename ${PROG2}):	bin/$(basename $(notdir ${PROG2}))
 $(basename ${TEST}):	bin/$(basename $(notdir ${TEST}))
 
 #================================================================================
@@ -86,6 +88,15 @@ bin/$(basename $(notdir ${PROG1})):	${PROG1}
 bin/$(basename $(notdir ${TEST})):	${TEST}
 	${cxx_cmd} -l${LIB1} -MMD -o $@ $<
 -include bin/$(notdir $(TEST:.cpp=.d))
+
+#----------------------------------------------------------------------
+# ${PROG2}
+bin/$(basename $(notdir ${PROG2})):	${PROG2} lib/obj/src/tumor_dof_reader.o
+	${cxx_cmd} ${PROG_l_FLAGS} -MMD -o $@ $^
+-include bin/$(notdir $(PROG1:.cpp=.d))
+lib/obj/src/tumor_dof_reader.o:		src/tumor_dof_reader.cpp
+	${cxx_cmd} ${PROG_l_FLAGS} -MMD -c -o $@ $<
+-include lib/obj/src/tumor_dof_reader.d
 
 #----------------------------------------------------------------------
 # ${LIB1}

@@ -23,6 +23,8 @@
 // #include "/Users/christianpower/cpp/ODE_Solver/implicit_euler.h"
 #include "/Users/christianpower/cpp/ODE_Solver/bdf.h"
 
+#include "iodof.h"
+
 // Remember: For every experiment modify
 //	in 'heat.hh'
 //	- RHSfunction
@@ -102,7 +104,7 @@ void BDF::ie_heat_algorithm(){
 	H1NormType h1norm(gridPart);
 	std::ofstream l2h1error_ofs
 	{Dune::Fem::Parameter::getValue<std::string>("fem.io.errorFile", 
-												 "../output/l2h1error"),
+						     "output/l2h1error"),
 			std::ios_base::app};
 
 	Dune::Fem::GridTimeProvider<GridType> timeProvider(t_0, grid);
@@ -259,7 +261,7 @@ void BDF::bdf2_heat_algorithm(){
 	H1NormType h1norm(gridPart);
 	std::ofstream l2h1error_ofs
 	{Dune::Fem::Parameter::getValue<std::string>("fem.io.errorFile", 
-												 "../output/l2h1error"),
+						     "output/l2h1error"),
 			std::ios_base::app};
 
 	Dune::Fem::GridTimeProvider<GridType> timeProvider(t_0, grid);
@@ -494,7 +496,7 @@ void BDF::nonlinear_algorithm(){
 	H1NormType h1norm(gridPart);
 	std::ofstream l2h1error_ofs
 	{Dune::Fem::Parameter::getValue<std::string>("fem.io.errorFile", 
-												 "../output/l2h1error"),
+						     "output/l2h1error"),
 			std::ios_base::app};
 	// Paraview output
 	IOTupleType ioTuple(&err_vec);
@@ -519,13 +521,19 @@ void BDF::nonlinear_algorithm(){
 		Dune::Fem::Parameter::getValue<double>("heat.solvereps", 1e-8); 
 	LinearInverseOperatorType solver(ellipticOp, solverEps, solverEps);	// CG-solver
 
+	const std::string ofile_name = Dune::Fem::Parameter::
+	  getValue<std::string>("fem.io.errorFile", "output/l2h1error");
+	
+	IO_dune_fem hd_dof_com {ofile_name, IO_direction::write};
+	
 	auto write_error = [&](std::ostream& os)
 	// helper function for 'l2h1error_ofs'
 		{
-			os << std::defaultfloat << timeProvider.deltaT() << ' ' 
-			   << std::scientific 
-			   << l2norm.distance(exact_solution, U_np1) << ' '
-			   << h1norm.distance(exact_solution, U_np1) << std::endl;
+		  // os << std::defaultfloat << timeProvider.deltaT() << ' ' 
+		  // << std::scientific 
+		  // << l2norm.distance(exact_solution, U_np1) << ' '
+		  // << h1norm.distance(exact_solution, U_np1) << std::endl;
+		  hd_dof_com(U_np1);
 		};
 
 	// initial steps
