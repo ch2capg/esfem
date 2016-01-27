@@ -16,14 +16,10 @@
 #ifndef DUNE_HEAT_ALGORITHM_HPP
 #define DUNE_HEAT_ALGORITHM_HPP
 
-#include <algorithm>
-
 // local includes
 #include "dune_typedef_heat.hpp"
-// #include "/Users/christianpower/cpp/ODE_Solver/implicit_euler.h"
+#include "/Users/christianpower/cpp/ODE_Solver/implicit_euler.h"
 #include "/Users/christianpower/cpp/ODE_Solver/bdf.h"
-
-#include "iodof.h"
 
 // Remember: For every experiment modify
 //	in 'heat.hh'
@@ -60,22 +56,6 @@ private:
 
 
 void BDF::ie_heat_algorithm(){
-	/**********************************************************************
-	 * Pseudocode:
-	 * u⁰ = interpol(solution) >> plot
-	 * container = M⁰u⁰ >> save
-	 * for-loop n = 0 ↦ N with N·Δt + t_begin = t_end
-	 *  t += ∆τ (set time)
-	 *  tmp = container == Mⁿuⁿ
-	 *  rhs = fⁿ⁺¹ == load Vector
-	 *  tmp += Δτ · rhs (solution == Mⁿuⁿ + Δτ·rhs)
-	 *  uⁿ⁺¹ == solution = (Mⁿ⁺¹ + Δτ Aⁿ⁺¹)⁻¹ tmp >> save
-	 *  container = Mⁿ⁺¹ uⁿ⁺¹
-	 * end-for-loop
-	 *  
-	 **********************************************************************/
-
-	// get time from parameter file
 	double t_0 = 
 		Dune::Fem::Parameter::getValue<double>("heat.starttime",0.0);
 	double dT = 
@@ -104,181 +84,28 @@ void BDF::ie_heat_algorithm(){
 	H1NormType h1norm(gridPart);
 	std::ofstream l2h1error_ofs
 	{Dune::Fem::Parameter::getValue<std::string>("fem.io.errorFile", 
-						     "output/l2h1error"),
-			std::ios_base::app};
+												 "../output/l2h1error")};
 
 	Dune::Fem::GridTimeProvider<GridType> timeProvider(t_0, grid);
 	timeProvider.init(dT);     // Do your first action before you enter the for loop.
-	deformation.set_time_provider(timeProvider);
 
-	DiscreteFunctionType U_n {"U_n", dfSpace};
-	DiscreteFunctionType rhs {"rhs", dfSpace}; 
-	DiscreteFunctionType load_vector {"load_vector", dfSpace};
-	DiscreteFunctionType exactSolution {"exactSolution", dfSpace};
-	DiscreteFunctionType xi {"xi", dfSpace};
+	deformation.set_time_provider(timeProvider);
+	 // deformation is aware of timeProvider
+
+	DiscreteFunctionType U_n("U_n",dfSpace), rhs("rhs", dfSpace), 
+		load_vector("load_vector", dfSpace), exactSolution("exactSolution",dfSpace);
 
 	InitialDataType initialData {timeProvider};
+	InterpolationType::interpolateFunction( initialData, U_n );
+	InterpolationType::interpolateFunction( initialData, exactSolution );
+	// solutionContainer is used for higher order BDF methods,
+	// U_n == uⁿ, rhs == tmp1, tmp == tmp2
+	// (create discrete functions for intermediate functionals)
 
 	// to get the degree of freedom vector
 	// for(auto it = U_n.dbegin(); it != U_n.dend(); ++it)
 	//	std::cout << *it << std::endl;
 	
-	RHSFunctionType f {timeProvider};
-	// This expression is very long; it's literally the same f as in L(u) = f;
-	// together with the function/method in rhs.hh, 
-
-	IOTupleType ioTuple(&U_n);
-	const int step = 0;	// is there any resonable choice, whitout adaptivity?
-	DataOutputType 
-		dataOutput(grid, ioTuple, 
-				   DataOutputParameters(Dune::Fem::Parameter::getValue<std::string>
-										("fem.io.outputName",
-										 "../output/ALE_LiteratureExample-"),
-										step) );
-	// Usage: dataOutput.write(timeProvider);
-
-	auto write_error = [&](std::ostream& os){
-		os << std::defaultfloat << timeProvider.deltaT() << ' ' 
-		<< std::scientific 
-		<< l2norm.distance(exactSolution, U_n) << ' '
-		<< h1norm.distance(exactSolution, U_n) << std::endl;
-	};
-
-	// Usage: write_error(l2h1error_ofs);
-	
-	NonlinearModel model {timeProvider};
-	NonlinearOperator ellipticOp {xi, model};
-	const double solverEps =
-		Dune::Fem::Parameter::getValue<double>("heat.solvereps", 1e-8);
-	LinearInverseOperatorType solver(ellipticOp, solverEps, solverEps);
-	// Initializing CG-Solver
-	// CAPG: it's very slow. Can't this be speed up somehow?
-
-	InterpolationType::interpolateFunction(initialData, U_n);
-	InterpolationType::interpolateFunction(initialData, exactSolution);
-
- 	// dataOutput.write(timeProvider);
-
-	// debugging
-	// std::cout << "\n==========\n"
-	// 		  << std::defaultfloat << "time = " << timeProvider.time() 
-	// 		  << std::scientific << std::endl;
-	// std::cout << "U_n = " << *(U_n.dbegin()) << std::endl;
-
-	ellipticOp.mass_matrix(U_n, rhs);
-	xi.assign(U_n);
-	// calculating: rhs = Mⁿ uⁿ  
-	// std::cout << "ellipticOp.mass_matrix(U_n, rhs) = " << *rhs.dbegin() << std::endl;
-
-
-	int iter = 0;
-	for(timeProvider.next(dT); iter < itno; timeProvider.next(dT), ++iter)
-		// put your loop-action here, but not the last action
-	{
-		// std::cout << "----------\n"
-		// 		  << std::defaultfloat<< "time = " << timeProvider.time()
-		// 		  << std::scientific << std::endl;
-
-		// f.setTime(timeProvider.time());	// obselete
-		// chance the time for the (long) RHS function f to tⁿ⁺¹
-		// ('f' from -∆u + \div(v) u + \matdot{u} = f)
-
-		// initialData.setTime(timeProvider.time());	// obselete
-
-		assembleRHS(f, load_vector);
-		// std::cout << "assembleRHS(f, load_vector) = " << *load_vector.dbegin() 
-		// 		  << std::endl;
-		// assemly stiffness/load vector; the vector is called 'rhs'; 
-		// in the sense of above it is fⁿ⁺¹
-
-		rhs.axpy(timeProvider.deltaT(), load_vector);
-		// std::cout << "rhs.axpy(timeProvider.deltaT(), load_vector) = "
-		// 		  << *rhs.dbegin() << std::endl;
-		// rhs += Δt * load_vector
-		// Just calculated: rhs == MⁿUⁿ + Δt fⁿ⁺¹
-
-		// InterpolationType::interpolateFunction(initialData, exactSolution);		
-		// ellipticOp.get_xi(exactSolution);
-		// std::cout << "ellipticOp.get_xi(exactSolution) = " << *exactSolution.dbegin()
-		//			 << std::endl;
-
-		//InterpolationType::interpolateFunction( initialData, U_n );
-		solver(rhs, U_n);
-		// std::cout << "solver(rhs, U_n) = " << *U_n.dbegin() << std::endl;
-		// Solve:  (Mⁿ⁺¹ + Δt A(Uⁿ)) uⁿ⁺¹ = rhs,
-		// CAPG remark: this is very very slow.
-
-		// dataOutput.write(timeProvider);
-
-		if(iter == itno - 1){
-			std::cout << "Time = " << timeProvider.time() << std::endl;
-			InterpolationType::interpolateFunction(initialData, exactSolution);		
-			// write_error(l2h1error_ofs);
-			write_error(std::cout);
-		}
-		
-		ellipticOp.mass_matrix(U_n, rhs);
-		// calculating: rhs = Mⁿ uⁿ  
-		// std::cout << "ellipticOp.mass_matrix(U_n, rhs) = " << *rhs.dbegin() << std::endl;
-
-		xi.assign(U_n);
-
-		// debugging
-		// std::cout << "U_n = " << *(U_n.dbegin()) << std::endl;
-
-	}
-	l2h1error_ofs.close();
-	std::cout << std::endl;
-}
-
-void BDF::bdf2_heat_algorithm(){
-	// get time from parameter file
-	double t_0 = 
-		Dune::Fem::Parameter::getValue<double>("heat.starttime",0.0);
-	double dT = 
-		Dune::Fem::Parameter::getValue<double>("heat.timestep",0.1);
-	double	t_end = 
-		Dune::Fem::Parameter::getValue<double>("heat.endtime",0.6);
-	const int itno = (t_end - t_0)/dT + .1;
- 
-	// prepare grid from DGF file
-	const std::string gridkey =
-		Dune::Fem::IOInterface::defaultGridKey( GridType::dimension );
-	const std::string gridfile =
-		Dune::Fem::Parameter::getValue< std::string >( gridkey );
-	if( Dune::Fem::MPIManager::rank() == 0 )
-		std::cout << "Loading macro grid: " << gridfile << std::endl;
-	Dune::GridPtr< HostGridType > hostGrid {gridfile};
-	hostGrid ->loadBalance();
-
-	// create grid
-	DeformationCoordFunction deformation {};
-	GridType grid(*hostGrid, deformation);
-	GridPartType gridPart(grid);
-	DiscreteFunctionSpaceType dfSpace(gridPart);
-
-	L2NormType l2norm(gridPart);
-	H1NormType h1norm(gridPart);
-	std::ofstream l2h1error_ofs
-	{Dune::Fem::Parameter::getValue<std::string>("fem.io.errorFile", 
-						     "output/l2h1error"),
-			std::ios_base::app};
-
-	Dune::Fem::GridTimeProvider<GridType> timeProvider(t_0, grid);
-	timeProvider.init(dT);     // Do your first action before you enter the for loop.
-	deformation.set_time_provider(timeProvider);
-
-	DiscreteFunctionType U_n {"U_n",dfSpace};
-	DiscreteFunctionType rhs {"rhs", dfSpace};
-	DiscreteFunctionType load_vector {"load_vector", dfSpace};
-	DiscreteFunctionType exactSolution {"exactSolution",dfSpace};
-	DiscreteFunctionType U_nm1 {"U_nm1", dfSpace};
-	DiscreteFunctionType M_U_nm1 {"M_U_nm1", dfSpace};
-	DiscreteFunctionType U_nm2 {"U_nm2", dfSpace};
-	DiscreteFunctionType M_U_nm2 {"M_U_nm2", dfSpace};
-	DiscreteFunctionType xi {"xi", dfSpace};
-	
-	InitialDataType initialData {timeProvider};
 	RHSFunctionType f {timeProvider};
 	// This expression is very long; it's literally the same f as in L(u) = f;
 	// together with the function/method in rhs.hh, 
@@ -294,138 +121,93 @@ void BDF::bdf2_heat_algorithm(){
 	// dataOutput.write(timeProvider);
 
 	auto write_error = [&](std::ostream& os){
-		os << std::defaultfloat << timeProvider.deltaT() << ' ' 
+		os << std::defaultfloat << timeProvider.time() << ' ' 
 		<< std::scientific 
 		<< l2norm.distance(exactSolution, U_n) << ' '
 		<< h1norm.distance(exactSolution, U_n) << std::endl;
 	};
+
 	// write_error(l2h1error_ofs);
 	
 	NonlinearModel model {timeProvider};
-	NonlinearOperator ellipticOp {xi, model, 1.5};
+	NonlinearOperator ellipticOp {U_n, model};
 	const double solverEps =
 		Dune::Fem::Parameter::getValue<double>( "heat.solvereps", 1e-8 );
 	LinearInverseOperatorType solver(ellipticOp, solverEps, solverEps);
+	// Initializing CG-Solver
+	// CAPG: it's very slow. Can't this be speed up somehow?
 
  	// dataOutput.write(timeProvider);
 
-	// first step
-	int iter = 0;
+	ellipticOp.get_xi(U_n);
+	ellipticOp.mass_matrix(U_n, rhs);
+	// calculating: rhs = Mⁿ uⁿ  
 
 	// debugging
-	// std::cout << "\n==========\n"
-	// 		  << std::defaultfloat << "time = " << timeProvider.time() 
-	// 		  << std::scientific << std::endl;
+	std::cout << std::scientific << "\n==========\n"
+			  << "U_n.dbegin() = " << *(U_n.dbegin()) << std::endl;
+	std::cout << "rhs.dbegin() = " << *(rhs.dbegin()) << std::endl;
 
-	InterpolationType::interpolateFunction(initialData, U_n);
-	// std::cout << "U_n = " << *(U_n.dbegin()) << std::endl;
-
-	U_nm2.assign(U_n);
-	// std::cout << "U_nm2.assign(U_n) = " << *U_nm2.dbegin() << std::endl;
-	ellipticOp.mass_matrix(U_nm2, M_U_nm2);
-	// std::cout << "ellipticOp.mass_matrix(U_nm2, M_U_nm2) = " 
-	// 		  << *M_U_nm2.dbegin() << std::endl;
-
-	// if(iter == itno){
-	// 	std::cout << "Time = " << timeProvider.time() << std::endl;
-	// 	InterpolationType::interpolateFunction(initialData, exactSolution);		
-	// 	write_error(l2h1error_ofs);
-	// }
-
-	// second step
-	++iter;		// iter == 1
-	timeProvider.next(dT);
-
-	std::cout << "----------\n"
-			  << std::defaultfloat << "time = " << timeProvider.time()
-			  << std::scientific << std::endl;
-
-	InterpolationType::interpolateFunction(initialData, U_n);
-	// std::cout << "U_n = " << *(U_n.dbegin()) << std::endl;
-	InterpolationType::interpolateFunction(initialData, exactSolution);	
-
-	U_nm1.assign(U_n);
-	// std::cout << "U_nm1.assign(U_n) = " << *U_nm1.dbegin() << std::endl;
-	ellipticOp.mass_matrix(U_nm1, M_U_nm1);
-	// std::cout << "ellipticOp.mass_matrix(U_nm1, M_U_nm1) = " << *M_U_nm1.dbegin()
-	// 		  << std::endl;
-
-	// if(iter == itno){
-	// 	std::cout << "Time = " << timeProvider.time() << std::endl;
-	// 	InterpolationType::interpolateFunction(initialData, exactSolution);	
-	// 	write_error(l2h1error_ofs);
-	// }
-
-	++iter;
-	for(timeProvider.next(dT); iter <= itno; timeProvider.next(dT), ++iter)
+	int iter = 0;
+	for(timeProvider.next(dT); iter < itno; timeProvider.next(dT), ++iter)
 		// put your loop-action here, but not the last action
 	{
-		std::cout << "----------\n"
-				  << std::defaultfloat<< "time = " << timeProvider.time()
-				  << std::scientific << std::endl;
-
-		// prepare 'rhs'
-		rhs.clear();	// rhs.clear() == rhs = 0
-		// std::cout << "rhs.clear() = " << *rhs.dbegin() << std::endl;
-		rhs.axpy((-1) * .5, M_U_nm2);		// a.axpy(α,v) == a += α·v
-		// std::cout << "rhs.axpy((-1) * .5, M_U_nm2) = " << *rhs.dbegin() << std::endl;
-		rhs.axpy((-1) * (-2.), M_U_nm1);
-		// std::cout << "rhs.axpy((-1) * (-2.), M_U_nm1) = " 
-		// 		  << *rhs.dbegin() << std::endl;
-		assembleRHS(f, load_vector);
-		// std::cout << "assembleRHS(f, load_vector) = " << *load_vector.dbegin() 
-		// 		  << std::endl;
-		rhs.axpy(timeProvider.deltaT(), load_vector);
-		std::cout << "rhs.axpy(timeProvider.deltaT(), load_vector) = " 
-				  << *rhs.dbegin() << std::endl;
-
-		// prepare 'solver'
-		// InterpolationType::interpolateFunction(initialData, exactSolution);
-		// ellipticOp.get_xi(exactSolution);
-		// std::cout << "ellipticOp.get_xi(exactSolution) = " << *exactSolution.dbegin()
-		// 		  << std::endl;
-		xi.clear();
-		xi.axpy(-1.,U_nm2);
-		xi.axpy(2.,U_nm1);
-		std::cout << "xi = " << *xi.dbegin() << std::endl;
-
-		solver(rhs, U_n);	// Solve:  (Mⁿ⁺¹ + Δt A(Uⁿ)) uⁿ⁺¹ = rhs,
-		std::cout << "solver(rhs, U_n) = " << *U_n.dbegin() << std::endl;
-
-		// write output
-		// dataOutput.write(timeProvider);
-		if(iter == itno){
-			std::cout << std::defaultfloat
-					  << "Time = " << timeProvider.time() 
-					  << std::scientific << std::endl;
-			InterpolationType::interpolateFunction(initialData, exactSolution);		
-			// write_error(l2h1error_ofs);
-			write_error(std::cout);
-		}
+		std::cout << std::defaultfloat << "==========\n"
+				  << "In for loop: iter = "<< iter << ", "
+				  << "time = " << timeProvider.time() << std::endl;
 		
-		// cycle bdf values
-		U_nm2.assign(U_nm1);
-		// std::cout << "U_nm2.assign(U_nm1) = " << *U_nm2.dbegin() << std::endl;
-		U_nm1.assign(U_n);
-		// std::cout << "U_nm1.assign(U_n) = " << *U_nm1.dbegin() << std::endl;
-		M_U_nm2.assign(M_U_nm1);
-		// std::cout << "M_U_nm2.assign(M_U_nm1) = " << *M_U_nm2.dbegin() << std::endl;
-		ellipticOp.mass_matrix(U_n, M_U_nm1);
-		// std::cout << "ellipticOp.mass_matrix(U_n, M_U_nm1) = " 
-		// 		  << *M_U_nm1.dbegin() << std::endl;
+		// f.setTime(timeProvider.time());	// obselete
+		// chance the time for the (long) RHS function f to tⁿ⁺¹
+		// ('f' from -∆u + \div(v) u + \matdot{u} = f)
+
+		// initialData.setTime(timeProvider.time());	// obselete
+
+		assembleRHS(f, load_vector);
+		std::cout << "assembleRHS(f, load_vector) = " << *(load_vector.dbegin()) << std::endl;
+
+		// assemly stiffness/load vector; the vector is called 'rhs'; 
+		// in the sense of above it is fⁿ⁺¹
+
+		rhs.axpy(timeProvider.deltaT(), load_vector);
+		// rhs += Δt * load_vector
+		// Just calculated: rhs == MⁿUⁿ + Δt fⁿ⁺¹
+		
+		std::cout << "rhs.axpy = " << *(rhs.dbegin()) << std::endl;
+
+		//InterpolationType::interpolateFunction( initialData, U_n );
+		solver(rhs, U_n);
+		// Solve:  (Mⁿ⁺¹ + Δt A(Uⁿ)) uⁿ⁺¹ = rhs,
+		// CAPG remark: this is very very slow.
+
+		std::cout << "solver(rhs, U_n) = " << *(U_n.dbegin()) << std::endl;
+
+		// dataOutput.write(timeProvider);
+
+		InterpolationType::interpolateFunction(initialData, exactSolution);		
+		// write_error(l2h1error_ofs);
+		
+		ellipticOp.mass_matrix(U_n, rhs);
+		std::cout << "mass_matrix(U_n, rhs) = " << *(rhs.dbegin()) << std::endl;
+
+		// calculating: rhs = Mⁿ uⁿ  
+		ellipticOp.get_xi(U_n);
 
 		// debugging
-		// std::cout << "U_n = " << *(U_n.dbegin()) << std::endl;
-
+		std::cout << std::scientific
+				  << "U_n.dbegin() = " << *(U_n.dbegin()) << std::endl;
+		std::cout << "rhs.dbegin() = " << *(rhs.dbegin()) << std::endl;
+		std::cout << "load_vector.dbegin() = " << *(load_vector.dbegin())
+				  << std::endl;
 	}
 	l2h1error_ofs.close();
-	std::cout << std::endl;
 }
 
+void BDF::bdf_algorithm(const int bdf_no){
+	if( bdf_no < 1 || bdf_no > 6) 
+		throw std::runtime_error("ERROR in BDF::bdf_algorithm():"
+								 " Bad bdf_no = " + std::to_string(bdf_no) + "\n"
+								 "Enter an integer between 1 and 6");
 
-// begin 2014nonlinear experiment
-void BDF::nonlinear_algorithm(){
-	// get time from parameter file
 	double t_0 = 
 		Dune::Fem::Parameter::getValue<double>("heat.starttime",0.0);
 	double dT = 
@@ -433,26 +215,168 @@ void BDF::nonlinear_algorithm(){
 	double	t_end = 
 		Dune::Fem::Parameter::getValue<double>("heat.endtime",0.6);
 	const int time_step_no_max = (t_end - t_0)/dT + .1;
+ 
+	// prepare grid from DGF file
+	const std::string gridkey =
+		Dune::Fem::IOInterface::defaultGridKey(GridType::dimension);
+	const std::string gridfile =
+		Dune::Fem::Parameter::getValue<std::string>(gridkey);
+	if(Dune::Fem::MPIManager::rank() == 0)
+		std::cout << "Loading macro grid: " << gridfile << std::endl;
+	Dune::GridPtr<HostGridType> hostGrid {gridfile};
+	hostGrid->loadBalance();
+
+	// create grid
+	DeformationCoordFunction deformation {};
+	GridType grid(*hostGrid, deformation);
+	GridPartType gridPart(grid);
+	DiscreteFunctionSpaceType dfSpace(gridPart);
+
+	L2NormType l2norm(gridPart);
+	H1NormType h1norm(gridPart);
+	std::ofstream l2h1error_ofs
+	{Dune::Fem::Parameter::getValue<std::string>("fem.io.errorFile", 
+												 "../output/l2h1error")};
+
+	Dune::Fem::GridTimeProvider<GridType> timeProvider(t_0, grid);
+	timeProvider.init(dT);     // Do your first action before you enter the for loop.
+
+	deformation.set_time_provider(timeProvider);
+	 // deformation is aware of timeProvider
+
+	DiscreteFunctionType U_n("U_n",dfSpace), rhs("rhs", dfSpace), 
+		load_vector("load_vector", dfSpace), exactSolution("exactSolution",dfSpace);
+	DiscreteFunctionType ie_U_n("ie_U_n", dfSpace);
+	DiscreteFunctionType ie_rhs("ie_rhs", dfSpace);
+
+	std::vector<DiscreteFunctionType> prev_M_n_U_n;
+	for(size_t i = 0; i < bdf_no; ++i)
+		prev_M_n_U_n.push_back(
+			DiscreteFunctionType {"U_n-" + std::to_string(i+1), dfSpace});
+	
+	
+	IOTupleType ioTuple(&U_n);
+	const int step = 0;	// is there any resonable choise, whitout adaptivity?
+	DataOutputType 
+		dataOutput(grid, ioTuple, 
+				   DataOutputParameters(Dune::Fem::Parameter::getValue<std::string>
+										("fem.io.outputName",
+										 "../output/ALE_LiteratureExample-"),
+										step) );
+	// dataOutput.write(timeProvider);
+
+	auto write_error = [&](std::ostream& os){
+		os << std::defaultfloat << timeProvider.time() << ' ' 
+		<< std::scientific 
+		<< l2norm.distance(exactSolution, U_n) << ' '
+		<< h1norm.distance(exactSolution, U_n) << std::endl;
+	};
+
+	InitialDataType initialData {timeProvider};
+	RHSFunctionType f {timeProvider};
+	NonlinearModel model {timeProvider};
+	NonlinearOperator ellipticOp {U_n, model};
+	const double solverEps =
+		Dune::Fem::Parameter::getValue<double>( "heat.solvereps", 1e-8 );
+	LinearInverseOperatorType solver(ellipticOp, solverEps, solverEps);
+
+	// first time step
+	int time_step_no = 0;
+	// timeProvider.time() == t_0;
+
+	InterpolationType::interpolateFunction(initialData, U_n);
+	InterpolationType::interpolateFunction(initialData, exactSolution);
+	InterpolationType::interpolateFunction(initialData, ie_U_n);
+
+	// write_error(l2h1error_ofs);
+ 	// dataOutput.write(timeProvider);
+
+	ellipticOp.get_xi(U_n);
+	ellipticOp.mass_matrix(ie_U_n, ie_rhs);
+	ellipticOp.mass_matrix(ie_U_n, prev_M_n_U_n.at(0) );
+	// calculating: rhs = Mⁿ uⁿ  
+
+	// debugging
+	std::cout << std::scientific << "\n==========\n"
+			  << "ie_U_n = " << *(ie_U_n.dbegin()) << '\t'
+		      << "ie_rhs = " << *(ie_rhs.dbegin()) << '\n'
+			  << "U_n = " << *(U_n.dbegin()) << '\t'
+			  << "prev_M_n_U_n.at(0) = " << *(prev_M_n_U_n.at(0).dbegin()) << std::endl;
+
+
+	for(timeProvider.next(dT); time_step_no < time_step_no_max; timeProvider.next(dT), ++time_step_no)
+		// put your loop-action here, but not the last action
+	{
+		std::cout << std::defaultfloat << "==========\n"
+				  << "In for loop: time_step_no = "<< time_step_no << ", "
+				  << "time = " << timeProvider.time() << std::endl;
+		
+		// f.setTime(timeProvider.time());	// obselete
+		// chance the time for the (long) RHS function f to tⁿ⁺¹
+		// ('f' from -∆u + \div(v) u + \matdot{u} = f)
+
+		// initialData.setTime(timeProvider.time());	// obselete
+
+		assembleRHS(f, load_vector);
+		std::cout << "assembleRHS(f, load_vector) = " << *(load_vector.dbegin()) << std::endl;
+
+		// assemly stiffness/load vector; the vector is called 'rhs'; 
+		// in the sense of above it is fⁿ⁺¹
+
+		rhs.axpy(timeProvider.deltaT(), load_vector);
+		// rhs += Δt * load_vector
+		// Just calculated: rhs == MⁿUⁿ + Δt fⁿ⁺¹
+		
+		std::cout << "rhs.axpy = " << *(rhs.dbegin()) << std::endl;
+
+		//InterpolationType::interpolateFunction( initialData, U_n );
+		solver(rhs, U_n);
+		// Solve:  (Mⁿ⁺¹ + Δt A(Uⁿ)) uⁿ⁺¹ = rhs,
+		// CAPG remark: this is very very slow.
+
+		std::cout << "solver(rhs, U_n) = " << *(U_n.dbegin()) << std::endl;
+
+		// dataOutput.write(timeProvider);
+
+		InterpolationType::interpolateFunction(initialData, exactSolution);		
+		// write_error(l2h1error_ofs);
+		
+		ellipticOp.mass_matrix(U_n, rhs);
+		std::cout << "mass_matrix(U_n, rhs) = " << *(rhs.dbegin()) << std::endl;
+
+		// calculating: rhs = Mⁿ uⁿ  
+		ellipticOp.get_xi(U_n);
+
+		// debugging
+		std::cout << std::scientific
+				  << "U_n.dbegin() = " << *(U_n.dbegin()) << std::endl;
+		std::cout << "rhs.dbegin() = " << *(rhs.dbegin()) << std::endl;
+		std::cout << "load_vector.dbegin() = " << *(load_vector.dbegin())
+				  << std::endl;
+	}
+	l2h1error_ofs.close();
+}
+
+
+// begin 2014nonlinear experiment
+void BDF::nonlinear_algorithm(){
+	double t_0 = 
+		Dune::Fem::Parameter::getValue<double>("heat.starttime",0.0);
+	double dT = 
+		Dune::Fem::Parameter::getValue<double>("heat.timestep",0.1);
+	double	t_end = 
+		Dune::Fem::Parameter::getValue<double>("heat.endtime",0.6);
+	const int itno = (t_end - t_0)/dT + .1;
 
 	// setting up BDF coefficients
 	const int bdf_no =
 		Dune::Fem::Parameter::getValue<double>("heat.bdf", 1);
 	const std::vector<double> bdf_alpha_coeff { NUMERIK::bdf_alpha_coeff(bdf_no) };
 	const std::vector<double> bdf_gamma_coeff { NUMERIK::bdf_gamma_coeff(bdf_no) };
-	 // bdf_*_coeff.back() is the lead coefficient of the polynomial
-
-	// debugging: print BDF coeffs
-	// for(double d : bdf_gamma_coeff)
-	// 	std::cout << d << ' ';
-	// std::cout << std::endl;
-	// for(double d : bdf_alpha_coeff)
-	// 	std::cout << d << ' ';
-	// std::cout << '\n' << bdf_alpha_coeff.back() << std::endl;
-
+ 
 	// prepare grid from DGF file
 	const std::string gridkey =
 		Dune::Fem::IOInterface::defaultGridKey( GridType::dimension );
-	std::cout << "gridkey: " << gridkey << std::endl;
 	const std::string gridfile =
 		Dune::Fem::Parameter::getValue< std::string >( gridkey );
 	if( Dune::Fem::MPIManager::rank() == 0 )
@@ -466,173 +390,208 @@ void BDF::nonlinear_algorithm(){
 	GridPartType gridPart(grid);
 	DiscreteFunctionSpaceType dfSpace(gridPart);
 
-	Dune::Fem::GridTimeProvider<GridType> timeProvider(t_0, grid);
-	deformation.set_time_provider(timeProvider);
-
-	// create FE-functions
-	DiscreteFunctionType U_np1("U_np1", dfSpace);	// Numerical solution
-	 // In a math book U_np1 == U_n+1.  
-	DiscreteFunctionType rhs("rhs", dfSpace);	// Right hand side for the LES
-	DiscreteFunctionType load_vector("load_vector", dfSpace);
-	DiscreteFunctionType xi("xi", dfSpace);		// For the lineary implicit BDF method
-	DiscreteFunctionType exact_solution("exact_solution", dfSpace);	
-	DiscreteFunctionType err_vec("dof_U_np1_minus_exact_solution", dfSpace);
-	 // Holds U_np1 - exact_solution
-	std::vector<DiscreteFunctionType> prev_steps_U_nmk;	// All previous U_{n-k}
-	for(int i = 0; i < bdf_no; ++i)
-		prev_steps_U_nmk.push_back( 
-			DiscreteFunctionType {"U_nm" + std::to_string(bdf_no - (i+1)), dfSpace} );
-	std::vector<DiscreteFunctionType> prev_steps_M_U_nmk;	// All previous M_U_{n-k}
-	for(int i = 0; i < bdf_no; ++i)
-		prev_steps_M_U_nmk.push_back(
-			DiscreteFunctionType {"M_U_nm" + std::to_string(bdf_no - (i+1)), dfSpace});
-
-	// stupid check
-	if(prev_steps_U_nmk.size() != prev_steps_M_U_nmk.size())
-		throw std::runtime_error("ERROR in bdf_cycle().");
-
-	// File output
 	L2NormType l2norm(gridPart);
 	H1NormType h1norm(gridPart);
 	std::ofstream l2h1error_ofs
 	{Dune::Fem::Parameter::getValue<std::string>("fem.io.errorFile", 
-						     "output/l2h1error"),
-			std::ios_base::app};
-	// Paraview output
-	IOTupleType ioTuple(&err_vec);
-	const int step = 0;	// is there any resonable choice, whitout adaptivity?
-	DataOutputType 
-	  dataOutput(grid, ioTuple, 
-		     DataOutputParameters(Dune::Fem::Parameter::getValue<std::string>
-					  ("fem.io.outputName",
-					   "../output/ALE_LiteratureExample-"),
-					  step) );
-	// helper function for 'err_vec'
-	auto calc_err_vec = [&]{
-		err_vec.assign(U_np1);
-		err_vec.axpy((-1.), exact_solution);
-	};
+												 "../output/l2h1error")};
 
-	InitialDataType initialData {timeProvider};
-	RHSFunctionType f {timeProvider};
-	NonlinearModel model {timeProvider};
-	NonlinearOperator ellipticOp {xi, model, bdf_alpha_coeff.back()};
-	const double solverEps =
-		Dune::Fem::Parameter::getValue<double>("heat.solvereps", 1e-8); 
-	LinearInverseOperatorType solver(ellipticOp, solverEps, solverEps);	// CG-solver
+	Dune::Fem::GridTimeProvider<GridType> timeProvider(t_0, grid);
+	timeProvider.init(dT);     // Do your first action before you enter the for loop.
 
-	const std::string ofile_name = Dune::Fem::Parameter::
-	  getValue<std::string>("fem.io.errorFile", "output/l2h1error");
-	
-	IO_dune_fem hd_dof_com {ofile_name, IO_direction::write};
-	
-	auto write_error = [&](std::ostream& os)
-	// helper function for 'l2h1error_ofs'
+	deformation.set_time_provider(timeProvider);	
+	 // deformation is aware of timeProvider
+
+	// Setting up dof vectors
+	DiscreteFunctionType U_n("U_n", dfSpace);	// Numerical solution
+	DiscreteFunctionType rhs("rhs", dfSpace);	// Right hand side for the LES
+	DiscreteFunctionType bdf_tmp("bdf_tmp", dfSpace);	
+	 // Purpose of bdf_tmp:
+	 // For the first k-time steps it is a tmp variable.
+	 // Later it holds the sum from the previous BDF steps
+	DiscreteFunctionType load_vector("load_vector", dfSpace);
+	DiscreteFunctionType exact_solution("exact_solution", dfSpace);	
+	DiscreteFunctionType err_vec("U_n_minus_exact_solution", dfSpace);
+	 // Holds U_n - exact_solution
+
+	auto calc_err_vec = [&]
+	// helper function: caclulates err_vec - exact_solution
 		{
-		  // os << std::defaultfloat << timeProvider.deltaT() << ' ' 
-		  // << std::scientific 
-		  // << l2norm.distance(exact_solution, U_np1) << ' '
-		  // << h1norm.distance(exact_solution, U_np1) << std::endl;
-		  hd_dof_com(U_np1);
+			err_vec.assign(U_n);
+			err_vec.axpy((-1.), exact_solution);
 		};
 
-	// initial steps
-	timeProvider.init(dT);     // Do your first action before you enter the for loop.
-	int time_step_no = 0;
+	std::vector<DiscreteFunctionType> prev_steps_vec;
+	for(int i = 0; i < bdf_no; ++i)
+		prev_steps_vec.push_back( 
+			DiscreteFunctionType {"U_n" + std::to_string(i+1), dfSpace} );
 
-	// debugging
-	// std::cout << "\n=========="  << std::endl;
+ 	// debugging
+	DiscreteFunctionType ie_U_n("ie_U_n", dfSpace);
+	DiscreteFunctionType ie_rhs("ie_rhs", dfSpace);
+	DiscreteFunctionType ie_load_vector("ie_load_vector", dfSpace);
 
-	// initialize 'prev_steps_U_nmk' and 'prev_steps_M_U_mmk'
-	for(;
-		time_step_no < std::min(prev_steps_U_nmk.size(), size_t(time_step_no_max));
-		++time_step_no, timeProvider.next(dT)){
-		
-		// debugging
-		// std::cout << std::defaultfloat << "time = " << timeProvider.time() 
-		//  		  << std::scientific << std::endl;
+	// Setting up PDE/ discrete operator
+	InitialDataType initialData {timeProvider};
+	InterpolationType::interpolateFunction( initialData, ie_U_n );
+	
+	RHSFunctionType f {timeProvider};
+	NonlinearModel model {timeProvider};
+	NonlinearOperator ellipticOp {ie_U_n, model};
+	const double solverEps =
+		Dune::Fem::Parameter::getValue<double>( "heat.solvereps", 1e-8 );
+	LinearInverseOperatorType solver(ellipticOp, solverEps, solverEps);
 
+	// Setting up paraview output
+	IOTupleType ioTuple(&U_n);
+	const int step = 0;	// is there any resonable choise, whitout adaptivity?
+	DataOutputType 
+		dataOutput(grid, ioTuple, 
+				   DataOutputParameters(Dune::Fem::Parameter::getValue<std::string>
+										("fem.io.outputName",
+										 "../output/ALE_LiteratureExample-"),
+										step) );
+	// helper function
+	auto write_error = [&](std::ostream& os){
+		os << std::defaultfloat << timeProvider.time() << ' ' 
+		<< std::scientific 
+		<< l2norm.distance(exact_solution, U_n) << ' '
+		<< h1norm.distance(exact_solution, U_n) << std::endl;
+	};
+
+
+
+	std::cout << '\n' << std::endl;
+	// initialize prev_step_vec[i] dof
+	int iter = (-1) * bdf_no;
+	for(int i =0; 
+		(i < prev_steps_vec.size()) && (iter < itno); 
+		++i, ++iter, timeProvider.next(dT)){
+		std::cout << std::defaultfloat << "==========\n"
+				  << "In initial steps: iter = "<< iter << ", "
+				  << "time = " << timeProvider.time() << std::endl;
+
+		InterpolationType::interpolateFunction(initialData, bdf_tmp);
+		ellipticOp.mass_matrix(bdf_tmp, prev_steps_vec.at(i));
 		InterpolationType::interpolateFunction(initialData, exact_solution);
-		prev_steps_U_nmk.at(time_step_no).assign(exact_solution);
-		ellipticOp.mass_matrix(exact_solution, prev_steps_M_U_nmk.at(time_step_no));
+		U_n.assign(bdf_tmp);
 
-		U_np1.assign(exact_solution);
-
-		// output
+		// debugging
+		// if(i == 0){
+		// 	InterpolationType::interpolateFunction(initialData, ie_U_n);
+		// 	std::cout << "interpolate = " << *(ie_U_n.dbegin()) << std::endl;
+		// 	ellipticOp.mass_matrix(ie_U_n, ie_rhs);
+		// 	ellipticOp.get_xi(ie_U_n);
+		// }
+		// else{
+		// 	assembleRHS(f, ie_load_vector);
+		// 	ie_rhs.axpy(timeProvider.deltaT(), ie_load_vector);
+		// 	solver(ie_rhs, ie_U_n);
+		// 	ellipticOp.get_xi(ie_U_n);
+		// }
+	
 		// calc_err_vec();
 		// dataOutput.write(timeProvider);
-		write_error(l2h1error_ofs);
+		// write_error(l2h1error_ofs);
 
-		// debugging
-		// std::cout << "exact_solution = " << *exact_solution.dbegin() << '\n'
-		// 		  << "U_np1 = " << *(U_np1.dbegin()) << '\n'
-		// 		  << "prev_steps_M_U_nmk.at(time_step_no) = " 
-		// 		  << *prev_steps_M_U_nmk.at(time_step_no).dbegin()
-		// 		  << std::endl;
+		std::cout << std::scientific
+				  << "U_n.dbegin() = " << *(U_n.dbegin())  << '\t'
+				  << "ie_U_n.dbegin() = " << *(ie_U_n.dbegin()) << '\n'
+				  << "ie_rhs.dbegin() = " << *(ie_rhs.dbegin()) <<  std::endl;
 	}
 
-	// debugging
-	// std::cout << "\n=========="  << std::endl;
+	ellipticOp.get_xi(U_n);
+	ellipticOp.mass_matrix(U_n, rhs);
+
+	// two helper functions
+
+	auto bdf_rhs = [&] 
+	// calculating: rhs = (-1) · (∑ᵢ₌₁ᵏ αᵢ₋₁ (Mu)ⁿ⁻ᵏ⁺ⁱ)
+	//				bdf_tmp = ∑ᵢ₌₁ᵏ γᵢ₋₁ (Mu)ⁿ⁻ᵏ⁺ⁱ
+	// NOTE for implicit euler: rhs = bdf_tmp = Mⁿ uⁿ
+		{
+			
+			rhs.clear();	// set dof to zero
+			bdf_tmp.clear();
+			
+			for(size_t i=0; i < prev_steps_vec.size(); ++i){
+				rhs.axpy(bdf_alpha_coeff.at(i), prev_steps_vec.at(i));
+				bdf_tmp.axpy(bdf_gamma_coeff.at(i), prev_steps_vec.at(i));
+			}
+			rhs *= (-1);
+			ellipticOp.get_xi(bdf_tmp);
+		};
+
+	auto bdf_cycle = [&]
+	// use this after calculating the numerical solution
+		{
+			// std::cout << "bdf_cycle at timeProvider.time() = "
+			// << timeProvider.time() << std::endl;
+			for(size_t i=0; i < prev_steps_vec.size() - 1; ++i)
+				prev_steps_vec.at(i).assign(prev_steps_vec.at(i+1));
+			ellipticOp.mass_matrix(U_n, prev_steps_vec.back());
+		};
+	
 
 	for(; 
-		time_step_no <= time_step_no_max; 
-		timeProvider.next(dT), ++time_step_no){
+		iter < itno; 
+		timeProvider.next(dT), ++iter)
+		// put your loop-action here, but not the last action
+	{
+		std::cout << std::defaultfloat << "==========\n"
+				  << "In for loop: iter = "<< iter << ", "
+				  << "time = " << timeProvider.time() << std::endl;
+		
+		bdf_rhs();		
+		assembleRHS(f, load_vector);
+		// assemly stiffness/load vector; the vector is called 'load_vector'; 
+		// in the sense of above it is fⁿ⁺¹
 
-		// debugging
-		// std::cout << std::defaultfloat << "time = " << timeProvider.time() 
-		// 		  << std::scientific << std::endl;
-
-		// 'rhs', i.e.
-		// calculating: rhs = (-1) · (∑ᵢ₌₁ᵏ αᵢ₋₁ (Mu)ⁿ⁻ᵏ⁺ⁱ)
-		//				xi = ∑ᵢ₌₁ᵏ γᵢ₋₁ uⁿ⁻ᵏ⁺ⁱ
-		// NOTE for implicit euler: rhs = Mⁿ uⁿ and xi = uⁿ
-		rhs.clear();	// set dof to zero
-		// xi.clear();
-		for(size_t i=0; i < prev_steps_U_nmk.size(); ++i){
-			rhs.axpy(bdf_alpha_coeff.at(i), prev_steps_M_U_nmk.at(i));
-			// xi.axpy(bdf_gamma_coeff.at(i), prev_steps_U_nmk.at(i));
-			// std::cout << "rhs.axpy(bdf_alpha_coeff.at(i), "
-			// 	"prev_steps_M_U_nmk.at(i)) = " << *rhs.dbegin() << std::endl;
-		}
-		// std::cout << "xi = " << *xi.dbegin() << std::endl;
-		rhs *= (-1);
-		// std::cout << "rhs *= (-1) : " << *rhs.dbegin() << std::endl;
-		assembleRHS(f, load_vector); 
-		// std::cout << "assembleRHS(f, load_vector) = " 
-		// 		  << *load_vector.dbegin() << std::endl;
 		rhs.axpy(timeProvider.deltaT(), load_vector);
-		// std::cout << "rhs.axpy(timeProvider.deltaT(), load_vector) = " 
-		// 		  << *rhs.dbegin() << std::endl;
+		// rhs += Δt * load_vector
+		// Just calculated: rhs == MⁿUⁿ + Δt fⁿ⁺¹
 
-		// 'solver'
-		solver(rhs, U_np1);
-		// std::cout << "solver(rhs, U_np1) = " << *U_np1.dbegin() << std::endl;
+		rhs /= bdf_alpha_coeff.back();
 
-		// cycle bdf values
-		for(size_t i=0; i < prev_steps_U_nmk.size() - 1; ++i){
-			prev_steps_U_nmk.at(i).assign(prev_steps_U_nmk.at(i+1));
-			prev_steps_M_U_nmk.at(i).assign(prev_steps_M_U_nmk.at(i+1));
-		}
-		prev_steps_U_nmk.back().assign(U_np1);
-		ellipticOp.mass_matrix(U_np1, prev_steps_M_U_nmk.back());
+		//InterpolationType::interpolateFunction( initialData, U_n );
+		solver(rhs, U_n);
+		// Solve:  (Mⁿ⁺¹ + Δt A(Uⁿ)) uⁿ⁺¹ = rhs,
+		// CAPG remark: this is very very slow.
 
-		// output
+		bdf_cycle();
 		InterpolationType::interpolateFunction(initialData, exact_solution);		
-		write_error(l2h1error_ofs);
-		// calc_err_vec();
+		calc_err_vec();
+
 		// dataOutput.write(timeProvider);
-		// if(time_step_no == time_step_no_max){
-			// std::cout << std::defaultfloat
-			// 		  << "Time = " << timeProvider.time() 
-			// 		  << std::scientific << std::endl;
-			// InterpolationType::interpolateFunction(initialData, exact_solution);		
-			// write_error(l2h1error_ofs);
-			// write_error(std::cout);
-		// }
+		// if(timeProvider.time() > t_end - 3*dT)
+			// write_error(l2h1error_ofs);	// write_error(std::cout);	
+
+		assembleRHS(f, ie_load_vector);
+		std::cout << "assembleRHS(f, ie_load_vector) = " << *(ie_load_vector.dbegin()) << std::endl;
+		ie_rhs.axpy(timeProvider.deltaT(), ie_load_vector);
+		std::cout << "ie_rhs.axpy = " << *(ie_rhs.dbegin()) << std::endl;
+		solver(ie_rhs, ie_U_n);
+		std::cout << "solver(ie_rhs, ie_U_n) = " << *(ie_U_n.dbegin()) << std::endl;
+		ellipticOp.mass_matrix(ie_U_n, ie_rhs);
+		std::cout << "mass_matrix(ie_U_n, ie_rhs) = " << *(ie_rhs.dbegin()) << std::endl;
+		ellipticOp.get_xi(ie_U_n);
 
 		// debugging
-		// std::cout << "U_np1 = " << *U_np1.dbegin()
-		// 		  << "\n----------" << std::endl;
+		std::cout << std::scientific
+				  << "U_n.dbegin() = " << *(U_n.dbegin())  << "\t\t"
+				  << "ie_U_n.dbegin() = " << *(ie_U_n.dbegin()) << std::endl;
+		std::cout << "rhs.dbegin() = " << *(rhs.dbegin()) << "\t\t"
+				  << "ie_rhs.dbegin() = " << *(ie_rhs.dbegin()) << std::endl;
+		std::cout << "load_vector.dbegin() = " << *(load_vector.dbegin()) << '\t'
+				  << "ie_load_vector.dbegin() = " << *(ie_load_vector.dbegin()) 
+				  << std::endl;
+		std::cout << "bdf_tmp.dbegin() = " << *(bdf_tmp.dbegin()) << std::endl;
+
+		for(size_t i=0; i < prev_steps_vec.size(); ++i){
+			std::cout << "prev_steps_vec.at(" << i << ").dbegin() = "
+					  << *(prev_steps_vec.at(i).dbegin()) << std::endl;
+		}
+
 	}
 	l2h1error_ofs.close();
 }
@@ -862,4 +821,5 @@ void BDF::nonlinear_algorithm(){
 // 	l2h1error_ofs.close();
 // }
 // // end paperALE experiment
+
 #endif // #ifndef DUNE_HEAT_ALGORITHM_HPP

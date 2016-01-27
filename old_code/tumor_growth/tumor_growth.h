@@ -76,10 +76,10 @@ namespace Tumor_growth{
   // Initial data for the Brusselator model
 
   template<typename Function_space>
-  struct Initial_data_gauss :
-    Dune::Fem::Function<Function_space, Initial_data_gauss<Function_space> >{
+  struct Initial_data_u :
+    Dune::Fem::Function<Function_space, Initial_data_u<Function_space> >{
 
-    explicit Initial_data_gauss(const double mean_value, const double variance)
+    explicit Initial_data_u(const double mean_value, const double variance)
       : random_fun (std::bind(Random_dist {mean_value, variance},
 			  Random_engine {}))
     {}
@@ -97,52 +97,23 @@ namespace Tumor_growth{
   };
 
   template<typename Function_space>
-  struct Initial_data_uniform :
-    Dune::Fem::Function<Function_space, Initial_data_uniform<Function_space> >{
+  struct Initial_data_w :
+    Dune::Fem::Function<Function_space, Initial_data_w<Function_space> >{
 
-    explicit Initial_data_uniform(const double hom_value, const double pertubation)
-      : random_fun (std::bind(Random_dist {hom_value, hom_value + pertubation},
-			  Random_engine {}))
+    explicit Initial_data_w(const double mean_value, const double variance)
+      : base {mean_value}, pertubation {variance}
     {}
     
     using Domain = typename Function_space::DomainType;
     using Range = typename Function_space::RangeType;
 
     void evaluate(const Domain& p, Range& q) const{
-      q = random_fun(); 
+      // const double  x = p[0], y = p[1], z = p[2];
+      q = Range {base};
     }
   private:
-    using Random_dist = std::uniform_real_distribution<>;
-    using Random_engine = std::default_random_engine;
-    std::function<double()> random_fun;
-  };
-
-    template <class FunctionSpace>
-  struct Identity : EvolutionFunction<FunctionSpace, 
-				      Identity<FunctionSpace> >{
-    typedef FunctionSpace FunctionSpaceType;
-    typedef typename FunctionSpaceType::DomainFieldType DomainFieldType;
-    typedef typename FunctionSpaceType::RangeFieldType RangeFieldType;
-    typedef typename FunctionSpaceType::DomainType DomainType;
-    typedef typename FunctionSpaceType::RangeType RangeType;
-    static const int dimDomain = DomainType::dimension;
-    static const int dimRange  = RangeType::dimension;
-
-    typedef EvolutionFunction<FunctionSpace, 
-			      Identity<FunctionSpace> >  Base;
-    using Base::get_time;
-
-    static_assert(dimDomain == 3 && dimRange == 3, 
-		  "Identity only implemented for R3");
-
-    Identity(const Dune::Fem::TimeProviderBase& time_provider)
-      : Base {time_provider} {};
-
-    void evaluate(const DomainType& xx, RangeType& phi) const{
-      phi[0] = xx[0];
-      phi[1] = xx[1];
-      phi[2] = xx[2];
-    }
+    double base;
+    double pertubation;
   };
   
   // ----------------------------------------------------------------------
@@ -223,7 +194,7 @@ namespace Tumor_growth{
     Brusselator_model(const double uniform_time_step,
 		      const double gamma, 
 		      const double a_or_b, 
-		      const Growth promoting_or_inhibiting,
+		      const Growth scalar_type,
 		      const double diffusion = 1.);
     // Pseudocode:
     // growth-promoting
@@ -263,10 +234,10 @@ namespace Tumor_growth{
 
     // ----------
     // data members
-    double mass_matrix_lhs {0.};	// 1 + τγ || 1
-    double stiffness_matrix_lhs {0.};	// τ || τ Dᶜ
-    double quadrilinear_mass_matrix_lhs {0.};	// - τγ || τγ
-    double mass_matrix_rhs {0.};	// τγa || τγb
+    double mass_matrix_lhs {0.};
+    double stiffness_matrix_lhs {0.};
+    double quadrilinear_mass_matrix_lhs {0.};
+    double mass_matrix_rhs {0.};
   };
 
   // ----------------------------------------------------------------------
@@ -486,10 +457,10 @@ namespace Tumor_growth{
   template <typename Scalar_function_space>
   Brusselator_model<Scalar_function_space>::
   Brusselator_model(const double uniform_time_step,
-		    const double gamma, const double a_or_b,
-		    const Growth promoting_or_inhibiting,
-		    const double diffusion) {
-    switch(promoting_or_inhibiting){
+		    const double gamma, const double a_or_b, const Growth scalar_type,
+		    const double diffusion)
+  {
+    switch(scalar_type){
     case Growth::promoting:
       mass_matrix_lhs = 1. + uniform_time_step * gamma;
       stiffness_matrix_lhs = uniform_time_step;
@@ -502,7 +473,7 @@ namespace Tumor_growth{
       break;
     default:
       throw std::runtime_error {"Error in constructor of Brusselator_model.\n"
-	  "Your \"promoting_or_inhibiting\" is not implemented."};
+	  "Your scalar_type is not implemented."};
       break;
     };
     mass_matrix_rhs = uniform_time_step * gamma * a_or_b;
@@ -815,14 +786,6 @@ namespace Tumor_growth{
 #endif // TUMOR_GROWTH_OPERATOR_H
 
 /*! Log:
-    2016.01.07: Add pattern stage
-
-                In an Email with the authors of the tumor growth paper they have
-		admitted that there was missing in the paper the information that
-		before the surface is evolving that some Turring pattern have to
-		form on it.  That means that (u,w) diffuse before some time before 
-		the surface evolves.  
-
     2015.11.27: Save a promising tumor_growth_code()
 
                 I have run the experiment with u_base_value = 1, w_base_value = 0, 

@@ -1,134 +1,302 @@
-#----------------------------------------------------------------------
+# ----------------------------------------------------------------------
 #  makefile template for libraries
 #
-#  Assumption: We have the following folders
-#  bin/ lib/ lib/obj/ src/ test/ (not explicit used)
-#  TODO (doc/)
+#  Revision history:
 #
+#	Revised by Christian Power Januar 2016
+#	Originally written by Christian Power
+#		(power22c@gmail.com) Decembre 2016
+#
+#  Assumption:
+#   - PROJECT_DIR is created and contains
+#     include src test
+#   - BUILD_DIR is created and contains
+#     bin lib obj
+#  
 #  How to use:
-#  - Enter name for LIB1 and update VERSION1 resp. SUBVERSION1
-#  - Enter filename with relative path of the files containing int main()
+#  - Set PROJECT_DIR in this makefile.  Enter an absolute path.
+#  - Type 'make help' 
+#  - DEBUG may be specified in the command line.  Use the values 1-9. 
+#  - BUILD_DIR may be specified in the command line or set in this file.
+#    The default value for BUILD_DIR is ${PROJECT_DIR} if no
+#    DEBUG value has been specified and else ${PROJECT_DIR}/debug if any DEBUG
+#    value is specified
 #  - Change compiler flags if needed
+#  - For libraries copy the template LIB1 
+#  - For programs copy the template PROG1
 #
-#  Created by Christian Power on 14. Dezember 2015
-#  Copyright (c) 2015 Christian Power.  All rights reserved.
-#----------------------------------------------------------------------
-
-#----------------------------------------------------------------------
-# Interface for the user
-
-#------------------------------------------------------------
-# Name of libraries, programs and test programs
-LIB1 := lib_name
-VERSION1 := 0
-SUBVERSION1 :=  1
-LIBRARIES := ${LIB1}
-
-#--------------------------------------------------
-# Filenamen with relative path (files must have different names!)
-PROG1 := src/2014nonlinear.cpp
-PROG2 := src/tumor_reader_main.cpp
-TEST := test/test.cpp
-
-PROGS := ${PROG1} ${PROG2}
-
-#------------------------------------------------------------
-# make commands (appear in .PHONY)
 # TODO: add 'global' resp. 'tags' and 'doxygen' resp. 'doc'
-.PHONY:	all $(basename ${PROGS} ${TEST}) ${LIBRARIES} clean
-# tags doc (doc should depend on tags)
-all: $(basename ${PROGS})
-clean:
-	find {lib,bin} ( -type f -or -type l ) -exec rm -f {} +
-#------------------------------------------------------------
-# more specific 
-$(basename ${PROG1}):	bin/$(basename $(notdir ${PROG1}))
-$(basename ${PROG2}):	bin/$(basename $(notdir ${PROG2}))
-$(basename ${TEST}):	bin/$(basename $(notdir ${TEST}))
+#       doc should depend on tags
+#
+#  Created by Christian Power on 18.01.2016
+#  Copyright (c) 2016Christian Power.  All rights reserved.
+# ----------------------------------------------------------------------
 
-#================================================================================
-# All implementation details
-#----------------------------------------------------------------------
+PROJECT_DIR := /Users/christianpower/cpp/DISS_surfaces
 
-home := $(shell echo ~/)
-DUNE_BASEDIR := ${home}cpp/dune/
-ALU_BASEDIR := ${home}cpp/ALUGrid-1.52/build/
-ALBERTA_BASEDIR := ${home}cpp/alberta-3.0.1/build/
+DUNE_BASEDIR := /Users/christianpower/cpp/dune
+ALU_BASEDIR := /Users/christianpower/cpp/ALUGrid-1.52/build
+ALBERTA_BASEDIR := /Users/christianpower/cpp/alberta-3.0.1/build
 
-#----------------------------------------------------------------------
-# Compiler and generic flags
 CXX := clang++
-STD_FLAG := -std=c++11
-W_FLAGS := $(addprefix -W, all extra)
-O_FLAG := -O3
-I_FLAGS := $(addprefix -I, src test include src/config)
-D_FLAGS := $(addprefix -D, HAVE_CONFIG_H ENABLE_GMP=1 ALUGRID_SIMPLEX \
-	ALBERTA_DIM=3 ENABLE_ALBERTA ENABLE_ZLIB=1 \
-	GRIDDIM=2 WORLDDIM=3 POLORDER=1)
-DEBUG_FLAGS := -g 
-L_FLAGS := $(addprefix -L, lib ${DUNE_BASEDIR}build/lib ${ALU_BASEDIR}lib \
-	${ALBERTA_BASEDIR}lib)
+CPPFLAGS ?= $(addprefix -I${PROJECT_DIR}/, include src test src/config) \
+ $(addprefix -I${DUNE_BASEDIR}/, build/include dune-common dune-geometry \
+   dune-istl dune-localfunctions dune-grid dune-fem dune-alugrid) \
+ $(addprefix -D, HAVE_CONFIG_H ENABLE_GMP=1 ALUGRID_SIMPLEX \
+   ALBERTA_DIM=3 ENABLE_ALBERTA ENABLE_ZLIB=1 \
+   GRIDDIM=2 WORLDDIM=3 POLORDER=1)
+CXXFLAGS ?= -std=c++1y $(addprefix -W, all extra) -g
+LDFLAGS ?= $(addprefix -L, ${DUNE_BASEDIR}/build/lib ${ALU_BASEDIR}/lib \
+             ${ALBERTA_BASEDIR}/lib) \
+ $(addprefix -l, dunecommon dunegeometry dunegrid \
+   dunealugrid dunefem alugrid alugrid_serial dunealbertagrid_3d \
+   lapack blas z m gmp gmpxx)
 
-I_FLAGS += $(addprefix -I${DUNE_BASEDIR}, build/include dune-common dune-geometry \
-	dune-istl dune-localfunctions dune-grid dune-fem dune-alugrid) 
-# I_FLAGS += ${ALBERTA_BASEDIR}include
+DEBUG ?= 0
+ifeq (${DEBUG}, 0)
+BUILD_DIR ?= ${PROJECT_DIR}
+CXXFLAGS += -O3
+else
+BUILD_DIR ?= ${PROJECT_DIR}/debug
+CPPFLAGS += -DDEBUG=${DEBUG}
+endif
 
-cxx_cmd := ${CXX} ${STD_FLAG} ${W_FLAGS} ${O_FLAG} ${I_FLAGS} ${L_FLAGS} \
-	${DEBUG_FLAGS} ${D_FLAGS}
+# ----------------------------------------------------------------------
+# Basic makefile rules
 
-#----------------------------------------------------------------------
-# Modify dependencies and add additional flags acoording to your ${PROG1} ${TEST}
-PROG_l_FLAGS := $(addprefix -l, dunecommon dunegeometry dunegrid \
-	dunealugrid dunefem alugrid alugrid_serial dunealbertagrid_3d \
-	lapack blas z m gmp gmpxx)
-bin/$(basename $(notdir ${PROG1})):	${PROG1}
-	${cxx_cmd} ${PROG_l_FLAGS} -MMD -o $@ $<
--include bin/$(notdir $(PROG1:.cpp=.d))
+.SUFFIXES:
+# .RECIPEPREFIX = >
+makefile: ;
+Makefile: ;
+GNUmakefile: ;
 
-bin/$(basename $(notdir ${TEST})):	${TEST}
-	${cxx_cmd} -l${LIB1} -MMD -o $@ $<
--include bin/$(notdir $(TEST:.cpp=.d))
+targets = ${libraries} ${progs} clean help
+.PHONY:	all ${targets}
+all: ${targets}
 
-#----------------------------------------------------------------------
-# ${PROG2}
-bin/$(basename $(notdir ${PROG2})):	${PROG2} lib/obj/src/tumor_dof_reader.o
-	${cxx_cmd} ${PROG_l_FLAGS} -MMD -o $@ $^
--include bin/$(notdir $(PROG1:.cpp=.d))
-lib/obj/src/tumor_dof_reader.o:		src/tumor_dof_reader.cpp
-	${cxx_cmd} ${PROG_l_FLAGS} -MMD -c -o $@ $<
--include lib/obj/src/tumor_dof_reader.d
+help:
+	@ echo Some general variables:
+	@ echo CXXFLAGS CPPFLAGS LDFLAGS CXX BUILD_DIR DEBUG=1-9
+	@ echo 
+	@ echo Possible targets - with usage or explanation:
+	@ echo all - generates "${targets}"
+	@ echo help - prints this message 
+	@ echo clean - deletes everything in "BUILD_DIR/{lib,bin,obj}"
+	@ echo 
+	@ echo ${LIB1_MSG}
+	@ echo ${PROG1_MSG}
+	@ echo ${PROG2_MSG}
+	@ echo ${PROG3_MSG}
+	@ echo ${PROG4_MSG}
+	@ echo ${TEST1_MSG}
+	@ echo 
+clean:
+	find ${BUILD_DIR}/{lib,bin,obj} ( -type f -or -type l ) -exec rm -f {} +
 
-#----------------------------------------------------------------------
-# ${LIB1}
 
-#------------------------------------------------------------
-# files
+# ----------------------------------------------------------------------
+# LIB1
 
-#--------------------------------------------------
-# source & object files and MMD include
-LIB1_SRC := $(wildcard src/*.cpp)	# Change if LIB2 exists
-lib1_a_obj := $(addprefix lib/obj/, $(LIB1_SRC:.cpp=.o))	
-lib1_dylib_obj := $(addprefix lib/obj/, $(LIB1_SRC:.cpp=_pic.o))
--include $(patsubst %.o, %.d, ${lib1_dylib.obj} ${lib1_a_obj})
+LIB1 := CHANGE
+VERSION1 := 0
+SUBVERSION1 :=  0
+PATCHVERSION1 := 0
+LIB1_SRC := $(addprefix ${PROJECT_DIR}/src/, CHANGE.cpp)
 
-#--------------------------------------------------
-# library files
-lib1_dylib := lib/lib${LIB1}.dylib
-lib1_dylib_v := lib/lib${LIB1}.${VERSION1}.dylib
-lib1_dylib_vv := lib/lib${LIB1}.${VERSION1}.${SUBVERSION1}.dylib
-lib1_a := lib/lib${LIB1}_s.a
+LIB1_MSG := ${LIB1} - No special flags
 
-#------------------------------------------------------------
-# Rule for ${LIB1}
-${LIB1}: ${lib1_a} ${lib1_dylib_vv}
-${lib1_a}: ${lib1_a_obj}
+${LIB1}: CXXFLAGS +=
+${LIB1}: CPPFLAGS +=
+${LIB1}: LDFLAGS +=
+
+# ------------------------------------------------------------
+# do not change
+
+libraries += ${LIB1}
+
+LIB1_a_obj := $(addprefix ${BUILD_DIR}/obj/, \
+	       $(patsubst %.cpp, %.o, \
+	        $(notdir ${LIB1_SRC}))) 
+LIB1_dylib_obj := $(addprefix ${BUILD_DIR}/obj/, \
+		   $(patsubst %.cpp, %_pic.o, \
+		    $(notdir ${LIB1_SRC})))
+-include $(patsubst %.o, %.d, ${LIB1_dylib_obj} ${LIB1_a_obj})
+
+LIB1_dylib := ${BUILD_DIR}/lib/lib${LIB1}.dylib
+LIB1_dylib_v := ${BUILD_DIR}/lib/lib${LIB1}.${VERSION1}.dylib
+LIB1_dylib_vv := ${BUILD_DIR}/lib/lib${LIB1}.${VERSION1}.${SUBVERSION1}.dylib
+LIB1_dylib_vvp := ${BUILD_DIR}/lib/lib${LIB1}.${VERSION1}.${SUBVERSION1}.${PATCHVERSION1}.dylib
+lib1_a := ${BUILD_DIR}/lib/lib${LIB1}_s.a
+
+${LIB1}: ${lib1_a} ${LIB1_dylib_vvp}
+${lib1_a}: ${LIB1_a_obj}
 	ar -cvr $@ $^
-${lib1_dylib_vv}: ${lib1_dylib_obj}
-	${CXX} -dynamiclib -flat_namespace -o $@ $^; 	ln -sf $(notdir $@) ${lib1_dylib_v}; 	ln -sf $(notdir ${lib1_dylib_v}) ${lib1_dylib}
+${LIB1_dylib_vvp}: ${LIB1_dylib_obj}
+	${CXX} -dynamiclib -flat_namespace -o $@ $^
+	ln -sf $@ ${LIB1_dylib_vv}
+	ln -sf ${LIB1_dylib_vv} ${LIB1_dylib_v}
+	ln -sf ${LIB1_dylib_v} ${LIB1_dylib}
+
+# ----------------------------------------------------------------------
+# PROG1
+
+PROG1 := ${PROJECT_DIR}/src/2014nonlinear.cpp
+PROG1_SRC := ${PROG1}
+PROG1_SRC += $(addprefix $(dir ${PROG1}), )
+
+PROG1_MSG = ${PROG1_name} - No special flags
+
+PROG1_name := $(basename $(notdir ${PROG1}))
+${PROG1_name}: CXXFLAGS +=
+${PROG1_name}: CPPFLAGS += 
+${PROG1_name}: LDFLAGS += # $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
+
+# ------------------------------------------------------------
+# do not change
+
+progs += ${PROG1_name}
+
+PROG1_obj := $(addprefix ${BUILD_DIR}/obj/, \
+               $(patsubst %.cpp, %.o, \
+                 $(notdir ${PROG1_SRC})))
+-include $(patsubst %.o, %.d, ${PROG1_obj})
+
+PROG1_bin := ${BUILD_DIR}/bin/${PROG1_name}
+
+${PROG1_name}: ${PROG1_bin}
+${PROG1_bin}: ${PROG1_obj}
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+
+# ----------------------------------------------------------------------
+# PROG2
+
+PROG2 := ${PROJECT_DIR}/src/tumor_reader_main.cpp
+PROG2_SRC := ${PROG2}
+PROG2_SRC += $(addprefix $(dir ${PROG2}), CHANGE.cpp)
+
+PROG2_MSG = ${PROG2_name} - No special flags
+
+PROG2_name := $(basename $(notdir ${PROG2}))
+${PROG2_name}: CXXFLAGS +=
+${PROG2_name}: CPPFLAGS += 
+${PROG2_name}: LDFLAGS += $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
+
+# ------------------------------------------------------------
+# do not change
+
+progs += ${PROG2_name}
+
+PROG2_obj := $(addprefix ${BUILD_DIR}/obj/, \
+               $(patsubst %.cpp, %.o, \
+                 $(notdir ${PROG2_SRC})))
+-include $(patsubst %.o, %.d, ${PROG2_obj})
+
+PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
+
+${PROG2_name}: ${PROG2_bin}
+${PROG2_bin}: ${PROG2_obj}
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+
+# ----------------------------------------------------------------------
+# PROG3
+
+PROG3 := ${PROJECT_DIR}/src/tumor.cpp
+PROG3_SRC := ${PROG3}
+PROG3_SRC += $(addprefix $(dir ${PROG3}), tumor_code.cpp)
+
+PROG3_MSG = ${PROG3_name} - No special flags
+
+PROG3_name := $(basename $(notdir ${PROG3}))
+${PROG3_name}: CXXFLAGS +=
+${PROG3_name}: CPPFLAGS += 
+${PROG3_name}: LDFLAGS += #$(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
+
+# ------------------------------------------------------------
+# do not change
+
+progs += ${PROG3_name}
+
+PROG3_obj := $(addprefix ${BUILD_DIR}/obj/, \
+               $(patsubst %.cpp, %.o, \
+                 $(notdir ${PROG3_SRC})))
+-include $(patsubst %.o, %.d, ${PROG3_obj})
+
+PROG3_bin := ${BUILD_DIR}/bin/${PROG3_name}
+
+${PROG3_name}: ${PROG3_bin}
+${PROG3_bin}: ${PROG3_obj}
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+
+# ----------------------------------------------------------------------
+# PROG4
+
+PROG4 := ${PROJECT_DIR}/src/esfem/esfem
+PROG4_SRC := $(addprefix $(dir ${PROG4}), main.cpp parameter.cpp grid_evolution.cpp \
+fe_grid.cpp discrete_function.cpp operator_initData.cpp operator_rhs.cpp \
+operator_linearHeat.cpp)
+
+PROG4_MSG = ${PROG4_name} - No special flags
+
+PROG4_name := $(basename $(notdir ${PROG4}))
+${PROG4_name}: CXXFLAGS +=
+${PROG4_name}: CPPFLAGS += $(addprefix -I, $(dir ${PROG4}) \
+	/Users/christianpower/cpp/ODE_Solver)
+${PROG4_name}: LDFLAGS += #$(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
+
+# ------------------------------------------------------------
+# do not change
+
+progs += ${PROG4_name}
+
+PROG4_obj := $(addprefix ${BUILD_DIR}/obj/, \
+               $(patsubst %.cpp, %_esfem.o, \
+                 $(notdir ${PROG4_SRC})))
+-include $(patsubst %.o, %.d, ${PROG4_obj})
+
+PROG4_bin := ${BUILD_DIR}/bin/${PROG4_name}
+
+${PROG4_name}: ${PROG4_bin}
+${PROG4_bin}: ${PROG4_obj}
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+
+# ----------------------------------------------------------------------
+# TEST1
+
+TEST1 := ${PROJECT_DIR}/test/CHANGE.cpp
+TEST1_SRC := ${TEST1}
+TEST1_SRC += $(addprefix $(dir ${TEST1}), CHANGE.cpp)
+
+TEST1_MSG = ${TEST1_name} - No special flags
+
+TEST1_name := $(basename $(notdir ${TEST1}))
+${TEST1_name}: CXXFLAGS +=
+${TEST1_name}: CPPFLAGS += 
+${TEST1_name}: LDFLAGS += 
+
+# ------------------------------------------------------------
+# do not change
+
+progs += ${TEST1_name}
+
+TEST1_obj := $(addprefix ${BUILD_DIR}/obj/, \
+               $(patsubst %.cpp, %.o, \
+                 $(notdir ${TEST1_SRC})))
+-include $(patsubst %.o, %.d, ${TEST1_obj})
+
+TEST1_bin := ${BUILD_DIR}/bin/${TEST1_name}
+
+${TEST1_name}: ${TEST1_bin}
+${TEST1_bin}: ${TEST1_obj} 
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
 
 #----------------------------------------------------------------------
 # pattern rules
-lib/obj/%.o:		%.cpp
-	${cxx_cmd} -MMD -c -o $@ $<
-lib/obj/%_pic.o:	%.cpp
-	${cxx_cmd} -fPIC -MMD -c -o $@ $<
+
+${BUILD_DIR}/obj/%.o:		${PROJECT_DIR}/src/%.cpp
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<
+${BUILD_DIR}/obj/%_pic.o:	${PROJECT_DIR}/src/%.cpp
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -fPIC -MMD -c -o $@ $<
+${BUILD_DIR}/obj/%_esfem.o:		${PROJECT_DIR}/src/esfem/%.cpp
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<
+${BUILD_DIR}/obj/%.o:		${PROJECT_DIR}/test/%.cpp
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<

@@ -1,0 +1,39 @@
+fem.verboserank: 0
+fem.solver.verbose: 0
+
+fem.timeprovider.factor: 1
+
+# Tumor growth model
+# - a,b,Dᶜ,γ ∈ R for the scalar equation with  γ ∼ vol(Γ).
+# - ε,δ,α ∈ R for the surface equation, where ε and α are small 
+#   regularization parameter.
+
+fem.io.savestep: 0.001
+
+heat.starttime: 0.
+tumor_growth.surface.start_growth: .001
+heat.endtime: .001 #10.
+heat.timestep: .001
+heat.bdf: 4
+heat.solvereps: 1e-9
+
+tumor_growth.heat.init_data.pertubation: .01
+
+tumor_growth.heat.a: .1
+tumor_growth.heat.b: .9
+tumor_growth.heat.Dc: 10.
+tumor_growth.heat.gamma: 30. 
+
+tumor_growth.surface.epsilon: .01
+tumor_growth.surface.alpha: 0 ##1e-3
+tumor_growth.surface.delta: .4
+
+
+fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surfaces/data/sphere/Sphere_4.dgf
+
+tumor_growth.prefix: /Users/christianpower/cpp/DISS_surfaces/
+
+tumor_growth.io.u_prefix: output/test_video/u_Sphere_4.txt
+tumor_growth.io.w_prefix: output/test_video/w_Sphere_4.txt
+tumor_growth.io.X_prefix: output/test_video/X_Sphere_4.txt
+tumor_growth.io.uw.output_name: output/test00/uw_Sphere_4-

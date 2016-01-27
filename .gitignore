@@ -1,6 +1,10 @@
 *~
+*.o
+*.log
 bin/*
 lib/*
+obj/*
+debug/*
 output/*
 Makefile
 src/config/config.h
@@ -8,3 +12,4 @@ dgfparser.log
 data/sphere/test.cpp
 data/sphere/triceratops.off
 data/sphere/raw_data/count*
+data/test_video/*
