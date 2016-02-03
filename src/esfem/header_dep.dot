@@ -1,0 +1,73 @@
+digraph dependencies {
+  rankdir=RL;
+
+  "linHeat_algo.h" -> "main.cpp";
+
+  "esfem.h" -> "linHeat_algo.h";
+
+  "io.h" -> "esfem.h";
+  "grid.h" -> "esfem.h";
+  "secOrd_op.h" -> "esfem.h";
+
+  "io_parameter.h" -> "io.h";
+  "io_l2h1Calculator.h" -> "io.h";
+  "io_errorStream.h" -> "io.h";
+  "io_paraview.h" -> "io.h";
+
+  "esfem_fwd.h" -> "io_parameter.h";
+  "io_parameter.h" -> "io_parameter.cpp";
+  "grid.h" -> "io_parameter.cpp";
+
+  "esfem_fwd.h" -> "io_l2h1Calculator.h";
+  "io_l2h1Calculator.h" -> "io_l2h1Calculator.cpp"
+  "grid.h" -> "io_l2h1Calculator.cpp"
+
+  "esfem_fwd.h" -> "io_errorStream.h";
+  "io_errorStream.h" -> "io_errorStream.cpp";
+
+  "esfem_fwd.h" -> "io_paraview.h";
+  "io_paraview.h" -> "io_paraview.cpp";
+  "io_parameter.h" -> "io_paraview.cpp";
+  "grid.h" -> "io_paraview.cpp";
+
+  "esfem_fwd.h" -> "grid.h";
+
+  "grid.h" -> "grid_deformation.cpp";
+  "grid.h" -> "grid_GridAndTime.cpp";
+
+  "secOrd_op_initData.h" -> "secOrd_op.h";
+  "secOrd_op_rhs.h" -> "secOrd_op.h";
+  "secOrd_op_linearHeat.h" -> "secOrd_op.h";
+  "secOrd_op_brusselator.h" -> "secOrd_op.h";
+
+  "esfem_fwd.h" -> "secOrd_op_initData.h";
+  "secOrd_op_initData.h" -> "secOrd_op_initData.cpp";
+  "grid.h" -> "secOrd_op_initData.cpp";
+
+  "esfem_fwd.h" -> "secOrd_op_rhs.h";
+  "secOrd_op_rhs.h" -> "secOrd_op_rhs.cpp";
+  "grid.h" -> "secOrd_op_rhs.cpp";
+
+  "esfem_fwd.h" -> "secOrd_op_linearHeat.h";
+
+  "esfem_fwd.h" -> "secOrd_op_brusselator.h";
+  "secOrd_op_brusselator.h" -> "secOrd_op_brusselator.cpp";
+  "secOrd_op_brusselator_impl.h" -> "secOrd_op_brusselator.cpp";
+  "io_parameter.h" -> "secOrd_op_brusselator.cpp";
+  "grid.h" -> "secOrd_op_brusselator.cpp";
+
+  "esfem_fwd.h" -> "secOrd_op_brusselator_impl.h";
+  "secOrd_op_brusselator.h" -> "secOrd_op_brusselator_impl.h";
+  "grid.h" -> "secOrd_op_brusselator_impl.h";
+  "secOrd_op_brusselator_impl.h" -> "secOrd_op_brusselator_impl.cpp";
+  "io_parameter.h" -> "secOrd_op_brusselator_impl.cpp";
+  "grid.h" -> "secOrd_op_brusselator_impl.cpp";
+
+  {
+    rank=same;
+    "main.cpp" "io_parameter.cpp" "io_l2h1Calculator.cpp" "io_errorStream.cpp"
+    "grid_deformation.cpp" "grid_GridAndTime.cpp" "secOrd_op_initData.cpp"
+    "secOrd_op_rhs.cpp" "io_paraview.cpp" "secOrd_op_brusselator.cpp"
+    
+  }
+}

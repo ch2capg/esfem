@@ -1,6 +1,7 @@
 *~
 *.o
 *.log
+*.png
 bin/*
 lib/*
 obj/*

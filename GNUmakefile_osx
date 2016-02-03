@@ -70,9 +70,13 @@ makefile: ;
 Makefile: ;
 GNUmakefile: ;
 
-targets = ${libraries} ${progs} clean help
+targets = ${libraries} ${progs} doc clean help
 .PHONY:	all ${targets}
 all: ${targets}
+
+doc:  ${BUILD_DIR}/doc/header_dep.png
+${BUILD_DIR}/doc/header_dep.png: ${BUILD_DIR}/src/esfem/header_dep.dot
+	dot -Tpng $< > $@
 
 help:
 	@ echo Some general variables:
@@ -81,6 +85,7 @@ help:
 	@ echo Possible targets - with usage or explanation:
 	@ echo all - generates "${targets}"
 	@ echo help - prints this message 
+	@ echo doc - generates a graph
 	@ echo clean - deletes everything in "BUILD_DIR/{lib,bin,obj}"
 	@ echo 
 	@ echo ${LIB1_MSG}
@@ -231,9 +236,14 @@ ${PROG3_bin}: ${PROG3_obj}
 # PROG4
 
 PROG4 := ${PROJECT_DIR}/src/esfem/esfem
-PROG4_SRC := $(addprefix $(dir ${PROG4}), main.cpp parameter.cpp grid_evolution.cpp \
-fe_grid.cpp discrete_function.cpp operator_initData.cpp operator_rhs.cpp \
-operator_linearHeat.cpp)
+# PROG4_SRC := $(addprefix $(dir ${PROG4}), main.cpp parameter.cpp grid_evolution.cpp \
+# fe_grid.cpp discrete_function.cpp operator_initData.cpp operator_rhs.cpp \
+# operator_linearHeat.cpp)
+PROG4_SRC := $(addprefix $(dir ${PROG4}), main.cpp io_parameter.cpp \
+io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp \
+grid_deformation.cpp grid_GridAndTime.cpp \
+secOrd_op_initData.cpp secOrd_op_rhs.cpp secOrd_op_linearHeat.cpp \
+secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp )
 
 PROG4_MSG = ${PROG4_name} - No special flags
 

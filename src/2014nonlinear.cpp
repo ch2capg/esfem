@@ -39,7 +39,9 @@ int main(int argc, char** argv) try {
   for( int i = 1; i < argc; ++i )
     Dune::Fem::Parameter::append(argv[i]);
 
-  const std::string parameter_dir {"data/2014nonlinear_parameter.txt"};
+  const std::string parameter_dir
+    // {"data/2014nonlinear_parameter.txt"};
+  {"/Users/christianpower/cpp/DISS_surfaces/data/tumor_parameter.txt"};
   Dune::Fem::Parameter::append(parameter_dir.c_str());
   BDF::nonlinear_algorithm();
 }

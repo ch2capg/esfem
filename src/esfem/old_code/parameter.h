@@ -19,7 +19,7 @@
 #define PARAMETER_H 
 
 #include <config.h>
-#include <iostream>
+#include <fstream>
 #include <vector>
 
 namespace Parameter{
@@ -33,21 +33,56 @@ namespace Parameter{
     PDE_data& operator=(PDE_data&&) = delete;
     ~PDE_data();
 
+    // ----------------------------------------------------------------------
     const std::string& grid() const noexcept;
     const std::string& error_log() const noexcept;
+    
     double start_time() const noexcept;
     double global_timeStep() const;
     long max_timeSteps() const;
+    
     double eps() const noexcept;
+    
     const std::vector<double>& bdf_alphas() const noexcept;
     const std::vector<double>& bdf_gammas() const noexcept;
-    
+
+    // ----------------------------------------------------------------------
     friend std::ostream& operator<<(std::ostream&, const PDE_data&);
   private:
     struct Data;
     Data* d_ptr;
   };
-  std::ofstream& err_stream(const PDE_data&);
+  class Error_stream{
+  public:
+    Error_stream() = delete;
+    explicit Error_stream(const PDE_data&);
+    Error_stream(const Error_stream&) = delete;
+    Error_stream(Error_stream&&) = delete;
+    Error_stream& operator=(const Error_stream&) = delete;
+    Error_stream& operator=(Error_stream&&) = delete;
+    ~Error_stream() = default;
+
+    // ----------------------------------------------------------------------
+    // Providing 'endl', 'scientific' and 'defaultfloat'
+    using Basic_ostream = std::basic_ostream<char, std::char_traits<char> >;
+    using StdManip = Basic_ostream& (*)(Basic_ostream&);
+    Error_stream& operator<<(StdManip);
+    
+    template<typename T>
+    Error_stream& operator<<(const T&);
+    Error_stream& operator<<(const std::vector<double>&);
+    Error_stream& close();
+  private:
+    std::ofstream ofs;
+  };
+
+  // ----------------------------------------------------------------------
+  // Template implementation
+  template<typename T>
+  Error_stream& Error_stream::operator<<(const T& t){
+    ofs << t;
+    return *this;
+  }
 }
 
 #endif // PARAMETER_H

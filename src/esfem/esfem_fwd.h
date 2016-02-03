@@ -18,6 +18,27 @@
 #ifndef ESFEM_FWD_H
 #define ESFEM_FWD_H 
 
+namespace Esfem{
+  namespace Io{
+    class Parameter;
+    class L2H1_calculator;
+    class Error_stream;
+    class Paraview;
+  }
+  namespace Grid{
+    class Deformation;
+    class Grid_and_time;
+    class Scal_FEfun;
+  }
+  namespace SecOrd_op{
+    class Init_data;
+    class Rhs;
+    class Linear_heat;
+    class Brusselator;
+  }
+}
+
+/*
 namespace Parameter{
   class PDE_data;
   class DataOutputParameters;
@@ -28,6 +49,7 @@ namespace Grid_evolution{
 namespace Operator{
   class Linear_heat;
 }
+*/
 
 #endif // ESFEM_FWD_H
 
