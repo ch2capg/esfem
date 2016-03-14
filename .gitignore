@@ -14,3 +14,4 @@ data/sphere/test.cpp
 data/sphere/triceratops.off
 data/sphere/raw_data/count*
 data/test_video/*
+old_code/*

@@ -12,31 +12,39 @@ fem.io.savestep: 0.01
 
 heat.starttime: 0.
 tumor_growth.surface.start_growth: .001
-heat.endtime: 1. #10.
-heat.timestep: .01
+heat.endtime: 10.
+heat.timestep: .001
 heat.bdf: 1
 heat.solvereps: 1e-9
 
-tumor_growth.heat.init_data.pertubation: .01
+# tumor_growth.heat.init_data.pertubation: .01
 
 tumor_growth.heat.a: .1
 tumor_growth.heat.b: .9
 tumor_growth.heat.Dc: 10.
-tumor_growth.heat.gamma: 30. 
+tumor_growth.heat.gamma: 200.
+
+# tumor_growth.heat.u_hom: 1.  # default: a + b 
+# tumor_growth.heat.w_hom: .9  # default: b / (a+b)^2 
+tumor_growth.heat.u_pertubation: .01
+tumor_growth.heat.w_pertubation: .01
 
 tumor_growth.surface.epsilon: .01
 tumor_growth.surface.alpha: 0 ##1e-3
 tumor_growth.surface.delta: .4
 
-fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surfaces/data/sphere/Sphere_1.dgf
-fem.io.errorFile: /Users/christianpower/cpp/DISS_surfaces/output/brusselator/sphere1_v02.log
+fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surfaces/test/input_test00.dgf
+fem.io.errorFile: /Users/christianpower/cpp/DISS_surfaces/output/brusselator/sphere3_v01.log
 
 fem.prefix: /Users/christianpower/cpp/DISS_surfaces
-fem.io.path: output/test01
-fem.io.outputName: initRhs_test-
+fem.io.path: output/brusselator_vid01
+fem.io.outputName: random_u-
 
 tumor_growth.prefix: /Users/christianpower/cpp/DISS_surfaces/
 tumor_growth.io.u_prefix: output/test_video/u_Sphere_4.txt
 tumor_growth.io.w_prefix: output/test_video/w_Sphere_4.txt
 tumor_growth.io.X_prefix: output/test_video/X_Sphere_4.txt
 tumor_growth.io.uw.output_name: output/test00/uw_Sphere_4-
+
+tumor_growth.io.u_init_dof: output/brusselator/u_dof.log
+tumor_growth.io.w_init_dof: output/brusselator/w_dof.log
