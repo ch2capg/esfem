@@ -166,7 +166,22 @@ void solve_pde(const Solver& s, Scal_FEfun_set& u, Scal_FEfun_set& w){
 // ----------------------------------------------------------------------
 // loop action
 
-void pre_loop_action(FEM_data&){
+void pre_loop_action(FEM_data& fd){
+  const Init_data init_data {fd.data};
+  const Err_cal err_cal {fd.fix_grid, fd.u, fd.w};
+  Io::Paraview paraview_plot {fd.data, fd.fix_grid, fd.u.fun, fd.w.fun};
+  Solver solver {fd.data, fd.fix_grid, fd.u, fd.w};
+  
+  first_interpolate(init_data, fd.u, fd.w);
+  generate_header_line(fd.estream);
+  write_error_line(fd.estream, fd.fix_grid, err_cal);
+  paraview_plot.write();
+
+  massMatrix_rhsLes(solver, fd.u, fd.w);
+  // u >> h;
+  // w >> h;
+  // u.write(h, "./");
+  // w.write(h, "./");
 }
 void pre_pattern_action(FEM_data&){
 }
