@@ -18,9 +18,11 @@
 #  - Type 'make help' 
 #  - DEBUG may be specified in the command line.  Use the values 1-9. 
 #  - BUILD_DIR may be specified in the command line or set in this file.
-#    The default value for BUILD_DIR is ${PROJECT_DIR} if no
-#    DEBUG value has been specified and else ${PROJECT_DIR}/debug if any DEBUG
-#    value is specified
+#    The default value for BUILD_DIR is ${PROJECT_DIR}.
+#  - doxygen -g ${PROJECT_DIR}/src/doc/doxy.config
+#    Change in the doxygen file:
+#    * EXCLUDE_PATTERNS = */test/*
+#    * 
 #  - Change compiler flags if needed
 #  - For libraries copy the template LIB1 
 #  - For programs copy the template PROG1
@@ -34,13 +36,16 @@
 
 HOME := /home/power
 PROJECT_DIR := ${HOME}/cpp/DISS_surfaces
+BUILD_DIR ?= ${PROJECT_DIR}
 
 DUNE_BASEDIR := ${HOME}/cpp/dune
-ALU_BASEDIR := ${HOME}/cpp/ALUGrid-1.52/build
+# ALU_BASEDIR := ${HOME}/cpp/ALUGrid-1.52/build
+ALU_BASEDIR := ${HOME}/cpp/dune/dune-alugrid/lib
 ALBERTA_BASEDIR := ${HOME}/cpp/alberta-3.0.1/build
 
 CXX := clang++
 CPPFLAGS ?= $(addprefix -I${PROJECT_DIR}/, include src test src/config) \
+ -I${HOME}/cpp/dassert/include \
  $(addprefix -I${DUNE_BASEDIR}/, build/include dune-common dune-geometry \
    dune-istl dune-localfunctions dune-grid dune-fem dune-alugrid) \
  $(addprefix -I, /usr/include/mpi ${HOME}/cpp/ODE_Solver) \
@@ -51,20 +56,26 @@ CPPFLAGS ?= $(addprefix -I${PROJECT_DIR}/, include src test src/config) \
 #   ALBERTA_DIM=3 ENABLE_ALBERTA ENABLE_ZLIB=1 \
 #   GRIDDIM=2 WORLDDIM=3 POLORDER=1)
 CXXFLAGS ?= -std=c++1y $(addprefix -W, all extra) -stdlib=libc++ -g
-LDFLAGS ?= $(addprefix -L, ${DUNE_BASEDIR}/build/lib ${ALU_BASEDIR}/lib \
+LDFLAGS ?= $(addprefix -L, ${DUNE_BASEDIR}/build/lib \
+	     ${ALU_BASEDIR} ${ALU_BASEDIR}/.libs \
              ${ALBERTA_BASEDIR}/lib) \
  $(addprefix -l, dunecommon dunegeometry dunegrid \
-   dunealugrid dunefem alugrid alugrid_serial dunealbertagrid_3d \
-   lapack blas z m gmp gmpxx)
+   dunealugrid dunefem dunealbertagrid_3d \
+   alberta_2d alberta_utilities \
+   alugrid_2d alugrid_parallel alugrid_serial \
+   lapack blas quadmath \
+   mpi dl hwloc z m) 
+   # gmp gmpxx alugrid alugrid_serial
 
 DEBUG ?= 0
-ifeq (${DEBUG}, 0)
-BUILD_DIR ?= ${PROJECT_DIR}
-CXXFLAGS += -O3
-else
-BUILD_DIR ?= ${PROJECT_DIR}/debug
 CPPFLAGS += -DDEBUG=${DEBUG}
+
+ifdef NDEBUG
+CPPFLAGS += -DNDEBUG
 endif
+
+CURRENT_MODE ?= Mode::throw_ #Mode::terminate_, Mode::ignore_
+CPPFLAGS += -DCURRENT_MODE=${CURRENT_MODE}
 
 # ----------------------------------------------------------------------
 # Basic makefile rules
@@ -75,9 +86,9 @@ makefile: ;
 Makefile: ;
 GNUmakefile: ;
 
-targets = ${libraries} ${progs} doc clean help
-.PHONY:	all ${targets}
-all: ${libraries} ${progs}
+targets = ${libraries} ${progs}
+.PHONY:	all ${targets} doc clean help
+all: ${targets}
 
 doc:  ${BUILD_DIR}/doc/header_dep.png
 ${BUILD_DIR}/doc/header_dep.png: ${BUILD_DIR}/src/esfem/header_dep.dot
@@ -100,11 +111,11 @@ help:
 	@ echo ${PROG4_MSG}
 	@ echo ${TEST1_MSG}
 	@ echo 
-clean:
-	find ${BUILD_DIR}/bin \( -type f -or -type l \) -exec rm -f {} +
-	find ${BUILD_DIR}/lib \( -type f -or -type l \) -exec rm -f {} +
-	find ${BUILD_DIR}/obj \( -type f -or -type l \) -exec rm -f {} +
-
+clean: 
+	find ${BUILD_DIR}/lib ( -type f -or -type l ) -exec rm -f {} +
+	find ${BUILD_DIR}/bin ( -type f -or -type l ) -exec rm -f {} +
+	find ${BUILD_DIR}/obj ( -type f -or -type l ) -exec rm -f {} +
+	find ${BUILD_DIR}/doc ( -type f -or -type l ) -exec rm -f {} +
 
 # ----------------------------------------------------------------------
 # LIB1
@@ -152,9 +163,16 @@ ${LIB1_dylib_vvp}: ${LIB1_dylib_obj}
 # ----------------------------------------------------------------------
 # PROG1
 
-PROG1 := ${PROJECT_DIR}/src/2014nonlinear.cpp
-PROG1_SRC := ${PROG1}
-PROG1_SRC += $(addprefix $(dir ${PROG1}), )
+PROG1 := ${PROJECT_DIR}/src/linear_heat
+PROG1_SRC := $(addprefix $(dir ${PROG1}), linHeat_main.cpp io_parameter.cpp \
+io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp io_dgf.cpp \
+grid_deformation.cpp grid_GridAndTime.cpp grid_GridAndTime_impl.cpp \
+secOrd_op_initData.cpp secOrd_op_initData_impl.cpp\
+secOrd_op_rhs.cpp secOrd_op_linearHeat.cpp \
+secOrd_op_initData_u.cpp secOrd_op_initData_w.cpp \
+secOrd_op_rhs_u.cpp secOrd_op_rhs_w.cpp \
+secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp \
+)
 
 PROG1_MSG = ${PROG1_name} - No special flags
 
@@ -179,19 +197,56 @@ ${PROG1_name}: ${PROG1_bin}
 ${PROG1_bin}: ${PROG1_obj}
 	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
 
+# PROG1 := ${PROJECT_DIR}/src/2014nonlinear.cpp
+# PROG1_SRC := ${PROG1}
+# PROG1_SRC += $(addprefix $(dir ${PROG1}), )
+# 
+# PROG1_MSG = ${PROG1_name} - No special flags
+# 
+# PROG1_name := $(basename $(notdir ${PROG1}))
+# ${PROG1_name}: CXXFLAGS +=
+# ${PROG1_name}: CPPFLAGS += 
+# ${PROG1_name}: LDFLAGS += # $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
+# 
+# # ------------------------------------------------------------
+# # do not change
+# 
+# progs += ${PROG1_name}
+# 
+# PROG1_obj := $(addprefix ${BUILD_DIR}/obj/, \
+#                $(patsubst %.cpp, %.o, \
+#                  $(notdir ${PROG1_SRC})))
+# -include $(patsubst %.o, %.d, ${PROG1_obj})
+# 
+# PROG1_bin := ${BUILD_DIR}/bin/${PROG1_name}
+# 
+# ${PROG1_name}: ${PROG1_bin}
+# ${PROG1_bin}: ${PROG1_obj}
+# 	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+
 # ----------------------------------------------------------------------
 # PROG2
 
-PROG2 := ${PROJECT_DIR}/src/tumor_reader_main.cpp
-PROG2_SRC := ${PROG2}
-PROG2_SRC += $(addprefix $(dir ${PROG2}), CHANGE.cpp)
-
+PROG2 := ${PROJECT_DIR}/src/brusselator
+PROG2_SRC := $(addprefix $(dir ${PROG2}), \
+ brusselator_main.cpp brusselator_algo.cpp \
+ secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp \
+)
+PROG2_SRC += $(addprefix $(dir ${PROG2}), \
+ io_parameter.cpp io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp io_dgf.cpp \
+ grid_deformation.cpp grid_GridAndTime.cpp grid_GridAndTime_impl.cpp \
+ grid_fef.cpp \
+ secOrd_op_initData.cpp secOrd_op_initData_impl.cpp\
+ secOrd_op_rhs.cpp secOrd_op_linearHeat.cpp \
+ secOrd_op_initData_u.cpp secOrd_op_initData_w.cpp \
+ secOrd_op_rhs_u.cpp secOrd_op_rhs_w.cpp \
+)
 PROG2_MSG = ${PROG2_name} - No special flags
 
 PROG2_name := $(basename $(notdir ${PROG2}))
 ${PROG2_name}: CXXFLAGS +=
 ${PROG2_name}: CPPFLAGS += 
-${PROG2_name}: LDFLAGS += $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
+${PROG2_name}: LDFLAGS += # $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 
 # ------------------------------------------------------------
 # do not change
@@ -207,7 +262,34 @@ PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
 
 ${PROG2_name}: ${PROG2_bin}
 ${PROG2_bin}: ${PROG2_obj}
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+	${CXX} $^ ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@
+
+# PROG2 := ${PROJECT_DIR}/src/tumor_reader_main.cpp
+# PROG2_SRC := ${PROG2}
+# PROG2_SRC += $(addprefix $(dir ${PROG2}), CHANGE.cpp)
+# 
+# PROG2_MSG = ${PROG2_name} - No special flags
+# 
+# PROG2_name := $(basename $(notdir ${PROG2}))
+# ${PROG2_name}: CXXFLAGS +=
+# ${PROG2_name}: CPPFLAGS += 
+# ${PROG2_name}: LDFLAGS += $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
+# 
+# # ------------------------------------------------------------
+# # do not change
+# 
+# progs += ${PROG2_name}
+# 
+# PROG2_obj := $(addprefix ${BUILD_DIR}/obj/, \
+#                $(patsubst %.cpp, %.o, \
+#                  $(notdir ${PROG2_SRC})))
+# -include $(patsubst %.o, %.d, ${PROG2_obj})
+# 
+# PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
+# 
+# ${PROG2_name}: ${PROG2_bin}
+# ${PROG2_bin}: ${PROG2_obj}
+# 	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
 
 # ----------------------------------------------------------------------
 # PROG3
@@ -282,9 +364,12 @@ ${PROG4_bin}: ${PROG4_obj}
 # ----------------------------------------------------------------------
 # TEST1
 
-TEST1 := ${PROJECT_DIR}/test/CHANGE.cpp
-TEST1_SRC := ${TEST1}
-TEST1_SRC += $(addprefix $(dir ${TEST1}), CHANGE.cpp)
+TEST1 := ${PROJECT_DIR}/test/test_ioDgf
+TEST1_SRC := ${PROJECT_DIR}/test/io_dgf.cpp
+TEST1_EXTERNAL_SRC := $(addprefix $(dir ${PROG2}), \
+io_parameter.cpp io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp io_dgf.cpp \
+grid_deformation.cpp grid_GridAndTime.cpp grid_GridAndTime_impl.cpp \
+)
 
 TEST1_MSG = ${TEST1_name} - No special flags
 
@@ -299,8 +384,11 @@ ${TEST1_name}: LDFLAGS +=
 progs += ${TEST1_name}
 
 TEST1_obj := $(addprefix ${BUILD_DIR}/obj/, \
-               $(patsubst %.cpp, %.o, \
+               $(patsubst %.cpp, %_test.o, \
                  $(notdir ${TEST1_SRC})))
+TEST1_obj += $(addprefix ${BUILD_DIR}/obj/, \
+	       $(patsubst %.cpp, %.o, \
+	         $(notdir ${TEST1_EXTERNAL_SRC})))
 -include $(patsubst %.o, %.d, ${TEST1_obj})
 
 TEST1_bin := ${BUILD_DIR}/bin/${TEST1_name}
@@ -309,14 +397,69 @@ ${TEST1_name}: ${TEST1_bin}
 ${TEST1_bin}: ${TEST1_obj} 
 	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
 
+# TEST1 := ${PROJECT_DIR}/test/CHANGE.cpp
+# TEST1_SRC := ${TEST1}
+# TEST1_SRC += $(addprefix $(dir ${TEST1}), CHANGE.cpp)
+# 
+# TEST1_MSG = ${TEST1_name} - No special flags
+# 
+# TEST1_name := $(basename $(notdir ${TEST1}))
+# ${TEST1_name}: CXXFLAGS +=
+# ${TEST1_name}: CPPFLAGS += 
+# ${TEST1_name}: LDFLAGS += 
+# 
+# # ------------------------------------------------------------
+# # do not change
+# 
+# progs += ${TEST1_name}
+# 
+# TEST1_obj := $(addprefix ${BUILD_DIR}/obj/, \
+#                $(patsubst %.cpp, %.o, \
+#                  $(notdir ${TEST1_SRC})))
+# -include $(patsubst %.o, %.d, ${TEST1_obj})
+# 
+# TEST1_bin := ${BUILD_DIR}/bin/${TEST1_name}
+# 
+# ${TEST1_name}: ${TEST1_bin}
+# ${TEST1_bin}: ${TEST1_obj} 
+# 	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+
+# ----------------------------------------------------------------------
+# TEST2
+
+TEST2 := ${PROJECT_DIR}/test/CHANGE.cpp
+TEST2_SRC := ${TEST2}
+TEST2_SRC += $(addprefix $(dir ${TEST2}), CHANGE.cpp)
+
+TEST2_MSG = ${TEST2_name} - No special flags
+
+TEST2_name := $(basename $(notdir ${TEST2}))
+${TEST2_name}: CXXFLAGS +=
+${TEST2_name}: CPPFLAGS += 
+${TEST2_name}: LDFLAGS += 
+
+# ------------------------------------------------------------
+# do not change
+
+progs += ${TEST2_name}
+
+TEST2_obj := $(addprefix ${BUILD_DIR}/obj/, \
+               $(patsubst %.cpp, %_test.o, \
+                 $(notdir ${TEST2_SRC})))
+-include $(patsubst %.o, %.d, ${TEST2_obj})
+
+TEST2_bin := ${BUILD_DIR}/bin/${TEST2_name}
+
+${TEST2_name}: ${TEST2_bin}
+${TEST2_bin}: ${TEST2_obj} 
+	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+
 #----------------------------------------------------------------------
 # pattern rules
 
 ${BUILD_DIR}/obj/%.o:		${PROJECT_DIR}/src/%.cpp
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<
+	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ 
 ${BUILD_DIR}/obj/%_pic.o:	${PROJECT_DIR}/src/%.cpp
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -fPIC -MMD -c -o $@ $<
-${BUILD_DIR}/obj/%_esfem.o:		${PROJECT_DIR}/src/esfem/%.cpp
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<
-${BUILD_DIR}/obj/%.o:		${PROJECT_DIR}/test/%.cpp
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<
+	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -fPIC -MMD -c -o $@ 
+${BUILD_DIR}/obj/%_test.o:		${PROJECT_DIR}/test/%.cpp
+	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ 

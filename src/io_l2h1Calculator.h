@@ -18,6 +18,7 @@
 #ifndef IO_L2H1CALCULATOR_H
 #define IO_L2H1CALCULATOR_H 
 
+#include <memory>
 #include "esfem_fwd.h"
 
 namespace Esfem{
@@ -35,7 +36,7 @@ namespace Esfem{
       double h1_err() const;
     private:
       struct Data;
-      Data* d_ptr {nullptr};
+      std::unique_ptr<Data> d_ptr;
     };
   }
 }

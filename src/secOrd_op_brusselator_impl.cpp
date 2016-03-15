@@ -23,6 +23,7 @@
 #include <iostream>
 #endif
 
+using namespace std;
 using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 using FE_space = FE_function::DiscreteFunctionSpaceType;
 using Entity = FE_space::IteratorType::Entity;
@@ -135,10 +136,10 @@ Brusselator_op::Brusselator_op(const Esfem::Io::Parameter& p,
 			       const Esfem::Growth type,
 			       const FE_function& quadMassMatrix_firstArg,
 			       const FE_function& quadMassMatrix_secondArg)
-try{
-  d_ptr = new Data {p, gt, type, quadMassMatrix_firstArg,
-		    quadMassMatrix_secondArg};
-}
+try : d_ptr {make_unique<Data>
+	  (p, gt, type, 
+	   quadMassMatrix_firstArg, quadMassMatrix_secondArg)}
+{}
 catch(const std::exception&){
    std::throw_with_nested(std::logic_error {"Error in constructor of "
   "Brusselator_op."});
@@ -146,13 +147,14 @@ catch(const std::exception&){
 catch(...){
   throw std::logic_error {"Unkown error in constructor of Brusselator_op."};
 }
-Brusselator_op::~Brusselator_op(){
-  delete d_ptr;
-  d_ptr = nullptr;
-#ifdef DEBGUG
-  std::cerr << "~Brusselator_op(): delete d_ptr.\n";
-#endif
-}
+Brusselator_op::~Brusselator_op() = default;
+// {
+//   delete d_ptr;
+//   d_ptr = nullptr;
+// #ifdef DEBGUG
+//   std::cerr << "~Brusselator_op(): delete d_ptr.\n";
+// #endif
+// }
 void Brusselator_op::operator()(const FE_function& rhs, FE_function& lhs) const{
   lhs.clear();
   const auto& df_space = lhs.space();

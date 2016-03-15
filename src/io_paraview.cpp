@@ -20,9 +20,7 @@
 #include "io_parameter.h"
 #include "grid.h"
 
-#ifdef DEBUG
-#include <iostream>
-#endif
+using namespace std;
 
 using Grid = Esfem::Grid::Grid_and_time::Grid;
 using FEfun = Esfem::Grid::Scal_FEfun::Dune_FEfun;
@@ -60,25 +58,24 @@ struct Esfem::Io::Paraview::Data{
 
 Esfem::Io::Paraview::Paraview(const Parameter& p , const Grid::Grid_and_time& gt,
 			      Grid::Scal_FEfun& fef1, Grid::Scal_FEfun& fef2,
-			      const int refinement_label){
-  try{
-    d_ptr = new Data {p, gt, fef1, fef2, refinement_label};
-  }
-  catch(const std::exception&){
-    std::throw_with_nested(std::logic_error
-			   {"Error in constructor of Paraview."});
-  }
-  catch(...){
-    throw std::logic_error{"Unkown error in constructor of Paraview."};
-  }
-}
-Esfem::Io::Paraview::~Paraview(){
-  delete d_ptr;
-  d_ptr = nullptr;
-#ifdef DEBUG
-  std::cerr << "~Paraview(): delete d_ptr.\n";
-#endif
-}
+			      const int refinement_label)
+try : d_ptr {make_unique<Data>(p, gt, fef1, fef2, refinement_label)}
+{}
+catch(const std::exception&){
+  std::throw_with_nested(std::logic_error
+			 {"Error in constructor of Paraview."});
+ }
+ catch(...){
+   throw std::logic_error{"Unkown error in constructor of Paraview."};
+ }
+Esfem::Io::Paraview::~Paraview() = default;
+// {
+//   delete d_ptr;
+//   d_ptr = nullptr;
+// #ifdef DEBUG
+//   std::cerr << "~Paraview(): delete d_ptr.\n";
+// #endif
+// }
 void Esfem::Io::Paraview::write(){
   d_ptr -> plotter.write( d_ptr -> tp);
 }

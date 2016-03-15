@@ -22,6 +22,8 @@
 #include "io_parameter.h"
 #include "grid.h"
 
+using namespace std;
+
 namespace Esfem{
   void dune_fem_parameter_append(int argc, char** argv, const std::string& file);
   std::string get_gridKey();
@@ -74,43 +76,46 @@ Esfem::Io::Parameter::Parameter(int argc, char** argv,
   const auto w_hom = Parameter::getValue<double>("tumor_growth.heat.w_hom",
 						 b  / ( u_hom * u_hom ) );
   
-  d_ptr = new Data {
-    Parameter::getValue<double>("heat.starttime",0.0),
-    Parameter::getValue<double>("heat.timestep",0.1),
-    Parameter::getValue<double>("heat.endtime",0.6),
-    Esfem::get_macroGrid(),
-    Parameter::getValue<std::string>("fem.io.errorFile",
-				      project_dir + "output/l2h1error"),
-    Parameter::getValue<std::string> ("fem.io.outputName",
-				       project_dir + "output/ALE_LiteratureExample-"),
-    Dune::Fem::Parameter::getValue<double>("heat.solvereps", 1e-8),
-    NUMERIK::bdf_alpha_coeff(bdf_no),
-    NUMERIK::bdf_gamma_coeff(bdf_no),
-    a,
-    b,
-    Parameter::getValue<double>("tumor_growth.heat.Dc", 10.),
-    Parameter::getValue<double>("tumor_growth.heat.gamma", 30.),
-    u_hom,
-    w_hom,
-    Parameter::getValue<double>("tumor_growth.heat.u_pertubation", .01),
-    Parameter::getValue<double>("tumor_growth.heat.w_pertubation", .01),
-    Parameter::getValue<std::string>("tumor_growth.io.u_init_dof",
-				     project_dir + "output/u_dof.log"),
-    Parameter::getValue<std::string>("tumor_growth.io.w_init_dof",
-				     project_dir + "output/w_dof.log")
-  };
+  d_ptr =  make_unique<Data>
+    (Data{
+      Parameter::getValue<double>("heat.starttime",0.0),
+	Parameter::getValue<double>("heat.timestep",0.1),
+	Parameter::getValue<double>("heat.endtime",0.6),
+	Esfem::get_macroGrid(),
+	Parameter::getValue<std::string>("fem.io.errorFile",
+					 project_dir + "output/l2h1error"),
+	Parameter::getValue<std::string> ("fem.io.outputName",
+					  project_dir + "output/ALE_LiteratureExample-"),
+	Dune::Fem::Parameter::getValue<double>("heat.solvereps", 1e-8),
+	NUMERIK::bdf_alpha_coeff(bdf_no),
+	NUMERIK::bdf_gamma_coeff(bdf_no),
+	a,
+	b,
+	Parameter::getValue<double>("tumor_growth.heat.Dc", 10.),
+	Parameter::getValue<double>("tumor_growth.heat.gamma", 30.),
+	u_hom,
+	w_hom,
+	Parameter::getValue<double>("tumor_growth.heat.u_pertubation", .01),
+	Parameter::getValue<double>("tumor_growth.heat.w_pertubation", .01),
+	Parameter::getValue<std::string>("tumor_growth.io.u_init_dof",
+					 project_dir + "output/u_dof.log"),
+	Parameter::getValue<std::string>("tumor_growth.io.w_init_dof",
+					 project_dir + "output/w_dof.log")
+	}
+      );
  }
  catch(const std::exception&){
    std::throw_with_nested(std::runtime_error
 			  {"Error in constructor of Parameter."});
  }
-Esfem::Io::Parameter::~Parameter(){
-  delete d_ptr;
-  d_ptr = nullptr;
-#ifdef DEBUG 
-  std::cerr << "~Parameter(): deleted d_ptr\n";
-#endif
-}
+Esfem::Io::Parameter::~Parameter() = default;
+// {
+//   delete d_ptr;
+//   d_ptr = nullptr;
+// #ifdef DEBUG 
+//   std::cerr << "~Parameter(): deleted d_ptr\n";
+// #endif
+// }
 const std::string& Esfem::Io::Parameter::grid() const noexcept{
   return d_ptr -> grid_dgf;
 }
@@ -178,7 +183,7 @@ const std::string& Esfem::Io::Parameter::w_init_dof() const noexcept{
 }
 
 std::ostream& Esfem::Io::operator<<(std::ostream& os, const Parameter& d){
-  const auto p = d.d_ptr;
+  const auto& p = d.d_ptr;
   os << "t_0: " << p->t_0 << '\n'
      << "dT: " << p->dT << '\n'
      << "t_end: " << p->t_end << '\n'

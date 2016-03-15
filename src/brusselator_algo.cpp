@@ -19,6 +19,7 @@
 using namespace Esfem;
 
 using Scal_FEfun_set = FEfun_set<Esfem::Grid::Scal_FEfun>;
+using Vec_FEfun_set = FEfun_set<Esfem::Grid::Vec_FEfun>;
 
 void clog_uw(const Scal_FEfun_set& u, const Scal_FEfun_set& w);
 
@@ -26,7 +27,7 @@ void brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
 
   const auto parameter_file =
-    "/Users/christianpower/cpp/DISS_surfaces/data/tumor_parameter.txt";  
+    "/home/power/cpp/DISS_surfaces/data/tumor_parameter.txt";  
 
   Io::Parameter data {argc, argv, parameter_file};
   const Io::Dgf::Handler dgf_interpreter {data.grid()};
@@ -45,7 +46,7 @@ void brusselator_algo(int argc, char** argv){
   grid.next_timeStep(data.global_timeStep());
   for(long it =0; it < data.max_timeSteps(); ++it){
     std::cout << "step number " << it << std::endl;
-    pre_pattern_action(dgf_interpreter, err_log, grid,
+    pre_pattern_action(data, dgf_interpreter, err_log, grid,
 		       u, w, err_cal, solver, paraview_plot);
     grid.next_timeStep(data.global_timeStep());
   }
@@ -142,11 +143,25 @@ void pre_loop_action(const Esfem::Io::Dgf::Handler& h,
   u.write(h, "./");
   w.write(h, "./");
 }
-void pre_pattern_action(const Grid::Grid_and_time& gt, const Solver& s,
-			const Err_cal& ec, Err_stream& es, Io::Paraview& p,
-			Scal_FEfun_set& u,
-			Scal_FEfun_set& w){
-  
+void pre_pattern_action(const Esfem::Io::Parameter& data,
+			const Esfem::Io::Dgf::Handler& h,
+			Err_stream& es,
+			const Esfem::Grid::Grid_and_time& gt,
+			FEfun_set<Esfem::Grid::Scal_FEfun>& u,
+			FEfun_set<Esfem::Grid::Scal_FEfun>& w,
+			const Err_cal& ec,
+			const Solver& s,
+			Esfem::Io::Paraview& p
+			){
+  Grid::Grid_and_time grid_tmp {data};
+  Scal_FEfun_set u_tmp {u, grid_tmp};
+  u_tmp = u;
+  Scal_FEfun_set w_tmp {w, grid_tmp};
+  w_tmp = w;
+  const Err_cal errCal_tmp {grid_tmp, u_tmp, w_tmp};
+  Solver solver {data, grid_tmp, u_tmp, w_tmp};
+  Io::Paraview paraview_plot {data, grid_tmp, u_tmp.fun, w_tmp.fun};
+
   massMatrixConstOne_rhsLes(s, u, w);
   // assemble_and_addScaled_rhsLes(rhs, u, w);	// testing rhs
   solve_pde(s, u, w);

@@ -54,7 +54,7 @@ public:
   void jacobian(const FE_function&, Linear_operator&) const;
 private:
   struct Data;
-  Data* d_ptr {nullptr};
+  std::unique_ptr<Data> d_ptr;
   
   void heat_model(const Entity&, const Local_function& rhs_loc,
 		  Local_function& lhs_loc) const;

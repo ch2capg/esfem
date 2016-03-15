@@ -98,13 +98,9 @@ namespace Esfem{
       using Dune_FEfun 
       = Dune::Fem::ISTLBlockVectorDiscreteFunction<Grid_and_time::FE_space>;
       
-      explicit Scal_FEfun(const std::string& fun_name, const Grid_and_time& gt)
-	: fun {fun_name, gt.fe_space()}
-      { fun.clear(); }
-      Scal_FEfun& operator=(const Scal_FEfun& other){
-	fun.assign(other.fun);
-      }
-      Scal_FEfun(const Scal_FEfun&) = delete;
+      explicit Scal_FEfun(const std::string& name, const Grid_and_time& gt);
+      explicit Scal_FEfun(const Scal_FEfun&, const Grid_and_time&);
+      Scal_FEfun& operator=(const Scal_FEfun&);
       
       operator Dune_FEfun&(){ return fun; }
       operator const Dune_FEfun&() const { return fun; }
@@ -118,14 +114,8 @@ namespace Esfem{
       auto cend() const { return fun.dend(); }
       auto name() const { return fun.name(); }
 
-      auto& operator+=(const double d){
-	for(auto it = fun.dbegin(); it != fun.dend(); ++it) *it += d;
-	return *this;
-      }
-      auto& operator*=(const double d){
-	for(auto it = fun.dbegin(); it != fun.dend(); ++it) *it *= d;
-	return *this;
-      }
+      Scal_FEfun& operator+=(const double d);
+      Scal_FEfun& operator*=(const double d);
     private:
       Dune_FEfun fun;
     };
@@ -136,14 +126,10 @@ namespace Esfem{
       // using Dune_FEfun 
       // = Dune::Fem::ISTLBlockVectorDiscreteFunction<Grid_and_time::Vec_E_space>;
       
-      explicit Vec_FEfun(const std::string& fun_name, const Grid_and_time& gt)
-	: fun {fun_name, gt.vec_fe_space()}
-      { fun.clear(); }
-      Vec_FEfun& operator=(const Vec_FEfun& other){
-	fun.assign(other.fun);
-      }
-      Vec_FEfun(const Vec_FEfun&) = delete;
-      
+      explicit Vec_FEfun(const std::string& name, const Grid_and_time&);
+      explicit Vec_FEfun(const Vec_FEfun&, const Grid_and_time&);
+      Vec_FEfun& operator=(const Vec_FEfun&);
+
       operator Dune_FEfun&(){ return fun; }
       operator const Dune_FEfun&() const { return fun; }
 
@@ -156,14 +142,8 @@ namespace Esfem{
       auto cend() const { return fun.dend(); }
       auto name() const { return fun.name(); }
 
-      auto& operator+=(const double d){
-	for(auto it = fun.dbegin(); it != fun.dend(); ++it) *it += d;
-	return *this;
-      }
-      auto& operator*=(const double d){
-	for(auto it = fun.dbegin(); it != fun.dend(); ++it) *it *= d;
-	return *this;
-      }
+      Vec_FEfun& operator+=(const double);
+      Vec_FEfun& operator*=(const double);
     private:
       Dune_FEfun fun;
     };

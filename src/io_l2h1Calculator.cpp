@@ -20,10 +20,7 @@
 #include "io_l2h1Calculator.h"
 #include "grid.h"
 
-#ifdef DEBUG
-#include <iostream>
-#endif
-
+using namespace std;
 using FEfun = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 using L2_norm = Dune::Fem::L2Norm<Esfem::Grid::Grid_and_time::Grid_part>;
 using H1_norm = Dune::Fem::H1Norm<Esfem::Grid::Grid_and_time::Grid_part>;
@@ -38,28 +35,30 @@ struct Esfem::Io::L2H1_calculator::Data{
 Esfem::Io::L2H1_calculator::
 L2H1_calculator(const Grid::Grid_and_time& gt,
 		const Grid::Scal_FEfun& exact_solution,
-		const Grid::Scal_FEfun& numerical_solution){
-  try{
-    d_ptr = new Data {exact_solution, numerical_solution,
-		      L2_norm {gt.grid_part()}, H1_norm {gt.grid_part()} };
-  }
-  catch(const std::exception&){
-    std::throw_with_nested(std::logic_error
-			   {"Error in constructor of L2H1_calculator."});
-  }
-  catch(...){
-    throw std::logic_error{"Unknown error in constructor of L2H1_calculator."};
-  }
+		const Grid::Scal_FEfun& numerical_solution)
+  : d_ptr {make_unique<Data>
+    (exact_solution, numerical_solution,
+     L2_norm {gt.grid_part()}, 
+     H1_norm {gt.grid_part()})}
+{}
+catch(const std::exception&){
+  std::throw_with_nested(std::logic_error
+			 {"Error in constructor of L2H1_calculator."});
+ }
+ catch(...){
+   throw std::logic_error{"Unknown error in constructor of L2H1_calculator."};
+ }
 }
 
 Esfem::Io::L2H1_calculator::
-~L2H1_calculator(){
-  delete d_ptr;
-  d_ptr = nullptr;
-#ifdef DEBUG
-  std::cerr << "~L2H1_calculator(): delete d_ptr\n";
-#endif
-}
+~L2H1_calculator() = default;
+// {
+//   delete d_ptr;
+//   d_ptr = nullptr;
+// #ifdef DEBUG
+//   std::cerr << "~L2H1_calculator(): delete d_ptr\n";
+// #endif
+// }
 double Esfem::Io::L2H1_calculator::l2_err() const{
   return d_ptr -> l2.distance(d_ptr -> u, d_ptr -> uN);
 }

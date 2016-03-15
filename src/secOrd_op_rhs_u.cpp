@@ -118,13 +118,14 @@ void RHS_data_u::evaluate(const Domain& d, Range& r) const{
   const double g = gamma;
   const double u = std::exp(-6. * t) * x * y;
   // const double w = std::exp(-6. * t) * y * z;
-  r =
+  r = u
+  //r =
     // - g * a + g * u	// rhs for w == 0.
     // tp.deltaT() * g * a 
     // u
     // tp.deltaT() * g * u * u * w
     // #include "/Users/christianpower/cpp/syntax/data/brusselator_u_cpp.txt"
-#include "/Users/christianpower/cpp/syntax/data/brusselator_u_v2_cpp.txt"
+    // #include "/Users/christianpower/cpp/syntax/data/brusselator_u_v2_cpp.txt"
     ;
 }
 RHS_data_u::Range RHS_data_u::operator()(const Domain& d) const{

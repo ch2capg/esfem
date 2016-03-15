@@ -20,6 +20,7 @@
 
 #include <string>
 #include <vector>
+#include <memory>
 #include "esfem_fwd.h"
 
 namespace Esfem{
@@ -62,7 +63,7 @@ namespace Esfem{
       friend std::ostream& operator<<(std::ostream&, const Parameter&);
     private:
       struct Data;
-      Data* d_ptr {nullptr};
+      std::unique_ptr<Data> d_ptr;
     };
   }
 }

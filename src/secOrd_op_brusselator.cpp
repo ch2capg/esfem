@@ -24,10 +24,7 @@
 #include "io_parameter.h"
 #include "grid.h"
 
-#ifdef DEBUG
-#include <iostream>
-#endif
-
+using namespace std;
 using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 using CG_method = Dune::Fem::CGInverseOperator<FE_function>;
 
@@ -57,49 +54,48 @@ struct Esfem::SecOrd_op::Brusselator::Data{
 };
 
 Esfem::SecOrd_op::Brusselator::
-Brusselator(const Io::Parameter& p, const Grid::Grid_and_time& gt, const Growth type){
-  try{
-    d_ptr = new Data {p, gt, type};
-  }
-  catch(const std::exception&){
-    std::throw_with_nested(std::logic_error
-			   {"Error in constructor of Brusselator."});
-  }
-  catch(...){
-    throw std::logic_error {"Unkown error in constructor of Brusselator."};
-  }
-}
+Brusselator(const Io::Parameter& p, const Grid::Grid_and_time& gt, const Growth type)
+try : d_ptr {make_unique<Data>(p, gt, type)}
+{}
+catch(const std::exception&){
+  std::throw_with_nested(std::logic_error
+			 {"Error in constructor of Brusselator."});
+ }
+ catch(...){
+   throw std::logic_error {"Unkown error in constructor of Brusselator."};
+ }
+
 Esfem::SecOrd_op::Brusselator::
 Brusselator(const Io::Parameter& p, const Grid::Grid_and_time& gt, const Growth type,
-	    const Grid::Scal_FEfun& fef1, const Grid::Scal_FEfun& fef2){
-  try{
-    const FE_function& fef1_ref = fef1;
-    const FE_function& fef2_ref = fef2;
-    d_ptr = new Data {p, gt, type, fef1_ref, fef2_ref};
+	    const Grid::Scal_FEfun& fef1, const Grid::Scal_FEfun& fef2)
+try{
+  const FE_function& fef1_ref = fef1;
+  const FE_function& fef2_ref = fef2;
+  d_ptr = make_unique<Data>
+    (p, gt, type, fef1_ref, fef2_ref);
+ }
+ catch(const std::exception&){
+   std::throw_with_nested(std::logic_error
+			  {"Error in constructor of Brusselator."});
   }
-  catch(const std::exception&){
-    std::throw_with_nested(std::logic_error
-			   {"Error in constructor of Brusselator."});
-  }
-  catch(...){
-    throw std::logic_error {"Unkown error in constructor of Brusselator."};
-  }
-}
-Esfem::SecOrd_op::Brusselator::~Brusselator(){
-  delete d_ptr;
-  d_ptr = nullptr;
-#ifdef DEBUG
-  std::cerr << "~Brusselator(): delete d_ptr.\n";
-#endif
-}
+ catch(...){
+   throw std::logic_error {"Unkown error in constructor of Brusselator."};
+ }
+
+Esfem::SecOrd_op::Brusselator::~Brusselator() 
+= default;
+// {
+//   delete d_ptr;
+//   d_ptr = nullptr;
+// #ifdef DEBUG
+//   std::cerr << "~Brusselator(): delete d_ptr.\n";
+// #endif
+// }
 void Esfem::SecOrd_op::Brusselator::
 solve(const Grid::Scal_FEfun& rhs, Grid::Scal_FEfun& lhs) const{
   const FE_function& rhs_ref = rhs;
   FE_function& lhs_ref = lhs;
 
-  // std::clog << "rhs_ref: " << *rhs_ref.dbegin() << '\n'
-  // 	    << "lhs_ref: " << *lhs_ref.dbegin() << std::endl;
-  
   d_ptr -> bruss_cg(rhs_ref, lhs_ref);
   // d_ptr -> bruss_op.jacobian(rhs_ref, d_ptr -> bruss_matrix);
   // d_ptr -> bruss_gmres(rhs_ref, lhs_ref);
@@ -184,12 +180,8 @@ Esfem::SecOrd_op::Brusselator::Data::
 ~Data(){
   if(owns){
     delete fef1_ptr;
-    fef1_ptr = nullptr;
     delete fef2_ptr;
-    fef2_ptr = nullptr;
-#ifdef DEBUG
-    std::cerr << "~Brusselator::Data(): delete fef1_ptr, delete fef2_ptr.\n";
-#endif
+    fef1_ptr = fef2_ptr = nullptr;
   }
 }
 

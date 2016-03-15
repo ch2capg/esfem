@@ -18,6 +18,7 @@
 #ifndef SECORD_OP_INITDATA_H
 #define SECORD_OP_INITDATA_H 
 
+#include <memory>
 #include "esfem_fwd.h"
 
 namespace Esfem{
@@ -35,7 +36,7 @@ namespace Esfem{
       void interpolate(Grid::Scal_FEfun&) const;
     private:
       struct Data;
-      Data* d_ptr {nullptr};
+      std::unique_ptr<Data> d_ptr;
     };
   }
 }

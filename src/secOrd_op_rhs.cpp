@@ -106,10 +106,10 @@ void RHS_data::evaluate(const Domain& d, Range& r) const{
   const double y = d[1];
   const double z = d[2];
   const double t = tp.time();
-  // r = std::exp(-6.*t)*x*y;
-  r =
+  r = std::exp(-6.*t)*x*y;
+  // r =
     // #include "u_rhs.txt"
-#include "/Users/christianpower/cpp/syntax/data/harmonicSphere_cpp.txt"
+    // #include "/Users/christianpower/cpp/syntax/data/harmonicSphere_cpp.txt"
     ;
 }
 RHS_data::Range RHS_data::operator()(const Domain& d) const{

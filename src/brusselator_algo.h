@@ -29,6 +29,7 @@ struct FEfun_set{
   FEfun exact;
   FEfun rhs_les;
   explicit FEfun_set(const std::string& name, const Esfem::Grid::Grid_and_time&);
+  explicit FEfun_set(const FEfun_set&, const Esfem::Grid::Grid_and_time&);
   FEfun_set& operator>>(const Esfem::Io::Dgf::Handler&);
   FEfun_set& operator<<(const Esfem::Io::Dgf::Handler&);
   void write(const Esfem::Io::Dgf::Handler&,
@@ -108,7 +109,8 @@ void pre_loop_action(const Esfem::Io::Dgf::Handler&,
 		     const Solver&, 
 		     Esfem::Io::Paraview&
 		     );
-void pre_pattern_action(const Esfem::Io::Dgf::Handler&,
+void pre_pattern_action(const Esfem::Io::Parameter&,
+			const Esfem::Io::Dgf::Handler&,
 			Err_stream&,
 			const Esfem::Grid::Grid_and_time&,
 			FEfun_set<Esfem::Grid::Scal_FEfun>& u,
@@ -122,11 +124,11 @@ void pre_pattern_action(const Esfem::Io::Dgf::Handler&,
 // io helper functions
 
 void generate_header_line(Err_stream&);
-void generate_header_line(Io::Error_stream&);
+void generate_header_line(Esfem::Io::Error_stream&);
 void write_error_line(Err_stream&, const Esfem::Grid::Grid_and_time&, const Err_cal&);
-void write_error_line(Io::Error_stream&,
+void write_error_line(Esfem::Io::Error_stream&,
 		      const Esfem::Grid::Grid_and_time&,
-		      const Io::L2H1_calculator&);
+		      const Esfem::Io::L2H1_calculator&);
 
 
 // ----------------------------------------------------------------------
@@ -138,6 +140,12 @@ FEfun_set<FEfun>::FEfun_set(const std::string& name,
   : fun {name, gt}, app {name + "_app", gt},
     exact {name + "_exact", gt}, rhs_les {name + "_rhs_les", gt}
 {}
+template<typename FEfun>
+FEfun_set<FEfun>::FEfun_set(const FEfun_set& other, const Esfem::Grid::Grid_and_time& gt)
+  : fun {other.fun, gt}, app {other.app, gt}, 
+    exact {other.exact, gt}, rhs_les {other.rhs_les, gt}
+{}
+
 template<typename FEfun>
 FEfun_set<FEfun>& FEfun_set<FEfun>::operator>>(const Esfem::Io::Dgf::Handler& h){
   write(h);

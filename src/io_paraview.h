@@ -18,6 +18,7 @@
 #ifndef IO_PARAVIEW_H
 #define IO_PARAVIEW_H 
 
+#include <memory>
 #include "esfem_fwd.h"
 
 namespace Esfem{
@@ -34,7 +35,7 @@ namespace Esfem{
       void write();
     private:
       struct Data;
-      Data* d_ptr {nullptr};
+      std::unique_ptr<Data> d_ptr;
     };
   } 
 }

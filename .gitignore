@@ -15,3 +15,11 @@ data/sphere/triceratops.off
 data/sphere/raw_data/count*
 data/test_video/*
 old_code/*
+u.dgf
+u_app.dgf
+u_exact.dgf
+u_rhs_les.dgf
+w.dgf
+w_app.dgf
+w_exact.dgf
+w_rhs_les.dgf
