@@ -233,7 +233,8 @@ PROG2_SRC := $(addprefix $(dir ${PROG2}), \
  secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp \
 )
 PROG2_SRC += $(addprefix $(dir ${PROG2}), \
- io_parameter.cpp io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp io_dgf.cpp \
+ io_parameter.cpp io_parameter_impl.cpp \
+ io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp io_dgf.cpp \
  grid_deformation.cpp grid_GridAndTime.cpp grid_GridAndTime_impl.cpp \
  grid_fef.cpp \
  secOrd_op_initData.cpp secOrd_op_initData_impl.cpp\

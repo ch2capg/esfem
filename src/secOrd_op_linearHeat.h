@@ -18,6 +18,7 @@
 #ifndef SECORD_OP_LINEARHEAT_H
 #define SECORD_OP_LINEARHEAT_H 
 
+#include <memory>
 #include "esfem_fwd.h"
 
 namespace Esfem{
@@ -34,7 +35,7 @@ namespace Esfem{
       void mass_matrix(const Grid::Scal_FEfun& rhs, Grid::Scal_FEfun& lhs) const;
     private:
       struct Data;
-      Data* d_ptr {nullptr};
+      std::unique_ptr<Data> d_ptr;
     };    
   }
 }

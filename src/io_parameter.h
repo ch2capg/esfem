@@ -38,8 +38,10 @@ namespace Esfem{
       const std::string& paraview() const noexcept;
       
       double start_time() const noexcept;
-      double global_timeStep() const;
-      long max_timeSteps() const;
+      double global_timeStep() const noexcept;
+      long max_timeSteps() const; 
+      long prePattern_timeSteps() const;
+      long pattern_timeSteps() const; 
     
       double eps() const noexcept;
     

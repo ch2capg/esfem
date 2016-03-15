@@ -36,10 +36,11 @@ Esfem::Io::L2H1_calculator::
 L2H1_calculator(const Grid::Grid_and_time& gt,
 		const Grid::Scal_FEfun& exact_solution,
 		const Grid::Scal_FEfun& numerical_solution)
-  : d_ptr {make_unique<Data>
-    (exact_solution, numerical_solution,
-     L2_norm {gt.grid_part()}, 
-     H1_norm {gt.grid_part()})}
+try  : d_ptr {make_unique<Data>(Data 
+  {exact_solution, numerical_solution,
+      L2_norm {gt.grid_part()}, 
+      H1_norm {gt.grid_part()}}
+      )}
 {}
 catch(const std::exception&){
   std::throw_with_nested(std::logic_error
@@ -48,7 +49,6 @@ catch(const std::exception&){
  catch(...){
    throw std::logic_error{"Unknown error in constructor of L2H1_calculator."};
  }
-}
 
 Esfem::Io::L2H1_calculator::
 ~L2H1_calculator() = default;

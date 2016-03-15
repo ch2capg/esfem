@@ -70,9 +70,53 @@ struct Err_stream{
   Esfem::Io::Error_stream w;
   explicit Err_stream(const Esfem::Io::Parameter&);
 };
+struct FEM_data{
+  Esfem::Io::Parameter data;
+  const Esfem::Io::Dgf::Handler dgf_handler;
+  Err_stream estream;
+  Esfem::Grid::Grid_and_time fix_grid;
+  FEfun_set<Esfem::Grid::Scal_FEfun> u;
+  FEfun_set<Esfem::Grid::Scal_FEfun> w;
+
+  explicit FEM_data(int argc, char** argv, const std::string& parameter_fname);
+
+  void next_timeStep(); 
+  long prePattern_timeSteps() const; 
+  long pattern_timeSteps() const; 
+};
 
 // esfem algorithm
 void brusselator_algo(int argc, char** argv);
+
+// ------------------------------------------------------------
+// loop action
+
+void pre_loop_action(FEM_data&);
+void pre_pattern_action(FEM_data&);
+void intermediate_action(FEM_data&);
+void pattern_action(FEM_data&);
+void final_action(FEM_data&);
+
+void pre_loop_action(const Esfem::Io::Dgf::Handler&,
+		     const Init_data&,
+		     Err_stream&,
+		     const Esfem::Grid::Grid_and_time&,
+		     FEfun_set<Esfem::Grid::Scal_FEfun>& u,
+		     FEfun_set<Esfem::Grid::Scal_FEfun>& w,
+		     const Err_cal&, 
+		     const Solver&, 
+		     Esfem::Io::Paraview&
+		     );
+void pre_pattern_action(const Esfem::Io::Parameter&,
+			const Esfem::Io::Dgf::Handler&,
+			Err_stream&,
+			const Esfem::Grid::Grid_and_time&,
+			FEfun_set<Esfem::Grid::Scal_FEfun>& u,
+			FEfun_set<Esfem::Grid::Scal_FEfun>& w,
+			const Err_cal&,
+			const Solver&,
+			Esfem::Io::Paraview&
+			);
 
 // ----------------------------------------------------------------------
 // helper functions
@@ -95,30 +139,6 @@ void assemble_and_addScaled_rhsLes(const Rhs&,
 void solve_pde(const Solver&,
 	       FEfun_set<Esfem::Grid::Scal_FEfun>& u,
 	       FEfun_set<Esfem::Grid::Scal_FEfun>& w);
-
-// ------------------------------------------------------------
-// loop action
-
-void pre_loop_action(const Esfem::Io::Dgf::Handler&,
-		     const Init_data&,
-		     Err_stream&,
-		     const Esfem::Grid::Grid_and_time&,
-		     FEfun_set<Esfem::Grid::Scal_FEfun>& u,
-		     FEfun_set<Esfem::Grid::Scal_FEfun>& w,
-		     const Err_cal&, 
-		     const Solver&, 
-		     Esfem::Io::Paraview&
-		     );
-void pre_pattern_action(const Esfem::Io::Parameter&,
-			const Esfem::Io::Dgf::Handler&,
-			Err_stream&,
-			const Esfem::Grid::Grid_and_time&,
-			FEfun_set<Esfem::Grid::Scal_FEfun>& u,
-			FEfun_set<Esfem::Grid::Scal_FEfun>& w,
-			const Err_cal&,
-			const Solver&,
-			Esfem::Io::Paraview&
-			);
 
 // ------------------------------------------------------------
 // io helper functions

@@ -29,6 +29,22 @@ void brusselator_algo(int argc, char** argv){
   const auto parameter_file =
     "/home/power/cpp/DISS_surfaces/data/tumor_parameter.txt";  
 
+  FEM_data fem {argc, argv, parameter_file};
+
+  pre_loop_action(fem);
+  fem.next_timeStep();
+  for(long it = 0; it < fem.prePattern_timeSteps(); ++it){
+    pre_pattern_action(fem);
+    fem.next_timeStep();
+  }
+  intermediate_action(fem);
+  // fem.next_timeStep(); // Do we need this?
+  for(long it = 0; it < fem.pattern_timeSteps(); ++it){
+    pattern_action(fem);
+    fem.next_timeStep();
+  }
+  final_action(fem);
+
   Io::Parameter data {argc, argv, parameter_file};
   const Io::Dgf::Handler dgf_interpreter {data.grid()};
   const Init_data init_data {data};
@@ -86,6 +102,31 @@ Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
 Err_stream::Err_stream(const Esfem::Io::Parameter& p)
   : u {"_u", p}, w {"_w", p}
 {}
+
+FEM_data::FEM_data(int argc, char** argv, const std::string& parameter_fname)
+try : data {argc, argv, parameter_fname},
+		 dgf_handler {data.grid()},
+		 estream {data},
+		 fix_grid {data},
+		 u {"u", fix_grid},
+		 w {"w", fix_grid}
+{}
+catch(const std::exception&){
+  throw_with_nested(std::runtime_error {"Error in constructor of FEM_data."});
+ }
+ catch(...){
+   throw std::runtime_error {"Unkown error in constructor of FEM_data."};
+ }
+void FEM_data::next_timeStep(){
+  fix_grid.next_timeStep(data.global_timeStep());
+}
+long FEM_data::prePattern_timeSteps() const{
+  return data.prePattern_timeSteps();
+}
+long FEM_data::pattern_timeSteps() const{
+  return data.pattern_timeSteps();
+}
+
 // ----------------------------------------------------------------------
 // helper functions
 
@@ -121,6 +162,21 @@ void solve_pde(const Solver& s, Scal_FEfun_set& u, Scal_FEfun_set& w){
   s.w.solve(w.rhs_les, w.fun);
   w.app = w.fun;  
 }
+
+// ----------------------------------------------------------------------
+// loop action
+
+void pre_loop_action(FEM_data&){
+}
+void pre_pattern_action(FEM_data&){
+}
+void intermediate_action(FEM_data&){
+}
+void pattern_action(FEM_data&){
+}
+void final_action(FEM_data&){
+}
+
 void pre_loop_action(const Esfem::Io::Dgf::Handler& h,
 		     const Init_data& id,
 		     Err_stream& es,

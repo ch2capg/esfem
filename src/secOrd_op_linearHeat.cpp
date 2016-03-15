@@ -23,10 +23,7 @@
 #include "io_parameter.h"
 #include "grid.h"
 
-#ifdef DEBUG
-#include <iostream>
-#endif
-
+using namespace std;
 using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 using Solver = Dune::Fem::CGInverseOperator<FE_function>;
 using Geometry
@@ -85,24 +82,24 @@ struct Esfem::SecOrd_op::Linear_heat::Data{
   {}
 };
 Esfem::SecOrd_op::Linear_heat::Linear_heat(const Io::Parameter& p,
-					   const Grid::Grid_and_time& gt){
-  try{
-    d_ptr = new Data{p, gt};
-  }
-  catch(const std::exception&){
-    std::throw_with_nested(std::logic_error{"Error in constructor of Linear_heat."});
-  }
-  catch(...){
-    throw std::logic_error{"Unkown error in constructor of Linear_heat."};
-  }
-}
-Esfem::SecOrd_op::Linear_heat::~Linear_heat(){
-  delete d_ptr;
-  d_ptr = nullptr;
-#ifdef DEBUG
-  std::cerr << "~Linear_heat(): delete d_ptr\n";
-#endif
-}
+					   const Grid::Grid_and_time& gt)
+try : d_ptr {make_unique<Data>(p, gt)}
+{}
+catch(const std::exception&){
+  std::throw_with_nested(std::logic_error{"Error in constructor of Linear_heat."});
+ }
+ catch(...){
+   throw std::logic_error{"Unkown error in constructor of Linear_heat."};
+ }
+
+Esfem::SecOrd_op::Linear_heat::~Linear_heat() = default;
+// {
+//   delete d_ptr;
+//   d_ptr = nullptr;
+// #ifdef DEBUG
+//   std::cerr << "~Linear_heat(): delete d_ptr\n";
+// #endif
+// }
 void Esfem::SecOrd_op::Linear_heat::
 solve(const Grid::Scal_FEfun& rhs, Grid::Scal_FEfun& lhs) const{
   const FE_function& fef1 = rhs;

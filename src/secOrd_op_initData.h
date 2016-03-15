@@ -26,9 +26,9 @@ namespace Esfem{
     class Init_data{
     public:
       explicit Init_data(const Grid::Grid_and_time&);
-      // explicit initial function
+      // Constructor for explicit initial function
       explicit Init_data(const Io::Parameter&, const Growth);
-      // random initial data
+      // Constructor for random initial data
       ~Init_data();
       Init_data(const Init_data&) = delete;
       Init_data& operator=(const Init_data&) = delete;

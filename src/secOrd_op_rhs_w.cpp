@@ -116,9 +116,9 @@ void RHS_data_w::evaluate(const Domain& dom, Range& r) const{
   const double t = tp.time();
   const double g = gamma;
   r =
-    // - g * b	// for w == 0
+    - g * b	// for w == 0
     // #include "/Users/christianpower/cpp/syntax/data/brusselator_w_cpp.txt"
-#include "/Users/christianpower/cpp/syntax/data/brusselator_w_v2_cpp.txt"
+    // #include "/Users/christianpower/cpp/syntax/data/brusselator_w_v2_cpp.txt"
     ;
 }
 RHS_data_w::Range RHS_data_w::operator()(const Domain& d) const{

@@ -31,23 +31,23 @@ struct Esfem::SecOrd_op::Init_data::Data{
   // eid_ptr constructor
   Data(const Io::Parameter&, const Growth);
   // rid_ptr constructor
-  //  ~Data();
+  // ~Data();
 };
 
 Esfem::SecOrd_op::Init_data::Init_data(const Grid::Grid_and_time& gt) 
-try : d_ptr = make_unique<Data>(gt);
+try : d_ptr {make_unique<Data>(gt)}
 {}
 catch(const std::exception&){
   std::throw_with_nested(logic_error {"Error in constructor of Init_data."});
-
-catch(...){
-  throw logic_error {"Unknown error in constructor of Init_data."};
-}
+ }
+ catch(...){
+   throw logic_error {"Unknown error in constructor of Init_data."};
+ }
 
 Esfem::SecOrd_op::Init_data::Init_data(const Io::Parameter& p,
-				       const Growth type) try{
-  d_ptr = new Data {p, type};
-}
+				       const Growth type) 
+try : d_ptr {make_unique<Data>(p, type)}
+{}
 catch(const std::exception&){
   std::throw_with_nested(std::logic_error{"Error in constructor of Init_data."});
 }
@@ -68,8 +68,8 @@ void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const try{
   using std::end;
   using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
   
-  const auto eid_ptr = d_ptr -> eid_ptr;
-  const auto rid_ptr = d_ptr -> rid_ptr;
+  const auto& eid_ptr = d_ptr -> eid_ptr;
+  const auto& rid_ptr = d_ptr -> rid_ptr;
   const auto& ofname = d_ptr -> dof_io_filename;
   
   if(eid_ptr)
