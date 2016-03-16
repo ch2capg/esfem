@@ -229,7 +229,7 @@ ${PROG1_bin}: ${PROG1_obj}
 
 PROG2 := ${PROJECT_DIR}/src/brusselator
 PROG2_SRC := $(addprefix $(dir ${PROG2}), \
- brusselator_main.cpp brusselator_algo.cpp \
+ brusselator_main.cpp brusselator_algo.cpp brusselator_algo_impl.cpp \
  secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp \
 )
 PROG2_SRC += $(addprefix $(dir ${PROG2}), \
@@ -264,33 +264,6 @@ PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
 ${PROG2_name}: ${PROG2_bin}
 ${PROG2_bin}: ${PROG2_obj}
 	${CXX} $^ ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@
-
-# PROG2 := ${PROJECT_DIR}/src/tumor_reader_main.cpp
-# PROG2_SRC := ${PROG2}
-# PROG2_SRC += $(addprefix $(dir ${PROG2}), CHANGE.cpp)
-# 
-# PROG2_MSG = ${PROG2_name} - No special flags
-# 
-# PROG2_name := $(basename $(notdir ${PROG2}))
-# ${PROG2_name}: CXXFLAGS +=
-# ${PROG2_name}: CPPFLAGS += 
-# ${PROG2_name}: LDFLAGS += $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
-# 
-# # ------------------------------------------------------------
-# # do not change
-# 
-# progs += ${PROG2_name}
-# 
-# PROG2_obj := $(addprefix ${BUILD_DIR}/obj/, \
-#                $(patsubst %.cpp, %.o, \
-#                  $(notdir ${PROG2_SRC})))
-# -include $(patsubst %.o, %.d, ${PROG2_obj})
-# 
-# PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
-# 
-# ${PROG2_name}: ${PROG2_bin}
-# ${PROG2_bin}: ${PROG2_obj}
-# 	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
 
 # ----------------------------------------------------------------------
 # PROG3

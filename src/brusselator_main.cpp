@@ -9,7 +9,7 @@ void print_errMsg(const std::exception&);
 
 int main(int argc, char** argv) try{
   // linHeat_algo(argc, argv);
-  brusselator_algo(argc, argv);
+  Esfem::brusselator_algo(argc, argv);
 } 
 catch(const Dune::Exception& e){
   std::cerr << "Dune error: " << e << std::endl;
