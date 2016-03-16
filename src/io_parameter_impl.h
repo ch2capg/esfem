@@ -25,7 +25,7 @@ namespace Esfem{
   namespace Impl{
     struct Parameter_error : std::runtime_error{
       explicit Parameter_error(const std::string& msg) 
-	: std::runtime_error {"Error in Parameter.\n" + msg}
+	: std::runtime_error {"Error in Esfem::Io::Parameter.\n" + msg}
       {}
     };
     template<int level>

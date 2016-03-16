@@ -23,7 +23,6 @@
 #include <memory>
 #include "esfem.h"
 
-
 namespace Esfem{
   void brusselator_algo(int argc, char** argv);
   // ESFEM algorithm.  Only this should be invoked by main
@@ -47,7 +46,6 @@ namespace Esfem{
     std::unique_ptr<Data> d_ptr;
     void pre_loop_action(); // to be invoked only in the constructor
   };
-
 }
 
 #endif // BRUSSELATOR_ALGO_H

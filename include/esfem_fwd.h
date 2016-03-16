@@ -35,6 +35,7 @@ namespace Esfem{
     class Vec_FEfun;
   }
   namespace SecOrd_op{
+    class Identity;
     class Init_data;
     class Init_data_u;
     class Init_data_w;

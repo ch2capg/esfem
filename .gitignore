@@ -23,3 +23,7 @@ w.dgf
 w_app.dgf
 w_exact.dgf
 w_rhs_les.dgf
+surface.dgf
+surface_app.dgf
+surface_exact.dgf
+surface_rhs_les.dgf

@@ -40,16 +40,16 @@ struct Parameter::Data{
   const std::vector<double> bdf_alphas;
   const std::vector<double> bdf_gammas;
   // bdf coefficients ordered w.r.t. the polynomial order: from X^0 to X^n
-  const double tg_a {.1};
-  const double tg_b {.9};
-  const double tg_Dc {10.};
-  const double tg_gamma {30.};
-  const double u_hom_value {1.};
-  const double w_hom_value {.9};
-  const double u_pertubation {.01};
-  const double w_pertubation {.01};
-  const std::string u_init_dof {Esfem::Impl::project_dir() + "output/u_dof.log"};
-  const std::string w_init_dof {Esfem::Impl::project_dir() + "output/w_dof.log"};
+  const double tg_a;
+  const double tg_b;
+  const double tg_Dc;
+  const double tg_gamma;
+  const double u_hom_value;
+  const double w_hom_value;
+  const double u_pertubation;
+  const double w_pertubation;
+  const std::string u_init_dof;
+  const std::string w_init_dof;
   Data();
 };
 
@@ -91,7 +91,7 @@ Esfem::Io::Parameter::Data::Data()
   Assert::dynamic<Assert::level(1), Esfem::Impl::Parameter_error>
     ( (t_0 <= t_0_pattern) && (t_0_pattern <= t_end), __FILE__, __LINE__, 
      "Something is wrong with heat.starttime, heat.endtime or heat.pattern.starttime.");
-  Esfem::Impl::file_check({grid_dgf, error_log, paraview, u_init_dof, w_init_dof});
+  Esfem::Impl::file_check({grid_dgf, error_log, u_init_dof, w_init_dof});
 }
 
 Esfem::Io::Parameter::Parameter(int argc, char** argv,
