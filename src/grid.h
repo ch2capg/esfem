@@ -33,18 +33,24 @@
 
 namespace Esfem{
   namespace Grid{
-    static_assert(Dune::GridSelector::dimgrid == 2, "Bad grid dimension.");
-    static_assert(Dune::GridSelector::dimworld == 3, "Bad world dimension.");
+    inline constexpr int grid_dim(){
+      constexpr int dim = Dune::GridSelector::dimgrid;
+      return dim;
+    }
+    inline constexpr int world_dim(){
+      constexpr int dim = Dune::GridSelector::dimworld;
+      return dim;
+    }
+
+    static_assert( grid_dim() == 2, "Bad grid dimension.");
+    static_assert( world_dim() == 3, "Bad world dimension.");
     
     class Deformation
       : public Dune::
-      AnalyticalCoordFunction<double,
-			      Dune::GridSelector::dimworld,
-			      Dune::GridSelector::dimworld,
-			      Deformation>
+               AnalyticalCoordFunction<double, world_dim(), world_dim(), Deformation>
     {
     public:
-      using Base = Dune::AnalyticalCoordFunction<double, 3, 3, Deformation>;
+      using Base = Dune::AnalyticalCoordFunction<double, world_dim(), world_dim(), Deformation>;
       using Domain = Base::DomainVector;
       using Range = Base::RangeVector;
 

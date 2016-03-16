@@ -38,7 +38,7 @@ using Vec_FE_space = Esfem::Grid::Grid_and_time::Vec_FE_space;
 Host_grid& loadBalance_and_deref(HGrid_ptr&);
 
 // ----------------------------------------------------------------------
-// Implemenation Esfem::Grid::Grid_and_time
+// Implemenation Esfem::Grid::Grid_and_time::Data
 
 struct Esfem::Grid::Grid_and_time::Data{
   // Impl::Evolving_grid eg;
@@ -53,6 +53,40 @@ struct Esfem::Grid::Grid_and_time::Data{
   Data(const Io::Parameter&, const std::string& dgf_file,
        const double t0);
 };
+
+Esfem::Grid::Grid_and_time::Data::Data(const Io::Parameter& p)
+  : // eg {p.grid()},
+    // d {eg},
+    d {},
+    hg_ptr {p.grid()},
+    g {loadBalance_and_deref(hg_ptr), d},
+    gp {g},
+    tp {p.start_time(), g},
+    fes {gp},
+    vfes {gp}
+{
+  d.set_timeProvider(tp);
+  tp.init(p.global_timeStep());
+}
+
+Esfem::Grid::Grid_and_time::Data::
+Data(const Io::Parameter& p, const std::string& dgf_file,
+     const double t0)
+  : d {},
+    hg_ptr {dgf_file},
+    g {loadBalance_and_deref(hg_ptr), d},
+    gp {g},
+    tp {t0, g},
+    fes {gp},
+    vfes {gp}
+{
+  d.set_timeProvider(tp);
+  tp.init(p.global_timeStep());
+}
+
+// ----------------------------------------------------------------------
+// Implemenation Esfem::Grid::Grid_and_time
+
 
 Esfem::Grid::Grid_and_time::Grid_and_time(const Io::Parameter& p)
 try  : d_ptr {std::make_unique<Data>(p)}
@@ -111,36 +145,6 @@ Vec_FE_space& Esfem::Grid::Grid_and_time::vec_fe_space() const{
 Host_grid& loadBalance_and_deref(HGrid_ptr& hg_ptr){
   hg_ptr -> loadBalance();
   return *hg_ptr;
-}
-
-Esfem::Grid::Grid_and_time::Data::Data(const Io::Parameter& p)
-  : // eg {p.grid()},
-    // d {eg},
-    d {},
-    hg_ptr {p.grid()},
-    g {loadBalance_and_deref(hg_ptr), d},
-    gp {g},
-    tp {p.start_time(), g},
-    fes {gp},
-    vfes {gp}
-{
-  d.set_timeProvider(tp);
-  tp.init(p.global_timeStep());
-}
-
-Esfem::Grid::Grid_and_time::Data::
-Data(const Io::Parameter& p, const std::string& dgf_file,
-     const double t0)
-  : d {},
-    hg_ptr {dgf_file},
-    g {loadBalance_and_deref(hg_ptr), d},
-    gp {g},
-    tp {t0, g},
-    fes {gp},
-    vfes {gp}
-{
-  d.set_timeProvider(tp);
-  tp.init(p.global_timeStep());
 }
 
 /*! Log:

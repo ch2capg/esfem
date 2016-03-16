@@ -17,6 +17,7 @@
 #include "brusselator_algo_impl.h"
 
 using namespace Esfem;
+using Scal_FEfun_set = FEfun_set<Esfem::Grid::Scal_FEfun>;
 
 // ----------------------------------------------------------------------
 // Implementation of structs 
@@ -83,8 +84,8 @@ void Esfem::assemble_and_addScaled_rhsLes(const Rhs& rhs, Scal_FEfun_set& u, Sca
 void Esfem::solve_pde(const Solver& s, Scal_FEfun_set& u, Scal_FEfun_set& w){
   s.u.solve(u.rhs_les, u.fun);
   u.app = u.fun;    
-  s.w.solve(w.rhs_les, w.fun);pp
-				w.app = w.fun;  
+  s.w.solve(w.rhs_les, w.fun);
+  w.app = w.fun;  
 }
 
 // ------------------------------------------------------------
@@ -114,7 +115,11 @@ void Esfem::write_error_line(Io::Error_stream& es,
      << cal.l2_err() << '\t'
      << cal.h1_err() << std::endl; 
 }
-
+std::string Esfem::compose_dgfName(const std::string& fun_name,
+				   const std::string& dir){
+  constexpr auto suffix= ".dgf";
+  return dir + fun_name + suffix;
+}
 void Esfem::clog_uw(const Scal_FEfun_set& u, const Scal_FEfun_set& w){
   const Grid::Scal_FEfun::Dune_FEfun& u_fun = u.fun;
   const Grid::Scal_FEfun::Dune_FEfun& u_rhsLes = u.rhs_les;

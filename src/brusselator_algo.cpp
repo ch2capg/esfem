@@ -23,7 +23,7 @@ using Esfem::Brusselator_scheme;
 using Scal_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Scal_FEfun>;
 using Vec_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Vec_FEfun>;
 
-void brusselator_algo(int argc, char** argv){
+void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
 
   const auto parameter_file =
@@ -71,6 +71,8 @@ Brusselator_scheme::Data::Data(int argc, char** argv, const std::string& paramet
 // ----------------------------------------------------------------------
 // Brusselator_scheme implemenation
 
+Brusselator_scheme::~Brusselator_scheme() = default;
+
 Brusselator_scheme::Brusselator_scheme(int argc, char** argv, const std::string& parameter_fname)
 try : d_ptr {std::make_unique<Data>(argc, argv, parameter_fname)}
 {
@@ -110,9 +112,14 @@ void Brusselator_scheme::pre_loop_action(){
   paraview_loc.write();
 
   massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);
+
+  d_ptr -> surface.write(d_ptr -> dgf_handler, "./");
 }
 void Brusselator_scheme::pre_pattern_action(){
-  const Grid::Grid_and_time grid_loc {d_ptr -> fix_grid, d_ptr -> surface};
+  const Grid::Grid_and_time grid_loc 
+  {d_ptr -> data, 
+      compose_dgfName(d_ptr -> surface.fun.name()), 
+      d_ptr -> fix_grid.time_provider().time()};
   Scal_FEfun_set u_loc {d_ptr -> u, grid_loc};
   Scal_FEfun_set w_loc {d_ptr -> w, grid_loc};
   const Err_cal errCal_loc {grid_loc, u_loc, w_loc};
@@ -136,5 +143,5 @@ void Brusselator_scheme::pre_pattern_action(){
 void Brusselator_scheme::pattern_action(){
 }
 void Brusselator_scheme::final_action(){
-  u >> dgf_interpreter;
+  d_ptr -> u >> d_ptr -> dgf_handler;
 }

@@ -104,6 +104,7 @@ namespace Esfem{
   void write_error_line(Esfem::Io::Error_stream&,
 			const Esfem::Grid::Grid_and_time&,
 			const Esfem::Io::L2H1_calculator&);
+  std::string compose_dgfName(const std::string& fun_name, const std::string& dir = "./");
   void clog_uw(const FEfun_set<Esfem::Grid::Scal_FEfun>& u, 
 	       const FEfun_set<Esfem::Grid::Scal_FEfun>& w);
 
@@ -134,19 +135,17 @@ namespace Esfem{
   }
   template<typename FEfun>
   void FEfun_set<FEfun>::write(const Esfem::Io::Dgf::Handler& h, const std::string& dir){
-    constexpr auto suffix = ".dgf";
-    h.write(dir + fun.name() + suffix, fun);
-    h.write(dir + app.name() + suffix, app);
-    h.write(dir + exact.name() + suffix, exact);
-    h.write(dir + rhs_les.name() + suffix, rhs_les);
+    h.write(compose_dgfName(fun.name(), dir), fun);
+    h.write(compose_dgfName(app.name(), dir), app);
+    h.write(compose_dgfName(exact.name(), dir), exact);
+    h.write(compose_dgfName(rhs_les.name(), dir), rhs_les);
   }
   template<typename FEfun>
   void FEfun_set<FEfun>::read(const Esfem::Io::Dgf::Handler& h, const std::string& dir){
-    constexpr auto suffix = ".dgf";
-    h.read(dir + fun.name() + suffix, fun);
-    h.read(dir + app.name() + suffix, app);
-    h.read(dir + exact.name() + suffix, exact);
-    h.read(dir + rhs_les.name() + suffix, rhs_les);
+    h.read(compose_dgfName(fun.name(), dir), fun);
+    h.read(compose_dgfName(app.name(), dir), app);
+    h.read(compose_dgfName(exact.name(), dir), exact);
+    h.read(compose_dgfName(rhs_les.name(), dir), rhs_les);
   }
 
 } // namespace Esfem
