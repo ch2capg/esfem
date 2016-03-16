@@ -9,9 +9,10 @@
                (power22c@gmail.com) Februar 2016
 
      Implementation details for brusselator_algo.h
-     Created by Christian Power on 04.02.2016
+
+     Created by Christian Power on 16.03.2016
      Copyright (c) 2016 Christian Power. All rights reserved.
- */
+*/
 
 #include <config.h>
 #include "brusselator_algo.h"
@@ -31,19 +32,23 @@ void brusselator_algo(int argc, char** argv){
 
   FEM_data fem {argc, argv, parameter_file};
 
-  pre_loop_action(fem);
-  fem.next_timeStep();
+  // pre_loop_action(fem);
+
+  // fem.next_timeStep();
   for(long it = 0; it < fem.prePattern_timeSteps(); ++it){
-    pre_pattern_action(fem);
+    // pre_pattern_action(fem);
+    fem.pre_pattern_action();
     fem.next_timeStep();
   }
-  intermediate_action(fem);
+  // intermediate_action(fem); // Do we need this?
   // fem.next_timeStep(); // Do we need this?
   for(long it = 0; it < fem.pattern_timeSteps(); ++it){
-    pattern_action(fem);
+    // pattern_action(fem);
+    fem.pattern_action();
     fem.next_timeStep();
   }
-  final_action(fem);
+  // final_action(fem);
+  fem.final_action();
 
   Io::Parameter data {argc, argv, parameter_file};
   const Io::Dgf::Handler dgf_interpreter {data.grid()};
@@ -159,7 +164,7 @@ void assemble_and_addScaled_rhsLes(const Rhs& rhs, Scal_FEfun_set& u, Scal_FEfun
 void solve_pde(const Solver& s, Scal_FEfun_set& u, Scal_FEfun_set& w){
   s.u.solve(u.rhs_les, u.fun);
   u.app = u.fun;    
-  s.w.solve(w.rhs_les, w.fun);
+  s.w.solve(w.rhs_les, w.fun);pp
   w.app = w.fun;  
 }
 
@@ -183,7 +188,27 @@ void pre_loop_action(FEM_data& fd){
   // u.write(h, "./");
   // w.write(h, "./");
 }
-void pre_pattern_action(FEM_data&){
+void pre_pattern_action(FEM_data& fd){
+  const Grid::Grid_and_time current_grid {fd.fix_grid, fd.X};
+  Scal_FEfun_set current_u {fd.u, current_grid};
+  Scal_FEfun_set current_w {fd.w, current_grid};
+  const Err_cal current_errCal {grid_current, current_u, current_w};
+  Solver current_solver {fd.data, current_grid, current_u, current_w};
+  Io::Paraview current_paraview 
+  {fd.data, current_grid, current_u.fun, current_w.fun};
+
+  massMatrixConstOne_rhsLes(current_solver, current_u, current_w);
+  // assemble_and_addScaled_rhsLes(rhs, u, w);	// testing rhs
+  solve_pde(current_solver, current_u, current_w);
+  massMatrix_rhsLes(current_solver, current_u, current_w);
+  // update_exactSolution(init_data, u, w);	// testing rhs
+
+  write_error_line(fd.estream, fd.fix_grid, current_errCal);
+  current_paraview.write();  
+
+  fd.u = current_u;
+  fd.w = current_w;
+  // Perhaps do something with fd.X?
 }
 void intermediate_action(FEM_data&){
 }

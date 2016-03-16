@@ -70,19 +70,31 @@ struct Err_stream{
   Esfem::Io::Error_stream w;
   explicit Err_stream(const Esfem::Io::Parameter&);
 };
-struct FEM_data{
+class FEM_data{
+public:
+  explicit FEM_data(int argc, char** argv, const std::string& parameter_fname);
+
+  void next_timeStep(); 
+  long prePattern_timeSteps() const; 
+  long pattern_timeSteps() const; 
+
+  void pre_pattern_action();
+  void intermediate_action();
+  void pattern_action();
+  void final_action();
+  
+private:
   Esfem::Io::Parameter data;
   const Esfem::Io::Dgf::Handler dgf_handler;
   Err_stream estream;
   Esfem::Grid::Grid_and_time fix_grid;
   FEfun_set<Esfem::Grid::Scal_FEfun> u;
   FEfun_set<Esfem::Grid::Scal_FEfun> w;
+  FEfun_set<Esfem::Grid::Vec_FEfun> X;
 
-  explicit FEM_data(int argc, char** argv, const std::string& parameter_fname);
+  void pre_loop_action(); // <-- use this in constructor and invoce 
+  // fem.next_timeStep();
 
-  void next_timeStep(); 
-  long prePattern_timeSteps() const; 
-  long pattern_timeSteps() const; 
 };
 
 // esfem algorithm
