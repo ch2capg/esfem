@@ -61,12 +61,13 @@
      \f{gather*}{
        \parentheses[\big]{M(X) + \alpha A(X)} \dell_t X = 
        \varepsilon A(X) + \delta M(u,\nodalValue{\surfaceNormal}), \	\
-       \dell_t \parentheses[\big]{M(X) u } + A(X) u
+       \dell_t \parentheses[\big]{M(X) \nodalValue{u} } + A(X) \nodalValue{u}
        = \gamma \parentheses[\big]{b M(X) \nodalValue{1} 
-       + M(X; u,w) u}, \				\
-       \dell_t \parentheses[\big]{M(X) w} + D_c A(X) w
+       + M(X; \nodalValue{u},\nodalValue{w}) \nodalValue{u}}, \				\
+       \dell_t \parentheses[\big]{M(X) \nodalValue{w}} 
+       + D_c A(X) \nodalValue{w}
        = \gamma \parentheses[\big]{b M(X) \nodalValue{1} 
-       - M(X; u,u) w}.
+       - M(X; \nodalValue{u},\nodalValue{u}) \nodalValue{w}}.
      \f}
 
      Full discretization (Elliott+Styles discretization)
@@ -168,8 +169,7 @@ namespace Esfem{
     std::unique_ptr<Data> d_ptr;
     void pre_loop_action(); // To be invoked only in the constructor
   };
-  /*!<
-    \brief Implementation of the Elliott and Styles full discretization of the tumor problem
+  /*!< \brief Implementation of the Elliott and Styles full discretization of the tumor problem
   */
 }
 

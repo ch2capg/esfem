@@ -18,12 +18,6 @@
      element function.  With a different function you can save the nodal values into
      a file with the dune grid format.
 
-     Example
-     --------------------------------------------------
-
-     To do.
-
-     
          Created by Christian Power on 16.03.2016
          Copyright (c) 2016 Christian Power.  All rights reserved.
      

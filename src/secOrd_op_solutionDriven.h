@@ -18,6 +18,54 @@
      scheme with an additional right-hand side.
 
 
+         Created by Christian Power on 17.03.2016
+         Copyright (c) 2016 Christian Power.  All rights reserved.
+
+*/
+
+#ifndef SECORD_OP_SOLUTIONDRIVEN_H
+#define SECORD_OP_SOLUTIONDRIVEN_H
+
+#include <memory>
+#include "esfem_fwd.h"
+
+namespace Esfem{
+  namespace SecOrd_op{
+    class Solution_driven{
+    public:
+      Solution_driven(const Io::Parameter&, const Grid::Grid_and_time&,
+		      const Grid::Scal_FEfun& u);
+      /*!< Extracts from `Io::Parameter` the parameter \f$ \alpha \f$ and \f$ \delta \f$.
+	`Grid::Grid_and_time` provides dynamical time steps via `time_provider`.
+	`u` is consistent with the \f$ u \f$ in the description above.
+       */
+      ~Solution_driven();
+
+      void solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
+      /*!< \brief Solve `lsh` in the lineare system L*`lhs`=`rhs`.
+	
+	We solve precicely the equation
+	\f{equation*}{
+	  \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} lhs = rhs,
+	\f}
+	via conjugated gradient method.
+       */
+      void rhs(Grid::Vec_FEfun&) const;
+      /*!< \brief Generates rhs for the linear system.
+
+	The new value of the finite element function will be
+	\f{equation*}{
+	  (M_3^n + \alpha A_3^n) \nodalValue{X}^n
+	  + \tau \delta M_3^n(\nodalValue{u}^n, \nodalValue{\surfaceNormal}).
+	\f}
+       */
+    private:
+      struct Data;
+      std::unique_ptr<Data> d_ptr;
+    };
+    /*!< \brief Solve the surface partial differential equation for
+                solution driven paper.
+
      Partial differential equation
      ==================================================
 
@@ -61,13 +109,8 @@
 	  \nodalValue{\surfaceNormal}),
 	\f}
      where \f$\nodalValue{\surfaceNormal}^n\f$ is elementwise normal.  
-
-         Created by Christian Power on 17.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
-
-*/
-
-#ifndef SECORD_OP_SOLUTIONDRIVEN_H
-#define SECORD_OP_SOLUTIONDRIVEN_H
+     */
+  } 
+} // Esfem
 
 #endif // SECORD_OP_SOLUTIONDRIVEN_H
