@@ -4,6 +4,7 @@
 *.png
 bin/*
 lib/*
+doc/*
 obj/*
 debug/*
 output/*
@@ -15,6 +16,9 @@ data/sphere/triceratops.off
 data/sphere/raw_data/count*
 data/test_video/*
 old_code/*
+GPATH
+GRTAGS
+GTAGS
 u.dgf
 u_app.dgf
 u_exact.dgf

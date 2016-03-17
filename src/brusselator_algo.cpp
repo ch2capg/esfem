@@ -20,13 +20,14 @@
 
 using namespace Esfem;
 using Esfem::Brusselator_scheme;
+using Esfem::SecOrd_op::Identity;
 using Scal_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Scal_FEfun>;
 using Vec_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Vec_FEfun>;
 
 void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
 
-  const auto parameter_file =
+  constexpr auto parameter_file =
     "/home/power/cpp/DISS_surfaces/data/tumor_parameter.txt";  
 
   Brusselator_scheme fem {argc, argv, parameter_file};
@@ -48,6 +49,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
 // Implementation of Brusselator_scheme::Data
  
 struct Brusselator_scheme::Data{
+  Identity identity {};
   Esfem::Io::Parameter data;
   const Esfem::Io::Dgf::Handler dgf_handler;
   Err_stream estream;
@@ -59,7 +61,8 @@ struct Brusselator_scheme::Data{
 };
 
 Brusselator_scheme::Data::Data(int argc, char** argv, const std::string& parameter_fname)
-  : data {argc, argv, parameter_fname},
+  : 
+  data {argc, argv, parameter_fname},
   dgf_handler {data.grid()},
   estream {data},
   fix_grid {data},
@@ -106,9 +109,12 @@ void Brusselator_scheme::pre_loop_action(){
       d_ptr -> u.fun, d_ptr -> w.fun};
   Solver solver {d_ptr -> data, d_ptr -> fix_grid, d_ptr -> u, d_ptr -> w};
   
-  first_interpolate(initData_loc, d_ptr -> u, d_ptr -> w);
+  first_interpolate(d_ptr -> identity, initData_loc,
+		    d_ptr -> u, d_ptr -> w, d_ptr -> surface);
+
   generate_header_line(d_ptr -> estream);
   write_error_line(d_ptr -> estream, d_ptr -> fix_grid, errCal_loc);
+  
   paraview_loc.write();
 
   massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);

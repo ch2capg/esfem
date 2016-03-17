@@ -4,7 +4,7 @@
 
     \brief Providing an identity function for vector valued finite element functions
 
-     Revision history:
+     Revision history
      --------------------------------------------------
 
           Revised by Christian Power March 2016

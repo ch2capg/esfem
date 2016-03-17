@@ -27,8 +27,6 @@ namespace Esfem{
     public:
       explicit Linear_heat(const Io::Parameter&, const Grid::Grid_and_time&);
       ~Linear_heat();
-      Linear_heat(const Linear_heat&) = delete;
-      Linear_heat& operator=(const Linear_heat&) = delete;
       
       void solve(const Grid::Scal_FEfun& rhs, Grid::Scal_FEfun& lhs) const;
       void apply_massMatrix_to(Grid::Scal_FEfun&) const;

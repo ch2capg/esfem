@@ -31,7 +31,7 @@ using Esfem::Io::Parameter;
 struct Parameter::Data{
   const double t_0;
   const double t_end;
-  const double t_0_pattern;
+  const double t_end_pattern;
   const double dT;
   const std::string grid_dgf;
   const std::string error_log;
@@ -56,7 +56,7 @@ struct Parameter::Data{
 Esfem::Io::Parameter::Data::Data()
   : t_0 {Dune::Fem::Parameter::getValue<double>("heat.starttime", 0.0)},
   t_end {Dune::Fem::Parameter::getValue<double>("heat.endtime", 0.6)},
-  t_0_pattern {Dune::Fem::Parameter::getValue<double>("heat.pattern.starttime", t_end)},
+  t_end_pattern {Dune::Fem::Parameter::getValue<double>("heat.pattern.endtime", t_end)},
   dT {Dune::Fem::Parameter::getValue<double>("heat.timestep",0.1)},
   grid_dgf {Esfem::Impl::get_macroGrid()},
   error_log {Dune::Fem::Parameter::getValue<std::string>
@@ -85,11 +85,11 @@ Esfem::Io::Parameter::Data::Data()
       ("tumor_growth.io.w_init_dof", Esfem::Impl::project_dir() + "output/w_dof.log")}
 {
   Assert::dynamic<Assert::level(1), Esfem::Impl::Parameter_error>
-    (eps > 0, __FILE__, __LINE__, "Negative tolerance.");
+    (eps > 0, __FILE__, __LINE__, "Non positive tolerance.");
   Assert::dynamic<Assert::level(1), Esfem::Impl::Parameter_error>
     ( dT > eps, __FILE__, __LINE__, "Time step too small.");
   Assert::dynamic<Assert::level(1), Esfem::Impl::Parameter_error>
-    ( (t_0 <= t_0_pattern) && (t_0_pattern <= t_end), __FILE__, __LINE__, 
+    ( (t_0 <= t_end_pattern) && (t_end_pattern <= t_end), __FILE__, __LINE__, 
      "Something is wrong with heat.starttime, heat.endtime or heat.pattern.starttime.");
   Esfem::Impl::file_check({grid_dgf, error_log, u_init_dof, w_init_dof});
 }
@@ -166,13 +166,13 @@ long Esfem::Io::Parameter::max_timeSteps() const{
   return (t_n - t_0)/d_ptr->dT + .1;
 }
 long Esfem::Io::Parameter::prePattern_timeSteps() const{
-  const auto t_n = d_ptr->t_0_pattern;
+  const auto t_n = d_ptr->t_end_pattern;
   const auto t_0 = d_ptr->t_0;
   return (t_n - t_0)/d_ptr->dT + .1;
 }
 long Esfem::Io::Parameter::pattern_timeSteps() const{
   const auto t_n = d_ptr->t_end;
-  const auto t_0 = d_ptr->t_0_pattern;
+  const auto t_0 = d_ptr->t_end_pattern;
   return (t_n - t_0)/d_ptr->dT + .1;
 }
 double Esfem::Io::Parameter::eps() const noexcept{
@@ -219,7 +219,7 @@ std::ostream& Esfem::Io::operator<<(std::ostream& os, const Parameter& d){
   const auto& p = d.d_ptr;
   os << "t_0: " << p->t_0 << '\n'
      << "dT: " << p->dT << '\n'
-     << "t_0_pattern: " << p-> t_0_pattern << '\n'
+     << "t_end_pattern: " << p-> t_end_pattern << '\n'
      << "t_end: " << p->t_end << '\n'
      << "grid_dgf: " << p->grid_dgf << '\n'
      << "error_log: " << p->error_log << '\n'

@@ -32,7 +32,7 @@ using Esfem::SecOrd_op::Identity;
 using Esfem::Impl::Identity_impl;
 
 struct Identity::Data{
-  Identity_impl {};
+  Identity_impl identity_impl {};
 };
 
 // ----------------------------------------------------------------------
@@ -44,8 +44,8 @@ Identity::Identity()
 
 Identity::~Identity() = default;
 
-void Identity::operator()(Grid::Vec_FEfun& vfef) const{
+void Identity::interpolate(Grid::Vec_FEfun& vfef) const{
   using FE_function = Grid::Vec_FEfun::Dune_FEfun;
   Dune::LagrangeInterpolation<FE_function>::
-    interpolateFunction(d_ptr -> Identity_impl, vfef);
+    interpolateFunction(d_ptr -> identity_impl, vfef);
 }

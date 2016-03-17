@@ -31,10 +31,10 @@
 namespace Esfem{
   namespace Impl{
     struct Identity_impl
-      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Function_space,      
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,      
 			    Identity_impl>
     {
-      using FE_space = Esfem::Grid::Grid_and_time::Function_space;
+      using FE_space = Esfem::Grid::Grid_and_time::Vec_Function_space;
       using Domain = FE_space::DomainType;
       using Range = FE_space::RangeType;
       static_assert(Domain::dimension == Range::dimension, "Bad dimension");

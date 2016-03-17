@@ -1,19 +1,21 @@
-/*! \file brusselator_algo.h
+/*! \file brusselator_algo_impl.h
 
-    \brief <Program Name>
+    \brief Implementation details for brusselator_algo.cpp
 
-     Revision history:
+     Revision history
+     --------------------------------------------------
 
           Revised by Christian Power March 2016
           Originally written by Christian Power
                (power22c@gmail.com) February 2016
 
-     Pseudocode:
-       (1+τγ)(Mu)ⁿ⁺¹ + τ (Au)ⁿ⁺¹ - τγ Mⁿ⁺¹(uⁿ,wⁿ)uⁿ⁺¹ = (Mu)ⁿ + τγa Mⁿ⁺¹1
-       (Mw)ⁿ⁺¹ + τDᶜ (Aw)ⁿ⁺¹ + τγ Mⁿ⁺¹(uⁿ⁺¹,uⁿ⁺¹)wⁿ⁺¹ = (Mw)ⁿ + τγb Mⁿ⁺¹1
+     Idea
+     --------------------------------------------------
 
-     Created by Christian Power on 11.03.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+     To do.
+
+         Created by Christian Power on 17.03.2016
+         Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef BRUSSELATOR_ALGO_IMPL_H
@@ -75,9 +77,11 @@ namespace Esfem{
   // ----------------------------------------------------------------------
   // helper functions
 
-  void first_interpolate(const Init_data&,
+  void first_interpolate(const SecOrd_op::Identity&,
+			 const Init_data&,
 			 FEfun_set<Esfem::Grid::Scal_FEfun>& u,
-			 FEfun_set<Esfem::Grid::Scal_FEfun>& w);
+			 FEfun_set<Esfem::Grid::Scal_FEfun>& w,
+			 FEfun_set<Esfem::Grid::Vec_FEfun>& surface);
   void update_exactSolution(const Init_data&,
 			    FEfun_set<Esfem::Grid::Scal_FEfun>& u,
 			    FEfun_set<Esfem::Grid::Scal_FEfun>& w);

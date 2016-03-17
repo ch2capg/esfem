@@ -18,6 +18,7 @@
 #ifndef SECORD_OP_H
 #define SECORD_OP_H 
 
+#include "secOrd_op_identity.h"
 #include "secOrd_op_initData.h"
 #include "secOrd_op_initData_u.h"
 #include "secOrd_op_initData_w.h"

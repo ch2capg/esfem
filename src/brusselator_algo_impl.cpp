@@ -18,6 +18,8 @@
 
 using namespace Esfem;
 using Scal_FEfun_set = FEfun_set<Esfem::Grid::Scal_FEfun>;
+using Vec_FEfun_set = FEfun_set<Esfem::Grid::Vec_FEfun>;
+using Identity = SecOrd_op::Identity;
 
 // ----------------------------------------------------------------------
 // Implementation of structs 
@@ -55,15 +57,18 @@ Err_stream::Err_stream(const Esfem::Io::Parameter& p)
 // ----------------------------------------------------------------------
 // helper functions
 
-void Esfem::first_interpolate(const Init_data& id,
+void Esfem::first_interpolate(const Identity& identity,
+			      const Init_data& id,
 			      Scal_FEfun_set& u,
-			      Scal_FEfun_set& w){
+			      Scal_FEfun_set& w,
+			      Vec_FEfun_set& surface){
   id.u.interpolate(u.fun);
   id.u.interpolate(u.app);
   id.u.interpolate(u.exact);
   id.w.interpolate(w.fun);
   id.w.interpolate(w.app);
   id.w.interpolate(w.exact);
+  identity.interpolate(surface.fun);
 }
 void Esfem::update_exactSolution(const Init_data& id, Scal_FEfun_set& u, Scal_FEfun_set& w){
   id.u.interpolate(u.exact);
