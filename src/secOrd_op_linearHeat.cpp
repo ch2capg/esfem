@@ -93,13 +93,7 @@ catch(const std::exception&){
  }
 
 Esfem::SecOrd_op::Linear_heat::~Linear_heat() = default;
-// {
-//   delete d_ptr;
-//   d_ptr = nullptr;
-// #ifdef DEBUG
-//   std::cerr << "~Linear_heat(): delete d_ptr\n";
-// #endif
-// }
+
 void Esfem::SecOrd_op::Linear_heat::
 solve(const Grid::Scal_FEfun& rhs, Grid::Scal_FEfun& lhs) const{
   const FE_function& fef1 = rhs;

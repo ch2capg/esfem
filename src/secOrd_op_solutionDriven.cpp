@@ -62,6 +62,9 @@ Solution_driven::Solution_driven(const Io::Parameter& p, const Grid::Grid_and_ti
 Solution_driven::~Solution_driven() = default;
 
 void Solution_driven::solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
+  const FEfun& fef1 = rhs;
+  FEfun& fef2 = lhs;
+  d_ptr -> mcf_solver(fef1, fef2);
 }
 
 void Solution_driven::rhs(Grid::Vec_FEfun&) const{
