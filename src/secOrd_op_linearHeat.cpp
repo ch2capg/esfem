@@ -130,6 +130,7 @@ void Linear_heat_op::operator()(const FE_function& cfef, FE_function& fef) const
     matrixFree_assembly(tp.deltaT(), geometry, quad,
 			cfef_loc, fef_loc);
   }
+  fef.communicate();
 }
 void Linear_heat_op::mass_matrix(FE_function& fef){
   tmp_fef.assign(fef);

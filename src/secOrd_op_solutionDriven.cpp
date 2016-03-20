@@ -28,44 +28,43 @@
 using Esfem::SecOrd_op::Solution_driven;
 using FEfun = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 using Vec_FEfun = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+using Vec_cg_solver = Dune::Fem::CGInverseOperator<Vec_FEfun>;
 
 // ----------------------------------------------------------------------
 // Implementation of Solution_driven::Data
 
 struct Solution_driven::Data{
-  const double alpha;
-  const double delta;
-  const double epsilon;
-  const Dune::Fem::TimeProviderBase& tp;
-  const FEfun& u;
+  MCF_op mcf_op;
+  Vec_cg_solver cg_solver;
   Data(const Io::Parameter&, const Grid::Grid_and_time&
        const Grid::Scal_FEfun& u_wrapper);
 };
 
 Solution_driven::Data::Data(const Io::Parameter& p, const Grid::Grid_and_time& g,
-			    const Grid::Scal_FEfun& u_input)
-  : alpha {p.velocity_regularization()},
-  delta {p.surface_growthFactor()},
-  epsilon {p.mcf_regularization()},
-  tp {g.time_provider()},
-  u {static_cast<FEfun>(u_input)}
+			    const Grid::Scal_FEfun& u_wrapper)
+  : mcf_op {p, g, static_cast<FEfun>(u_wrapper)},
+  cg_solver {mcf_op, p.eps(), p.eps()}
 {}
 
 // ----------------------------------------------------------------------
 // Implementation of Solution_driven
 
-Solution_driven::Solution_driven(const Io::Parameter& p, const Grid::Grid_and_time& g,
+Solution_driven::Solution_driven(const Io::Parameter& p,
+				 const Grid::Grid_and_time& g,
 				 const Grid::Scal_FEfun& u)
   : d_ptr {std::make_unique<Data>(p, g, u)}
 {}
 
 Solution_driven::~Solution_driven() = default;
 
-void Solution_driven::solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
-  const FEfun& fef1 = rhs;
-  FEfun& fef2 = lhs;
-  d_ptr -> mcf_solver(fef1, fef2);
+void Solution_driven::
+solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
+  const Vec_FEfun& vfef1 = rhs;
+  Vec_FEfun& vfef2 = lhs;
+  d_ptr -> cg_solver(vfef1, vfef2);
 }
 
-void Solution_driven::rhs(Grid::Vec_FEfun&) const{
+void Solution_driven::rhs(Grid::Vec_FEfun& vfef_wrapper) const{
+  Vec_FEfun& vfef = vfef_wrapper;
+  d_ptr -> mcf_op.rhs(vfef);
 }

@@ -34,11 +34,13 @@ namespace Esfem{
     class Solution_driven{
     public:
       Solution_driven(const Io::Parameter&, const Grid::Grid_and_time&,
-		      const Grid::Scal_FEfun& u);
+		      const Grid::Scal_FEfun& u_wrapper);
       /*!< Extracts from `Io::Parameter` the parameter \f$ \alpha \f$ 
-	   and \f$ \delta \f$.
+	and \f$ \delta \f$.
 	`Grid::Grid_and_time` provides dynamical time steps via `time_provider`.
 	`u` is consistent with the \f$ u \f$ in the description above.
+	More precisely we need the method `velocity_regularization`,
+	`surface_growthFactor` and `mcf_regularization` from `Io::Parameter`.
        */
       ~Solution_driven();
 
