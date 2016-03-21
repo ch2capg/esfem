@@ -231,6 +231,7 @@ PROG2 := ${PROJECT_DIR}/src/brusselator
 PROG2_SRC := $(addprefix $(dir ${PROG2}), \
  brusselator_main.cpp brusselator_algo.cpp brusselator_algo_impl.cpp \
  secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp \
+ secOrd_op_solutionDriven.cpp secOrd_op_solutionDriven_impl.cpp \
 )
 PROG2_SRC += $(addprefix $(dir ${PROG2}), \
  io_parameter.cpp io_parameter_impl.cpp \

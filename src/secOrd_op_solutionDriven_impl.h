@@ -25,6 +25,7 @@
 #define SECORD_OP_SOLUTIONDRIVEN_IMPL_H
 
 #include <cmath>
+#include <vector>
 #include <config.h>
 #include <dune/fem/operator/common/operator.hh>
 #include "io_parameter.h"
@@ -78,10 +79,18 @@ namespace Esfem{
       /*! \name Functions returning dimensions
        */
       //@{
-      constexpr int dim_vec_domain() { return Domain<Vector_fef>::dimension; }
-      constexpr int dim_vec_range() { return Range<Vector_fef>::dimension; }
-      constexpr int dim_scalar_domain() { return Domain<Scalar_fef>::dimension; }
-      constexpr int dim_scalar_range() { return Range<Scalar_fef>::dimension; }
+      static constexpr int dim_vec_domain(){
+	return Domain<Vector_fef>::dimension;
+      }
+      static constexpr int dim_vec_range() {
+	return Range<Vector_fef>::dimension;
+      }
+      static constexpr int dim_scalar_domain() {
+	return Domain<Scalar_fef>::dimension;
+      }
+      static constexpr int dim_scalar_range() {
+	return Range<Scalar_fef>::dimension;
+      }
       //@}
 
       // ------------------------------------------------------------
@@ -116,9 +125,11 @@ namespace Esfem{
 	###Pseudo code
 
 	`(M + alpha * A) X + tau * delta * M(u^n, surfaceNormal)`
-       */
-      RangeField euclidean_norm(const Range<Vector_fef>&);
-      /*!< \brief Euclidean norm for dimension 3 vectors. */
+       */      
+      Range<Vector_fef> massMatrix_surfaceNormal(const Geometry&);
+      /*!< \brief Calculates the outwards pointing normal vector and
+                  multiplies it with the growth promoting factor.
+      */
       
       const double alpha; 
       /*!< Velocity Laplace regularization parameter by Lubich */
@@ -136,40 +147,55 @@ namespace Esfem{
     /*! \name Helper functions for `MCF_op`
      */
     //@{
-    MCF_op::Range<Vector_fef>
-    massMatrix_surfaceNormal(const std::size_t pt,
-			     const MCF_op::Quadrature&,
-			     const MCF_op::Local_function<Scalar_fef>& u_loc);
+    std::vector<MCF_op::Domain<Vector_fef> >
+    oriented_basis(const MCF_op::Geometry&);
+    /*!< \brief Calculates an oriented basis for the tangent space.
+                Assumes `grid dimension == 2` and
+                `world dimension == 3`.
+    */
+    MCF_op::Range<Vector_fef> nonUnit_normal
+    (const std::vector<MCF_op::Domain<Vector_fef> >& basis);
+    /* \brief Calculates an non-normalized normal vector via
+              the cross product formula.  Assumes `basis.size() == 2`
+	      and that the basis is correctly oriented.
+     */
+    inline MCF_op::RangeField
+    euclidean_norm(const Range<Vector_fef>& v){
+      static_assert(MCF_op::dim_vec_range() == 3, "Bad dimension");
+      return std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
+    }
+    /*!< \brief Euclidean norm for a 3-dimensional vector. */
     inline MCF_op::Range<Vector_fef>
-    mass_matrix(const std::size_t pt,
-		const MCF_op::Quadrature& q,
-		const MCF_op::Local_function<Vector_fef>& cf){
-      MCF_op::Range<Vector_fef> X;
+    evaluate(const std::size_t pt,
+	     const MCF_op::Quadrature& q,
+	     const MCF_op::Local_function<Vector_fef>& cf){
+      Range<Vector_fef> X;
       cf.evaluate(q[pt], X);
       return X;
     }
-    /*!< \brief Calculates `MX` */
+    inline MCF_op::Range<Scalar_fef>
+    evaluate(const std::size_t pt,
+	     const MCF_op::Quadrature& q,
+	     const MCF_op::Local_function<Scalar_fef>& cf){
+      Range<Scalar_fef> u;
+      cf.evaluate(q[pt], u);
+      return u;
+    }
+    /*!< \brief Returns `X(p)` */
     inline MCF_op::Jacobian_range<Vector_fef>
-    stiffness_matrix(const std::size_t pt,
-		     const MCF_op::Quadrature& q,
-		     const MCF_op::Local_function<Vector_fef>& cf){
-      MCF_op::Jacobian_range<Vector_fef> nabla_X;
+    jacobian(const std::size_t pt,
+	     const MCF_op::Quadrature& q,
+	     const MCF_op::Local_function<Vector_fef>& cf){
+      Jacobian_range<Vector_fef> nabla_X;
       cf.jacobian(q[pt], nabla_X);
       return nabla_X;
     }
-    /*!< \brief Calculates `AX`*/
+    /*!< \brief Returns `dX(p)`*/
     //@}
 
     // ----------------------------------------------------------------------
     // Implementation class inline function
 
-    inline RangeField MCF_op::euclidian_norm(const Range<Vector_fef>& v){
-      static_assert( dim_vec_range() == 3, "Bad dimension");
-      const auto rv = std::sqrt(v[0] * v[0] + v[1] * v[1] + v[2] * v[2]);
-      Assert::dynamic<Assert::level(7), Esfem::SolutionDriven_error>
-	(rv > eps, __FILE__, __LINE__, "Norm is too small.");
-      return rv;
-    }
 }
 
 #endif // SECORD_OP_SOLUTIONDRIVEN_IMPL_H
