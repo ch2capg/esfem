@@ -151,14 +151,20 @@ namespace Esfem{
     /*!< \brief To be used in the first for-loop.  
 
       At this stage the tumor is not growing, but rather the inital data is created.
-      \warning Do not forget to use `Brusselator_scheme::next_timeStep`.
+      \warning Do not forget to use `Brusselator_scheme::next_timeStep` afterwards.
      */
-    // void intermediate_action();
+    void intermediate_action();
+    /*!< \brief To be used between first and second for-loop.
+
+      The inital data has been created.  It will be saved and the right hand side for
+      the surface PDE will be created. 
+      \warning Do not use `Brusselator_scheme::next_timeStep` afterwards.
+     */
     void pattern_action();
     /*!< \brief To be used in the second for-loop.
 
       At this stage the tumor is growing.
-      \warning Do not forget to use `Brusselator_scheme::next_timeStep`.
+      \warning Do not forget to use `Brusselator_scheme::next_timeStep` afterwards.
      */
     void final_action();
     /*!< \brief To be used after the second for-loop to save some data.

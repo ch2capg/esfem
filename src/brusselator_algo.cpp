@@ -36,8 +36,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
     fem.pre_pattern_action();
     fem.next_timeStep();
   }
-  // intermediate_action(fem); // Do we need this?
-  // fem.next_timeStep(); // Do we need this?
+  fem.intermediate_action(); 
   for(long it = 0; it < fem.pattern_timeSteps(); ++it){
     fem.pattern_action();
     fem.next_timeStep();
@@ -145,6 +144,9 @@ void Brusselator_scheme::pre_pattern_action(){
   d_ptr -> u = u_loc;
   d_ptr -> w = w_loc;
   // Perhaps do something with surface?
+}
+void Brusselator_scheme::intermediate_action(){
+  d_ptr -> u >> d_ptr -> dgf_handler;
 }
 void Brusselator_scheme::pattern_action(){
 }
