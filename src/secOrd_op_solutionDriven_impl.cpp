@@ -21,6 +21,8 @@
 
 */
 
+#include <dassert.h>
+#include "esfem_error.h"
 #include "secOrd_op_solutionDriven_impl.h"
 
 using std::size_t;
@@ -59,7 +61,7 @@ MCF_op::MCF_op(const Io::Parameter& p,
 void MCF_op::operator()(const Vector_fef& rhs, Vector_fef& lhs) const{
   // (M + (alpha + epsilon * tau) A) X
   lhs.clear();
-  const auto& df_space = fef.space();
+  const auto& df_space = lhs.space();
   for(const auto& entity : df_space){
     const auto& geometry = entity.geometry();
     const auto rhs_loc = rhs.localFunction(entity);
@@ -73,7 +75,7 @@ void MCF_op::operator()(const Vector_fef& rhs, Vector_fef& lhs) const{
 void MCF_op::rhs(const Vector_fef& rhs, Vector_fef& lhs){
   // (M + alpha * A) X + tau * delta * M(u^n, surfaceNormal)
   lhs.clear();
-  const auto& df_space = fef.space();
+  const auto& df_space = lhs.space();
   for(const auto& entity : df_space){
     const auto& geometry = entity.geometry();
     const auto& rhs_loc = rhs.localFunction(entity);
@@ -91,15 +93,17 @@ void MCF_op::rhs(const Vector_fef& rhs, Vector_fef& lhs){
 void MCF_op::mcf_lhs_matrixFree_assembly(const Geometry& g,
 					 const Quadrature& q,
 					 const Local_function<Vector_fef>& cf,
-					 Local_function<Vector_fef>& f){
+					 Local_function<Vector_fef>& f) const{
   for(size_t pt = 0; pt < q.nop(); ++pt){
     // (M + (alpha + epsilon * tau) A) X
     const auto& x = q.point(pt);
     const auto integral_factor = q.weight(pt) * g.integrationElement(x);
 
-    auto X_p = evaluate(pt, q, cf) * integral_factor;
-    auto dX_p = jacobian(pt, q, cf)
-      * integral_factor * (alpha + epsilon * tp.deltaT());
+    auto X_p = evaluate(pt, q, cf);
+    X_p *= integral_factor;
+    
+    auto dX_p = jacobian(pt, q, cf);
+    dX_p *= integral_factor * (alpha + epsilon * tp.deltaT());
 
     f.axpy(q[pt], X_p, dX_p);
   }
@@ -108,25 +112,30 @@ void MCF_op::mcf_rhs_matrixFree_assembly(const Geometry& g,
 					 const Quadrature& q,
 					 const Local_function<Vector_fef>& cf,
 					 const Local_function<Scalar_fef>& u_loc,
-					 Local_function<Vector_fef>& f){
+					 Local_function<Vector_fef>& f) const{
   for(size_t pt = 0; pt < q.nop(); ++pt){
     // (M + alpha * A) X + tau * delta * M(u^n, surfaceNormal)
     const auto& x = q.point(pt);
     const auto integral_factor = q.weight(pt) * g.integrationElement(x);
 
-    auto X_p = evaluate(pt, q, cf) * integral_factor;
+    auto n_p = surface_normal(g);
     const auto u_p = evaluate(pt, q, u_loc);
-    X_p += massMatrix_surfaceNormal(g)
-      u_p * tp.deltaT() * delta * integral_factor;
-    auto dX_p = jacobian(pt, q, cf) * alpha * integral_factor;
+    n_p *= u_p * tp.deltaT() * delta * integral_factor;
+
+    auto X_p = evaluate(pt, q, cf);
+    X_p *= integral_factor;
+    X_p += n_p;
+    
+    auto dX_p = jacobian(pt, q, cf);
+    dX_p *= alpha * integral_factor;
 
     f.axpy(q[pt], X_p, dX_p);	
   }
 }
 
 MCF_op::Range<Vector_fef>
-MCF_op::massMatrix_surfaceNormal(const Geometry& g){
-  static_assert(dim_vec_domain() == 3, "Bad dimension");
+MCF_op::surface_normal(const Geometry& g) const{
+  static_assert(dim_vec_domain == 3, "Bad dimension");
   const auto basis = oriented_basis(g);
   auto normal = nonUnit_normal(basis);
   const auto norm = euclidean_norm(normal);

@@ -21,11 +21,16 @@
 
 */
 
+#include <config.h>
+#include <dune/fem/solver/cginverseoperator.hh>
 #include "secOrd_op_solutionDriven.h"
+#include "secOrd_op_solutionDriven_impl.h"
 #include "io_parameter.h"
 #include "grid.h"
 
+
 using Esfem::SecOrd_op::Solution_driven;
+using Esfem::Impl::MCF_op;
 using FEfun = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 using Vec_FEfun = Esfem::Grid::Vec_FEfun::Dune_FEfun;
 using Vec_cg_solver = Dune::Fem::CGInverseOperator<Vec_FEfun>;
@@ -36,7 +41,7 @@ using Vec_cg_solver = Dune::Fem::CGInverseOperator<Vec_FEfun>;
 struct Solution_driven::Data{
   MCF_op mcf_op;
   Vec_cg_solver cg_solver;
-  Data(const Io::Parameter&, const Grid::Grid_and_time&
+  Data(const Io::Parameter&, const Grid::Grid_and_time&,
        const Grid::Scal_FEfun& u_wrapper);
 };
 
@@ -64,7 +69,8 @@ solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
   d_ptr -> cg_solver(vfef1, vfef2);
 }
 
-void Solution_driven::rhs(Grid::Vec_FEfun& vfef_wrapper) const{
-  Vec_FEfun& vfef = vfef_wrapper;
-  d_ptr -> mcf_op.rhs(vfef);
+void Solution_driven::rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
+  const Vec_FEfun& vfef1 = rhs;
+  Vec_FEfun& vfef2 = lhs;
+  d_ptr -> mcf_op.rhs(vfef1, vfef2);
 }

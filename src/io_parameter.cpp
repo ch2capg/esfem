@@ -19,6 +19,7 @@
 #include <dune/fem/io/file/dataoutput.hh>
 #include <bdf.h>
 #include <dassert.h>
+#include "esfem_error.h"
 #include "io_parameter.h"
 #include "io_parameter_impl.h"
 
@@ -44,6 +45,9 @@ struct Parameter::Data{
   const double tg_b;
   const double tg_Dc;
   const double tg_gamma;
+  const double velocity_regularization;
+  const double surface_growthFactor;
+  const double mcf_regularization;
   const double u_hom_value;
   const double w_hom_value;
   const double u_pertubation;
@@ -73,6 +77,12 @@ Esfem::Io::Parameter::Data::Data()
   tg_b {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.b", .9)},
   tg_Dc {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)},
   tg_gamma {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.gamma", 30.)},
+  velocity_regularization
+  {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.alpha", 1e-3)},
+  surface_growthFactor
+  {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.delta", .4)},
+  mcf_regularization
+  {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.epsilon", .01)},
   u_hom_value {Dune::Fem::Parameter::getValue<double>
       ("tumor_growth.heat.u_hom", tg_a + tg_b)},
   w_hom_value {Dune::Fem::Parameter::getValue<double>
@@ -196,6 +206,15 @@ double Esfem::Io::Parameter::tg_Dc() const noexcept{
 double Esfem::Io::Parameter::tg_gamma() const noexcept{
   return d_ptr -> tg_gamma;
 }
+double Parameter::velocity_regularization() const noexcept{
+  return d_ptr -> velocity_regularization;
+}
+double Parameter::surface_growthFactor() const noexcept{
+  return d_ptr -> surface_growthFactor;
+}
+double Parameter::mcf_regularization() const noexcept{
+  return d_ptr -> mcf_regularization;
+}
 double Esfem::Io::Parameter::u_hom_value() const noexcept{
   return d_ptr -> u_hom_value;
 }
@@ -231,6 +250,9 @@ std::ostream& Esfem::Io::operator<<(std::ostream& os, const Parameter& d){
      << "tg_b: " << p->tg_b << '\n'
      << "tg_Dc: " << p->tg_Dc << '\n'
      << "tg_gamma: " << p->tg_gamma << '\n'
+     << "velocity_regularization: " << p->velocity_regularization << '\n'
+     << "surface_growthFactor: " << p->surface_growthFactor << '\n'
+     << "mcf_regularization: " << p->mcf_regularization << '\n'
      << "u_hom_value: " << p -> u_hom_value << '\n'
      << "w_hom_value: " << p -> w_hom_value << '\n'
      << "u_pertubation: " << p -> u_pertubation << '\n'

@@ -56,6 +56,9 @@ struct Brusselator_scheme::Data{
   Scal_FEfun_set u;
   Scal_FEfun_set w;
   Vec_FEfun_set surface;
+  Solver solver_prePattern;
+  Io::Paraview paraview_prePattern;
+  Err_cal errCal_prePattern;
   Data(int argc, char** argv, const std::string& parameter_fname);
 };
 
@@ -67,7 +70,10 @@ Brusselator_scheme::Data::Data(int argc, char** argv, const std::string& paramet
   fix_grid {data},
   u {"u", fix_grid},
   w {"w", fix_grid},
-  surface {"surface", fix_grid}
+  surface {"surface", fix_grid},
+  solver_prePattern {data, fix_grid, u, w},
+  paraview_prePattern {data, fix_grid, u.fun, w.fun},
+  errCal_prePattern {fix_grid, u, w}
 {}
 
 // ----------------------------------------------------------------------
@@ -117,10 +123,51 @@ void Brusselator_scheme::pre_loop_action(){
   paraview_loc.write();
 
   massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);
-
-  d_ptr -> surface.write(d_ptr -> dgf_handler, "./");
 }
-void Brusselator_scheme::pre_pattern_action(){
+void Brusselator_scheme::pre_pattern_action(){  
+  // const Grid::Grid_and_time grid_loc 
+  // {d_ptr -> data, 
+  //     compose_dgfName(d_ptr -> surface.fun.name()), 
+  //     d_ptr -> fix_grid.time_provider().time()};
+  // Scal_FEfun_set u_loc {d_ptr -> u, grid_loc};
+  // Scal_FEfun_set w_loc {d_ptr -> w, grid_loc};
+  // const Err_cal errCal_loc {grid_loc, u_loc, w_loc};
+  // Solver solver_loc {d_ptr -> data, grid_loc, u_loc, w_loc};
+  // Io::Paraview paraview_loc 
+  // {d_ptr -> data, grid_loc, u_loc.fun, w_loc.fun};
+
+  // massMatrixConstOne_rhsLes(solver_loc, u_loc, w_loc);
+  // assemble_and_addScaled_rhsLes(rhs, u, w);	// testing rhs
+  // solve_pde(solver_loc, u_loc, w_loc);
+  // massMatrix_rhsLes(solver_loc, u_loc, w_loc);
+  // update_exactSolution(init_data, u, w);	// testing rhs
+
+  massMatrixConstOne_rhsLes(d_ptr -> solver_prePattern,
+			    d_ptr -> u, d_ptr -> w);
+  solve_pde(d_ptr -> solver_prePattern,
+	    d_ptr -> u, d_ptr -> w);
+  massMatrix_rhsLes(d_ptr -> solver_prePattern,
+		    d_ptr -> u, d_ptr -> w);
+  
+  write_error_line(d_ptr -> estream, d_ptr -> fix_grid, errCal_loc);
+  paraview_loc.write();  
+
+  d_ptr -> u = u_loc;
+  d_ptr -> w = w_loc;
+  // Perhaps do something with surface?
+}
+void Brusselator_scheme::intermediate_action(){
+  d_ptr -> u.write(d_ptr -> dgf_handler, "./intermediate_");
+  d_ptr -> surface.write(d_ptr -> dgf_handler, "./"); // comment this out
+}
+void Brusselator_scheme::pattern_action(){
+  Helper_surface hs {d_ptr};
+  hs.solve_for_surface();
+  Helper_uw huw {d_ptr};
+  huw.solve_pde();
+  huw.write_error_line();
+  huw.paraview_plot();
+  
   const Grid::Grid_and_time grid_loc 
   {d_ptr -> data, 
       compose_dgfName(d_ptr -> surface.fun.name()), 
@@ -131,25 +178,8 @@ void Brusselator_scheme::pre_pattern_action(){
   Solver solver_loc {d_ptr -> data, grid_loc, u_loc, w_loc};
   Io::Paraview paraview_loc 
   {d_ptr -> data, grid_loc, u_loc.fun, w_loc.fun};
-
-  massMatrixConstOne_rhsLes(solver_loc, u_loc, w_loc);
-  // assemble_and_addScaled_rhsLes(rhs, u, w);	// testing rhs
-  solve_pde(solver_loc, u_loc, w_loc);
-  massMatrix_rhsLes(solver_loc, u_loc, w_loc);
-  // update_exactSolution(init_data, u, w);	// testing rhs
-
-  write_error_line(d_ptr -> estream, d_ptr -> fix_grid, errCal_loc);
-  paraview_loc.write();  
-
-  d_ptr -> u = u_loc;
-  d_ptr -> w = w_loc;
-  // Perhaps do something with surface?
-}
-void Brusselator_scheme::intermediate_action(){
-  d_ptr -> u >> d_ptr -> dgf_handler;
-}
-void Brusselator_scheme::pattern_action(){
 }
 void Brusselator_scheme::final_action(){
-  d_ptr -> u >> d_ptr -> dgf_handler;
+  d_ptr -> u.write(d_ptr -> dgf_handler, "./final_");
+  d_ptr -> surface.write(d_ptr -> dgf_handler, "./final_");
 }

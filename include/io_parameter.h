@@ -32,37 +32,60 @@ namespace Esfem{
       Parameter(const Parameter&) = delete;
       Parameter& operator=(const Parameter&) = delete;
 
-      // ----------------------------------------------------------------------
+      /*! \name File names*/
+      //@{
       const std::string& grid() const noexcept;
       const std::string& error_log() const noexcept;
       const std::string& paraview() const noexcept;
-      
+      //@}
+
+      /*! \name Time control*/
+      //@{
       double start_time() const noexcept;
       double global_timeStep() const noexcept;
+      //@}
+      
+      /*! \name Flow control parameter */
+      //@{
       long max_timeSteps() const; 
       long prePattern_timeSteps() const;
       long pattern_timeSteps() const; 
-    
+      //@}
+      
       double eps() const noexcept;
-    
+      /*!< \brief Generic precision */
+
+      /*! \name BDF coefficients */
+      //@{
       const std::vector<double>& bdf_alphas() const noexcept;
       const std::vector<double>& bdf_gammas() const noexcept;
+      //@}
 
+      /*! \name Tumor growth PDE data */
+      //@{
       double tg_a() const noexcept;
       double tg_b() const noexcept;
       double tg_Dc() const noexcept;
       double tg_gamma() const noexcept;
+      double velocity_regularization() const noexcept;
+      double surface_growthFactor() const noexcept;
+      double mcf_regularization() const noexcept;
+      //@}
 
+      /*! \name Tumor growth initial data */
+      //@{
       double u_hom_value() const noexcept;
       double w_hom_value() const noexcept;
       double u_pertubation() const noexcept;
       double w_pertubation() const noexcept;
-
       const std::string& u_init_dof() const noexcept;
+      /*!< \brief File name for backup of initial nodal values */
       const std::string& w_init_dof() const noexcept;
+      /*!< \brief File name for backup of initial nodal values */
+      //@}
       
-      // ----------------------------------------------------------------------
       friend std::ostream& operator<<(std::ostream&, const Parameter&);
+      /*! \brief Prints out all data members. */
     private:
       struct Data;
       std::unique_ptr<Data> d_ptr;

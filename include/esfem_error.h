@@ -51,10 +51,10 @@ namespace Esfem{
 // Assert::dynamic specialization
 
 template<>
-inline void Assert::dynamic<false, Esfem::Impl::Parameter_error>
+inline void Assert::dynamic<false, Esfem::Parameter_error>
 (const bool, const std::string&){};
 template<>
-inline void Assert::dynamic<false, Esfem::Impl::SolutionDriven_error>
+inline void Assert::dynamic<false, Esfem::SolutionDriven_error>
 (const bool, const std::string&){};
 
 #endif // ESFEM_ERROR_H

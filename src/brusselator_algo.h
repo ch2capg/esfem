@@ -129,7 +129,6 @@ namespace Esfem{
      */
     ~Brusselator_scheme();
 
-
     /*! \name Flow control 
      */
     //@{

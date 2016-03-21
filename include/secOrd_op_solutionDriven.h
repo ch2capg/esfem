@@ -56,7 +56,7 @@ namespace Esfem{
 	  \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} lhs = rhs,
 	\f}
        */
-      void rhs(Grid::Vec_FEfun&) const;
+      void rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
       /*!< \brief Generates rhs for the linear system.
 
 	The new value of the finite element function will be
