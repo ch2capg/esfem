@@ -34,26 +34,34 @@ namespace Esfem{
     class Solution_driven{
     public:
       Solution_driven(const Io::Parameter&, const Grid::Grid_and_time&,
-		      const Grid::Scal_FEfun& u);
-      /*!< Extracts from `Io::Parameter` the parameter \f$ \alpha \f$ and \f$ \delta \f$.
+		      const Grid::Scal_FEfun& u_wrapper);
+      /*!< Extracts from `Io::Parameter` the parameter \f$ \alpha \f$ 
+	and \f$ \delta \f$.
 	`Grid::Grid_and_time` provides dynamical time steps via `time_provider`.
 	`u` is consistent with the \f$ u \f$ in the description above.
+	More precisely we need the method `velocity_regularization`,
+	`surface_growthFactor` and `mcf_regularization` from `Io::Parameter`.
        */
       ~Solution_driven();
 
       void solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
-      /*!< \brief Solve `lsh` in the lineare system L*`lhs`=`rhs`.
+      /*!< \brief Solve `lsh` in the lineare system `A * lsh = rhs`.
 	
 	We solve precicely the equation
+	    (M_3^n + (\alpha + \varepsilon\tau) A_3^n)*lhs = rhs,
+	via conjugated gradient method.
+       */
+      /* 
 	\f{equation*}{
 	  \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} lhs = rhs,
 	\f}
-	via conjugated gradient method.
        */
       void rhs(Grid::Vec_FEfun&) const;
       /*!< \brief Generates rhs for the linear system.
 
 	The new value of the finite element function will be
+       */
+      /*
 	\f{equation*}{
 	  (M_3^n + \alpha A_3^n) \nodalValue{X}^n
 	  + \tau \delta M_3^n(\nodalValue{u}^n, \nodalValue{\surfaceNormal}).
