@@ -1,18 +1,25 @@
 /*! \file grid.h
+    \author Christian Power
+    \date 22. March 2016
 
-    \brief <Program Name>
+    \brief Fundamental header providing grid, time provider and finite element functions
 
-     Revision history:
+    Revision history
+    --------------------------------------------------
 
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power March 2016
+	  Revised by Christian Power February 2016
           Originally written by Christian Power
-               (power22c@gmail.com) 27. Januar 2016
+               (power22c@gmail.com) January 2016
 
-     This programm implements a basic expression calculator.
-     Input from cin; output to cout.  The grammar for input is: etc.
+     Idea
+     --------------------------------------------------
 
-     Created by Christian Power on 27.01.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+     Wrapper classes for the dune implementations.  This is very usefull
+     since the construction of those classes is quite non trivial.
+
+         Created by Christian Power on 17.03.2016
+         Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef GRID_H
@@ -34,12 +41,10 @@
 namespace Esfem{
   namespace Grid{
     inline constexpr int grid_dim(){
-      constexpr int dim = Dune::GridSelector::dimgrid;
-      return dim;
+      return Dune::GridSelector::dimgrid;
     }
     inline constexpr int world_dim(){
-      constexpr int dim = Dune::GridSelector::dimworld;
-      return dim;
+      return Dune::GridSelector::dimworld;
     }
 
     static_assert( grid_dim() == 2, "Bad grid dimension.");
@@ -157,6 +162,3 @@ namespace Esfem{
 }	// namespace Esfem
 
 #endif // GRID_H
-
-/*! Log:
- */

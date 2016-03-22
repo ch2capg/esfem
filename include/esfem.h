@@ -20,6 +20,7 @@
 
 #include "io.h"
 #include "grid.h"
+#include "grid_FEfunSet.h"
 #include "secOrd_op.h"
 
 #endif // ESFEM_H

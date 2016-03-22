@@ -21,6 +21,7 @@ using Esfem::Init_data;
 using Esfem::Solver;
 using Esfem::Err_cal;
 using Esfem::Err_stream;
+using Esfem::PreLoop_helper;
 using Esfem::Helper_surface;
 using Esfem::SecOrd_op::Identity;
 using Scal_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Scal_FEfun>;
@@ -58,6 +59,84 @@ Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
 Err_stream::Err_stream(const Esfem::Io::Parameter& p)
   : u {"_u", p}, w {"_w", p}
 {}
+
+// ----------------------------------------------------------------------
+// Implementation PreLoop_helper
+
+PreLoop_helper::PreLoop_helper(Brusselator_scheme& bs_ref)
+  : bs {bs_ref},
+  io {bs.io},
+  fef {bs.fef},
+  init_data {bs.data},
+  err_cal {bs.fix_grid, fef.u, fef.w},
+  paraview {bs.data, bs.fix_grid, fef.u.fun, fef.w.fun},
+  solver {bs.data, bs.fix_grid, fef.u, fef.w}
+{}
+
+void PreLoop_helper::first_interpolate(){
+  interpolate(init_data.u, fef.u);
+  interpolate(init_data.w, fef.w);
+  bs.identity.interpolate(fef.surface.fun);
+}
+void PreLoop_helper::headLine_in_errFile(){
+  head_line(io.u);
+  head_line(io.w);
+}
+void PreLoop_helper::plot_errors_in_errFile(){
+  const auto& g = bs.fix_grid;
+  write_error_line(io.u, g.time_provider(), err_cal.u);
+  write_error_line(io.w, g.time_provider(), err_cal.w);
+}
+void PreLoop_helper::plot_paraview(){
+  paraview.write();
+}
+void PreLoop_helper::prepare_rhs(){
+  auto& u = fef.u;
+  auto& w = fef.w;
+  solver.u.mass_matrix(u.fun, u.rhs_les);
+  solver.w.mass_matrix(w.fun, w.rhs_les);
+}
+
+// ----------------------------------------------------------------------
+// Implementation PrePattern_helper 
+
+PrePattern_helper::PrePattern_helper(Brusselator_scheme& bs_input)
+  : bs {bs_input},
+  io {bs.io},
+  fef {bs.fef},
+  err_cal {bs.fix_grid, fef.u, fef.w},
+  paraview {bs.data, bs.fix_grid, fef.u.fun, fef.w.fun},
+  solver {bs.data, bs.fix_grid, fef.u, fef.w}
+{}
+
+void PrePattern_helper::finalize_rhs(){
+  auto& u_rhs = fef.u.rhs_les;
+  auto& w_rhs = fef.w.rhs_les;
+  solver.u.add_massMatrixConstOne_to(u_rhs);
+  solver.u.add_massMatrixConstOne_to(w_rhs);
+}
+void PrePattern_helper::solve_pde(){
+  auto& u = fef.u;
+  auto& w = fef.w;
+  solver.u.solve(u.rhs_les, u.fun);
+  u.app = u.fun;    
+  solver.w.solve(w.rhs_les, w.fun);
+  w.app = w.fun;    
+}
+void PrePattern_helper::prepare_rhs(){
+  auto& u = fef.u;
+  auto& w = fef.w;
+  solver.u.mass_matrix(u.fun, u.rhs_les);
+  solver.w.mass_matrix(w.fun, w.rhs_les);
+}
+void PrePattern_helper::plot_errors_in_errFile(){
+  const auto& g = bs.fix_grid;
+  write_error_line(io.u, g.time_provider(), err_cal.u);
+  write_error_line(io.w, g.time_provider(), err_cal.w);
+}
+void PrePattern_helper::plot_paraview(){
+  paraview.write();
+}
 
 // ----------------------------------------------------------------------
 // Implementation Helper_surface
@@ -98,6 +177,28 @@ void Helper_uw::paraview_plot(){
 
 // ----------------------------------------------------------------------
 // helper functions
+
+void Esfem::interpolate(const SecOrd_op::Init_data& id, Scalar_FEfun_set& f){
+  id.interpolate(f.fun);
+  f.app = f.fun;
+  f.exact = f.fun;
+}
+void Esfem::head_line(Io::Error_stream& file){
+  es << "timestep" << "\t"
+     << "L2err" << "\t\t"
+     << "H1err" << std::endl;
+  es << std::scientific;
+}
+void Esfem::write_error_line(Io::Error_stream& file,
+			     const Dune::Fem::TimeProviderBase& tp,
+			     const Io::L2H1_calculator& cal){
+  file << tp.deltaT() << '\t'
+       << cal.l2_err() << '\t'
+       << cal.h1_err() << std::endl; 
+}
+
+// ----------------------------------------------------------------------
+// old code
 
 void Esfem::first_interpolate(const Identity& identity,
 			      const Init_data& id,
@@ -161,11 +262,6 @@ void Esfem::write_error_line(Io::Error_stream& es,
   es << tp.deltaT() << '\t'
      << cal.l2_err() << '\t'
      << cal.h1_err() << std::endl; 
-}
-std::string Esfem::compose_dgfName(const std::string& fun_name,
-				   const std::string& dir){
-  constexpr auto suffix= ".dgf";
-  return dir + fun_name + suffix;
 }
 void Esfem::clog_uw(const Scal_FEfun_set& u, const Scal_FEfun_set& w){
   const Grid::Scal_FEfun::Dune_FEfun& u_fun = u.fun;

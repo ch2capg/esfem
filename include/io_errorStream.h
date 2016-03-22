@@ -26,11 +26,9 @@ namespace Esfem{
     class Error_stream{
     public:
       explicit Error_stream(const Parameter&);
-      // filename is parameter.error_log()
+      /*!< \brief `filename` is `Io::Parameter::error_log` */
       explicit Error_stream(const std::string& suffix, const Parameter&);
-      // filename is suffix + parameter.error_log()
-      Error_stream(const Error_stream&) = delete;
-      Error_stream& operator=(const Error_stream&) = delete;
+      /*!< \brief `filename` is `suffix + Io::Parameter::error_log` */
 
       // ----------------------------------------------------------------------
       // Providing 'endl', 'scientific' and 'defaultfloat'

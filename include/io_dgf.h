@@ -1,19 +1,26 @@
 /*! \file io_dgf.h
+    \author Christian Power
+    \date 22. March 2016
 
-    \brief <Program Name>
+    \brief Provides class Io::Dgf::Handler to communicate
+           between dgf files and finite element functions
 
-     Revision history:
+    Revision history
+    --------------------------------------------------
 
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power March 2016
           Originally written by Christian Power
                (power22c@gmail.com) March 2016
+
+     Idea
+     --------------------------------------------------
 
      Providing routines to input resp. output nodal values of a scalar valued
      finite element function to files according to the dune grid format.
 
-     Created by Christian Power on 08.03.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
- */
+         Created by Christian Power on 17.03.2016
+         Copyright (c) 2016 Christian Power.  All rights reserved.
+*/
 
 #ifndef IO_DGF_H
 #define IO_DGF_H 
@@ -167,13 +174,6 @@ namespace Esfem{
       FEfun& operator<<(FEfun& fef, const Handler::Vertices& v){
 	using std::begin;
 	using std::end;
-	// std::clog << "operator<<().\n"
-	// 	  << "fef.size(): " << fef.size() << '\n'
-	// 	  << "v.size(): " << v.size() << '\n'
-	// 	  << "v.front().size(): " << v.front().size() 
-	// 	  << std::endl;
-	// for(const auto d : v.front()) std::clog << d << ' ';
-	// std::clog << std::endl;
 	auto o_it = begin(fef);
 	auto first = cbegin(v);
 	auto last = cend(v);
@@ -194,6 +194,3 @@ namespace Esfem{
 }	// namespace Esfem
 
 #endif // IO_DGF_H
-
-/*! Log:
- */

@@ -21,9 +21,8 @@
 
 using namespace Esfem;
 using Esfem::Brusselator_scheme;
-using Esfem::SecOrd_op::Identity;
-using Scal_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Scal_FEfun>;
-using Vec_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Vec_FEfun>;
+using Scal_FEfun_set = Brusselator_scheme::Scal_FEfun_set;
+using Vec_FEfun_set = Brusselator_scheme::Vec_FEfun_set;
 
 void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
@@ -33,27 +32,14 @@ void Esfem::brusselator_algo(int argc, char** argv){
 
   Brusselator_scheme fem {argc, argv, parameter_file};
 
-  for(long it = 0; it < fem.prePattern_timeSteps(); ++it){
-    fem.pre_pattern_action();
-    fem.next_timeStep();
-  }
+  fem.prePattern_loop();
   fem.intermediate_action(); 
-  for(long it = 0; it < fem.pattern_timeSteps(); ++it){
-    fem.pattern_action();
-    fem.next_timeStep();
-  }
+  fem.pattern_loop();
   fem.final_action();
 }
 
 // ----------------------------------------------------------------------
 // Implementation of Brusselator_scheme::Data
-
-struct Brusselator_scheme::Numerical_solution{
-  Err_stream estream;
-  FEfun_set<Grid::Scal_FEfun> u;
-  FEfun_set<Grid::Scal_FEfun> w;
-  FEfun_set<Grid::Vec_FEfun> surface;
-};
 
 struct Brusselator_scheme::Data{
   Identity identity {};
@@ -71,8 +57,7 @@ struct Brusselator_scheme::Data{
 };
 
 Brusselator_scheme::Data::Data(int argc, char** argv, const std::string& parameter_fname)
-  : 
-  data {argc, argv, parameter_fname},
+  : data {argc, argv, parameter_fname},
   dgf_handler {data.grid()},
   estream {data},
   fix_grid {data},
@@ -87,10 +72,11 @@ Brusselator_scheme::Data::Data(int argc, char** argv, const std::string& paramet
 // ----------------------------------------------------------------------
 // Brusselator_scheme implemenation
 
-Brusselator_scheme::~Brusselator_scheme() = default;
-
 Brusselator_scheme::Brusselator_scheme(int argc, char** argv, const std::string& parameter_fname)
-try : d_ptr {std::make_unique<Data>(argc, argv, parameter_fname)}
+try : data {argc, argv, parameter_fname},
+  io {data},
+  fix_grid {data},
+  fef {fix_grid}
 {
   pre_loop_action();
   next_timeStep();
@@ -103,35 +89,88 @@ catch(const std::exception&){
  }
 
 void Brusselator_scheme::next_timeStep(){
-  d_ptr -> fix_grid.next_timeStep(d_ptr -> data.global_timeStep());
+  fix_grid.next_timeStep(data.global_timeStep());
 }
 long Brusselator_scheme::prePattern_timeSteps() const{
-  return d_ptr -> data.prePattern_timeSteps();
+  return data.prePattern_timeSteps();
 }
 long Brusselator_scheme::pattern_timeSteps() const{
-  return d_ptr -> data.pattern_timeSteps();
+  return data.pattern_timeSteps();
 }
 
 // ------------------------------------------------------------
 // Brusselator_scheme loop action
 
 void Brusselator_scheme::pre_loop_action(){
-  const Init_data initData_loc {d_ptr -> data};
-  const Err_cal errCal_loc {d_ptr -> fix_grid, d_ptr -> u, d_ptr -> w};
-  Io::Paraview paraview_loc {d_ptr -> data, d_ptr -> fix_grid, 
-      d_ptr -> u.fun, d_ptr -> w.fun};
-  Solver solver {d_ptr -> data, d_ptr -> fix_grid, d_ptr -> u, d_ptr -> w};
+  PreLoop_helper helper {*this};
+  helper.first_interpolate();
+  helper.headLine_in_errFile();
+  helper.plot_errors_in_errFile();
+  helper.plot_paraview();
+  helper.prepare_rhs();
   
-  first_interpolate(d_ptr -> identity, initData_loc,
-		    d_ptr -> u, d_ptr -> w, d_ptr -> surface);
-
-  generate_header_line(d_ptr -> estream);
-  write_error_line(d_ptr -> estream, d_ptr -> fix_grid, errCal_loc);
-  
-  paraview_loc.write();
-
-  massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);
+  // const Init_data initData_loc {d_ptr -> data};
+  // const Err_cal errCal_loc {d_ptr -> fix_grid, d_ptr -> u, d_ptr -> w};
+  // Io::Paraview paraview_loc {d_ptr -> data, d_ptr -> fix_grid, 
+  //     d_ptr -> u.fun, d_ptr -> w.fun};
+  // Solver solver {d_ptr -> data, d_ptr -> fix_grid, d_ptr -> u, d_ptr -> w};
+  // first_interpolate(d_ptr -> identity, initData_loc,
+  // 		    d_ptr -> u, d_ptr -> w, d_ptr -> surface);
+  // generate_header_line(d_ptr -> estream);
+  // write_error_line(d_ptr -> estream, d_ptr -> fix_grid, errCal_loc);
+  // paraview_loc.write();
+  // massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);
 }
+void Brusselator_scheme::prePattern_loop(){
+  PrePattern_helper helper {*this};
+  for(long it = 0; it < prePattern_timeSteps(); ++it){
+    helper.finalize_rhs();
+    helper.solve_pde();
+    helper.prepare_rhs();
+    helper.plot_errors_in_errFile();
+    helper.plot_paraview();
+    next_timeStep();
+  }
+  // massMatrixConstOne_rhsLes(d_ptr -> solver_prePattern,
+  // 			    d_ptr -> u, d_ptr -> w);
+  // solve_pde(d_ptr -> solver_prePattern,
+  // 	    d_ptr -> u, d_ptr -> w);
+  // massMatrix_rhsLes(d_ptr -> solver_prePattern,
+  // 		    d_ptr -> u, d_ptr -> w);
+  // write_error_line(d_ptr -> estream, d_ptr -> fix_grid, errCal_loc);
+  // paraview_loc.write();  
+}
+void Brusselator_scheme::intermediate_action(){
+  fef.u.write(io.dgf_handler, "./intermediate_");
+  fef.w.write(io.dgf_handler, "./intermediate_");
+  fef.surface.write(io.dgf_handler, "./");
+  intermediate_surface_rhs();
+}
+void Brusselator_scheme::pattern_loop(){
+  for(long it = 0; it < pattern_timeSteps(); ++it){
+    solve_surfacePDE();
+    Pattern_helper helper {*this};
+    helper.finalize_scalarPDE_rhs();
+    helper.solve_scalarPDE();
+    helper.prepare_all_rhs();
+    helper.plot_errors_in_errFile();
+    helper.plot_paraview();
+    next_timeStep();
+  }
+  Helper_surface hs {d_ptr};
+  hs.solve_for_surface();
+  Helper_uw huw {d_ptr};
+  huw.solve_pde();
+  huw.write_error_line();
+  huw.paraview_plot();
+}
+void Brusselator_scheme::final_action(){
+  fef.u.write(io.dgf_handler, "./final_");
+  fef.w.write(io.dgf_handler, "./final_");
+  fef.surface.write(io.dgf_handler, "./final_"); 
+}
+
+
 void Brusselator_scheme::pre_pattern_action(){  
   // const Grid::Grid_and_time grid_loc 
   // {d_ptr -> data, 
@@ -164,10 +203,6 @@ void Brusselator_scheme::pre_pattern_action(){
   d_ptr -> w = w_loc;
   // Perhaps do something with surface?
 }
-void Brusselator_scheme::intermediate_action(){
-  d_ptr -> u.write(d_ptr -> dgf_handler, "./intermediate_");
-  d_ptr -> surface.write(d_ptr -> dgf_handler, "./"); // comment this out
-}
 void Brusselator_scheme::pattern_action(){
   Helper_surface hs {d_ptr};
   hs.solve_for_surface();
@@ -187,7 +222,17 @@ void Brusselator_scheme::pattern_action(){
   Io::Paraview paraview_loc 
   {d_ptr -> data, grid_loc, u_loc.fun, w_loc.fun};
 }
-void Brusselator_scheme::final_action(){
-  d_ptr -> u.write(d_ptr -> dgf_handler, "./final_");
-  d_ptr -> surface.write(d_ptr -> dgf_handler, "./final_");
-}
+
+// ----------------------------------------------------------------------
+// Implementation of Brusselator_scheme's helper struct's constructors
+
+struct Brusselator_scheme::Fef::Fef(Grid::Grid_and_time& gt)
+  : u {"u", gt},
+  w {"w", gt},
+  surface {"surface", gt}
+{}
+
+struct Brusselator_scheme::Io::Io(const Io::Parameter& p)
+  : dgf_handler {p.grid()},
+  estream {p}
+{}

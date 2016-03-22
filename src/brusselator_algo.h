@@ -121,9 +121,12 @@
 namespace Esfem{
   void brusselator_algo(int argc, char** argv);
   /*!< \brief ESFEM algorithm.  Only this should be invoked by main. */
-
+  
   class Brusselator_scheme{
   public:
+    using Scal_FEfun_set = Grid::FEfun_set<Grid::Scal_FEfun>;
+    using Vec_FEfun_set = Grid::FEfun_set<Grid::Vec_FEfun>;
+    
     explicit Brusselator_scheme(int argc, char** argv,
 				const std::string& parameter_fname);
     /*!< \brief The constructor that also performs the
@@ -133,8 +136,65 @@ namespace Esfem{
       \param parameter_fname Preferable absolute path to parameter file.
       \warning Absolute path differs on different operating systems.
      */
-    ~Brusselator_scheme();
 
+    /*! \name Loop action */
+    //@{
+    void prePattern_loop();
+    /*!< \brief In some sense calculates the inital data for
+                the solution driven problem.
+     */
+    void intermediate_action();
+    /*!< \brief To be used between `Brusselator_scheme::prePattern_loop`
+                and `Brusselator_scheme::pattern_action()`.
+
+      The inital data has been created.  It will be saved
+      and the right hand side for the surface PDE will be created. 
+      \warning Do not use `Brusselator_scheme::next_timeStep` afterwards.
+     */
+    void pattern_loop();
+    /*!< \brief To be used in the second for-loop.
+
+      At this stage the tumor is growing.
+      \warning Do not forget to use `Brusselator_scheme::next_timeStep` afterwards.
+     */
+    void final_action();
+    /*!< \brief To be used after the second for-loop to save some data. */
+    //@}
+  private:    
+    /*! \name Data members */
+    //@{
+    Io::Parameter data; /*!< Contains parameter from `tumor_parameter.txt`. */
+    struct Io{
+      SecOrd_op::Identity identity {};
+      const Esfem::Io::Dgf::Handler dgf_handler;
+      Io::Error_stream u;
+      Io::Error_stream w;
+      Io(const Io::Parameter&);
+    } io;
+    /*!< \brief Member are used for input and output of
+                the nodal values from the finite element functions.
+    */
+    Grid::Grid_and_time fix_grid; /*!< Non evolving grid */
+    struct Fef{
+      Scal_FEfun_set u;
+      Scal_FEfun_set w;
+      Vec_FEfun_set surface;
+      Fef(Grid::Grid_and_time&);
+    } fef;
+    /*!< \brief All finite element functions */
+    //@}
+    
+    /*! \name Helper classes for the for-loops */
+    //@{
+    friend class PrePattern_helper;
+    friend class Pattern_helper;    
+    //@}
+
+    void pre_loop_action();
+    /*!< \warning Should be invoked only by the constructor. */
+    void solve_surfacePDE();
+    /*!< \brief Solves the surface PDE and prints out a dgf file. */
+    
     /*! \name Flow control */
     //@{
     void next_timeStep(); 
@@ -147,120 +207,11 @@ namespace Esfem{
     /*!< \brief Maximum number of time steps for the second for-loop. */
     //@}
 
-    /*! \name Loop action */
-    //@{
-    void pre_pattern_action();
-    /*!< \brief To be used in the first for-loop.  
 
-      At this stage the tumor is not growing, but rather the
-      inital data is created.
-      \warning Do not forget to use `Brusselator_scheme::next_timeStep` afterwards.
-     */
-    void intermediate_action();
-    /*!< \brief To be used between first and second for-loop.
-
-      The inital data has been created.  It will be saved
-      and the right hand side for the surface PDE will be created. 
-      \warning Do not use `Brusselator_scheme::next_timeStep` afterwards.
-     */
-    void pattern_action();
-    /*!< \brief To be used in the second for-loop.
-
-      At this stage the tumor is growing.
-      \warning Do not forget to use `Brusselator_scheme::next_timeStep` afterwards.
-     */
-    void final_action();
-    /*!< \brief To be used after the second for-loop to save some data. */
-    //@}
-  private:
-    template<typename FEfun>
-    struct FEfun_set{
-      FEfun fun; /*!< Numerical solution */
-      FEfun app; /*!< BDF approximation to the numerical solution */
-      FEfun exact; /*!< Reference solution */
-      FEfun rhs_les; /*!< Right-hand side for the solver */
-      FEfun_set(const std::string& name, const Grid::Grid_and_time&);
-      /*!< \brief Standard constructor
-	\param name Member get concated names like name + "_app" etc.
-      */
-      FEfun_set(const FEfun_set&, const Grid::Grid_and_time&);
-      /*!< \brief Pseudo copy constructor
-	
-	`Grid::Grid_and_time` is needed to get the correct finite element space.
-       */
-      FEfun_set& operator>>(const Esfem::Io::Dgf::Handler&);
-      /*! \brief Specialized `FEfun_set::write` */
-      FEfun_set& operator<<(const Esfem::Io::Dgf::Handler&);
-      /*! \brief Specialized `FEfun-set::read` */
-      void write(const Esfem::Io::Dgf::Handler&,
-		 const std::string& dir = "/tmp/");
-      /*! \brief Save nodal values in a dgf file. */
-      void read(const Esfem::Io::Dgf::Handler&,
-		const std::string& dir = "/tmp/");
-      /*! \brief Read nodal values from a dgf file. */
-    };
-    /*!< \brief Minimal amount of finite element functions to perform
-                higher order BDF-ESFEM
-    */
-    using Scal_FEfun_set = FEfun_set<Grid::Scal_FEfun>;
-    using Vec_FEfun_set = FEfun_set<Grid::Vec_FEfun>;
-
-    Io::Parameter data;
-    Grid::Grid_and_time fix_grid;
-    Scal_FEfun_set u;
-    Scal_FEfun_set w;
-    Vec_FEfun_set surface;
-
-    const Esfem::Io::Dgf::Handler dgf_handler;
-    friend class PrePattern_helper;
-    friend class Pattern_helper;
-    void pre_loop_action(); // To be invoked only in the constructor
   };
   /*!< \brief Implementation of the Elliott and Styles
               full discretization of the tumor problem
   */
-
-  // ----------------------------------------------------------------------
-  // Template implementation
-
-  template<typename FEfun>
-  FEfun_set<FEfun>::FEfun_set(const std::string& name,
-			      const Esfem::Grid::Grid_and_time& gt)
-    : fun {name, gt}, app {name + "_app", gt},
-    nexact {name + "_exact", gt}, rhs_les {name + "_rhs_les", gt}
-  {}
-  template<typename FEfun>
-  FEfun_set<FEfun>::FEfun_set(const FEfun_set& other, const Esfem::Grid::Grid_and_time& gt)
-    : fun {other.fun, gt}, app {other.app, gt}, 
-    exact {other.exact, gt}, rhs_les {other.rhs_les, gt}
-  {}
-
-  template<typename FEfun>
-  FEfun_set<FEfun>& FEfun_set<FEfun>::operator>>(const Esfem::Io::Dgf::Handler& h){
-    write(h);
-    return *this;
-  }
-  template<typename FEfun>
-  FEfun_set<FEfun>& FEfun_set<FEfun>::operator<<(const Esfem::Io::Dgf::Handler& h){
-    read(h);
-    return *this;
-  }
-  template<typename FEfun>
-  void FEfun_set<FEfun>::write(const Esfem::Io::Dgf::Handler& h,
-			       const std::string& dir){
-    h.write(compose_dgfName(fun.name(), dir), fun);
-    h.write(compose_dgfName(app.name(), dir), app);
-    h.write(compose_dgfName(exact.name(), dir), exact);
-    h.write(compose_dgfName(rhs_les.name(), dir), rhs_les);
-  }
-  template<typename FEfun>
-  void FEfun_set<FEfun>::read(const Esfem::Io::Dgf::Handler& h, const std::string& dir){
-    h.read(compose_dgfName(fun.name(), dir), fun);
-    h.read(compose_dgfName(app.name(), dir), app);
-    h.read(compose_dgfName(exact.name(), dir), exact);
-    h.read(compose_dgfName(rhs_les.name(), dir), rhs_les);
-  }
-
 }
 
 #endif // BRUSSELATOR_ALGO_H
