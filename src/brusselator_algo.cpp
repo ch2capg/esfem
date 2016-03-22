@@ -17,6 +17,7 @@
 #include <config.h>
 #include "brusselator_algo.h"
 #include "brusselator_algo_impl.h"
+#include "secOrd_op_solutionDriven.h"
 
 using namespace Esfem;
 using Esfem::Brusselator_scheme;
@@ -46,7 +47,14 @@ void Esfem::brusselator_algo(int argc, char** argv){
 
 // ----------------------------------------------------------------------
 // Implementation of Brusselator_scheme::Data
- 
+
+struct Brusselator_scheme::Numerical_solution{
+  Err_stream estream;
+  FEfun_set<Grid::Scal_FEfun> u;
+  FEfun_set<Grid::Scal_FEfun> w;
+  FEfun_set<Grid::Vec_FEfun> surface;
+};
+
 struct Brusselator_scheme::Data{
   Identity identity {};
   Esfem::Io::Parameter data;

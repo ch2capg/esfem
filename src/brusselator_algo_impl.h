@@ -23,23 +23,9 @@
 
 #include <string>
 #include "esfem.h"
+#include "brusselator_algo.h"
 
 namespace Esfem{
-  template<typename FEfun>
-  struct FEfun_set{
-    FEfun fun;
-    FEfun app;
-    FEfun exact;
-    FEfun rhs_les;
-    explicit FEfun_set(const std::string& name, const Esfem::Grid::Grid_and_time&);
-    explicit FEfun_set(const FEfun_set&, const Esfem::Grid::Grid_and_time&);
-    FEfun_set& operator>>(const Esfem::Io::Dgf::Handler&);
-    FEfun_set& operator<<(const Esfem::Io::Dgf::Handler&);
-    void write(const Esfem::Io::Dgf::Handler&,
-	       const std::string& dir = "/tmp/");
-    void read(const Esfem::Io::Dgf::Handler&,
-	      const std::string& dir = "/tmp/");  
-  };
   struct Rhs{
     Esfem::SecOrd_op::Rhs_u u;
     Esfem::SecOrd_op::Rhs_w w;
@@ -74,6 +60,65 @@ namespace Esfem{
     explicit Err_stream(const Esfem::Io::Parameter&);
   };
 
+  class PrePattern_helper{
+  };
+  class Pattern_helper{
+  };
+  class Helper_surface{
+  public:
+    Helper_surface(const Scal_FEfun_set& u_input, Vec_FEfun_set& surface,
+		   const Io::Parameter&, const Grid::Grid_and_time&);
+    Helper_surface(const Helper_surface&) = delete;
+    Helper_surface& operator=(const Helper_surface&) = delete;
+
+    void solve_for_surface();
+  private:
+    /*! \name Reference to container */
+    //@{
+    const Scal_FEfun_set& u;
+    Vec_FEfun_set& surface;
+    //@}
+    /*! \name Local loop variable */
+    //@{
+    const Grid::Grid_and_time gt;
+    Vec_FEfun_set surface_loc;
+    SecOrd_op::Solution_driven solver;
+    //@}
+  };
+  /*!< \brief `Esfem::Brusselator_scheme::pattern_action`
+               pattern action implementation details
+  */
+  class Helper_uw{
+  public:
+    Helper_uw(Scal_FEfun_set& u_input, Scal_FEfun_set& w_input,
+	      Vec_FEfun_set& surface, const Io::Parameter&,
+	      const Grid::Grid_and_time&);
+    Helper_uw(const Helper_uw&) = delete;
+    Helper_uw& operator=(const Helper_uw&) = delete;
+
+    void solve_pde();
+    void write_error_line();
+    void paraview_plot();
+  private:
+    /*! \name Reference to container */
+    //@{
+    Scal_FEfun_set& u; 
+    Scal_FEfun_set& w;
+    //@}
+    /*! \name Local loop variable */
+    //@{
+    const Grid::Grid_and_time gt; 
+    Scal_FEfun_set u_loc;
+    Scal_FEfun_set w_loc;
+    const Err_cal errCal;
+    Solver solver;
+    Io::Paraview paraview;
+    //@}
+  };
+  /*!< \brief `Esfem::Brusselator_scheme::pattern_action`
+               pattern action implementation details
+  */
+  
   // ----------------------------------------------------------------------
   // helper functions
 
@@ -111,47 +156,6 @@ namespace Esfem{
   std::string compose_dgfName(const std::string& fun_name, const std::string& dir = "./");
   void clog_uw(const FEfun_set<Esfem::Grid::Scal_FEfun>& u, 
 	       const FEfun_set<Esfem::Grid::Scal_FEfun>& w);
-
-  // ----------------------------------------------------------------------
-  // Template implementation
-
-  template<typename FEfun>
-  FEfun_set<FEfun>::FEfun_set(const std::string& name,
-			      const Esfem::Grid::Grid_and_time& gt)
-    : fun {name, gt}, app {name + "_app", gt},
-			 exact {name + "_exact", gt}, rhs_les {name + "_rhs_les", gt}
-{}
-  template<typename FEfun>
-  FEfun_set<FEfun>::FEfun_set(const FEfun_set& other, const Esfem::Grid::Grid_and_time& gt)
-    : fun {other.fun, gt}, app {other.app, gt}, 
-			 exact {other.exact, gt}, rhs_les {other.rhs_les, gt}
-{}
-
-  template<typename FEfun>
-  FEfun_set<FEfun>& FEfun_set<FEfun>::operator>>(const Esfem::Io::Dgf::Handler& h){
-    write(h);
-    return *this;
-  }
-  template<typename FEfun>
-  FEfun_set<FEfun>& FEfun_set<FEfun>::operator<<(const Esfem::Io::Dgf::Handler& h){
-    read(h);
-    return *this;
-  }
-  template<typename FEfun>
-  void FEfun_set<FEfun>::write(const Esfem::Io::Dgf::Handler& h, const std::string& dir){
-    h.write(compose_dgfName(fun.name(), dir), fun);
-    h.write(compose_dgfName(app.name(), dir), app);
-    h.write(compose_dgfName(exact.name(), dir), exact);
-    h.write(compose_dgfName(rhs_les.name(), dir), rhs_les);
-  }
-  template<typename FEfun>
-  void FEfun_set<FEfun>::read(const Esfem::Io::Dgf::Handler& h, const std::string& dir){
-    h.read(compose_dgfName(fun.name(), dir), fun);
-    h.read(compose_dgfName(app.name(), dir), app);
-    h.read(compose_dgfName(exact.name(), dir), exact);
-    h.read(compose_dgfName(rhs_les.name(), dir), rhs_les);
-  }
-
 } // namespace Esfem
 
 #endif // BRUSSELATOR_ALGO_IMPL_H

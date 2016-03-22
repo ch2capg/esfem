@@ -16,10 +16,15 @@
 
 #include "brusselator_algo_impl.h"
 
-using namespace Esfem;
-using Scal_FEfun_set = FEfun_set<Esfem::Grid::Scal_FEfun>;
-using Vec_FEfun_set = FEfun_set<Esfem::Grid::Vec_FEfun>;
-using Identity = SecOrd_op::Identity;
+using Esfem::Rhs;
+using Esfem::Init_data;
+using Esfem::Solver;
+using Esfem::Err_cal;
+using Esfem::Err_stream;
+using Esfem::Helper_surface;
+using Esfem::SecOrd_op::Identity;
+using Scal_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Scal_FEfun>;
+using Vec_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Vec_FEfun>;
 
 // ----------------------------------------------------------------------
 // Implementation of structs 
@@ -53,6 +58,43 @@ Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
 Err_stream::Err_stream(const Esfem::Io::Parameter& p)
   : u {"_u", p}, w {"_w", p}
 {}
+
+// ----------------------------------------------------------------------
+// Implementation Helper_surface
+
+Helper_surface::
+Helper_surface(const Scal_FEfun_set& u_input, Vec_FEfun_set& surface_input,
+	       const Io::Parameter& p, const Grid::Grid_and_time& g)
+  : u {u_input},
+  surface {surface_input},
+  gt {p, compose_dgfName(surface_input.fun.name()), g.time_provider().time()},
+  surface_loc {"surface_loc", g},
+  solver {p, gt, u}
+{}
+void Helper_surface::solve_for_surface(){
+}
+
+// ----------------------------------------------------------------------
+// Implementation Helper_uw
+
+Helper_uw::Helper_uw(Scal_FEfun_set& u_input, Scal_FEfun_set& w_input,
+		     Vec_FEfun_set& surface, const Io::Parameter& p,
+		     const Grid::Grid_and_time& g)
+  : u {u_input},
+  w {w_input},
+  gt {p, compose_dgfName(surface.fun.name()), g.time_provider().time()},
+  u_loc {"u_loc", g},
+  w_loc {"w_loc", g},
+  errCal {p, u_loc, w_loc},
+  solver {p, gt, u_loc, w_loc},
+  paraview {p, g, u_loc.fun, w_loc.fun}
+{}
+void Helper_uw::solve_pde(){
+}
+void Helper_uw::write_error_line(){
+}
+void Helper_uw::paraview_plot(){
+}
 
 // ----------------------------------------------------------------------
 // helper functions
@@ -135,4 +177,3 @@ void Esfem::clog_uw(const Scal_FEfun_set& u, const Scal_FEfun_set& w){
 	    << *w_fun.dbegin() << '\t'
 	    << *w_rhsLes.dbegin() << std::endl;  
 }
-

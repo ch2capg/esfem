@@ -89,7 +89,7 @@ Data(const Io::Parameter& p, const std::string& dgf_file,
 
 
 Esfem::Grid::Grid_and_time::Grid_and_time(const Io::Parameter& p)
-try  : d_ptr {std::make_unique<Data>(p)}
+try : d_ptr {std::make_unique<Data>(p)}
 {}
 catch(const std::exception&){
   throw_with_nested
@@ -101,7 +101,7 @@ catch(const std::exception&){
 
 Esfem::Grid::Grid_and_time::
 Grid_and_time(const Io::Parameter& p, const std::string& dgf_file, const double t0)
-try  : d_ptr {std::make_unique<Data>(p, dgf_file, t0)}
+try : d_ptr {std::make_unique<Data>(p, dgf_file, t0)}
 {}
 catch(const std::exception&){
   throw_with_nested
