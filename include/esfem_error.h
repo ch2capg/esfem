@@ -31,20 +31,28 @@
 namespace Esfem{
   struct Parameter_error;
   struct SolutionDriven_error;
-
+  struct BrusselatorScheme_error;
+  
   struct Parameter_error : std::runtime_error{
     explicit Parameter_error(const std::string& msg) 
-      : std::runtime_error {"Error in Esfem::Io::Parameter.\n" + msg}
+      : std::runtime_error {"Esfem::Io::Parameter.\n" + msg}
     {}
   };
   /*!< \brief Used in io_parameter{,_impl}.{h,cpp} */
   struct SolutionDriven_error : std::runtime_error{
     explicit SolutionDriven_error(const std::string& msg)
       : std::runtime_error
-    {"Error in Esfem::SecOrd_op::Solution_driven.\n" + msg}
+    {"Esfem::SecOrd_op::Solution_driven.\n" + msg}
     {}
   };
   /*!< \brief Used in secOrd_op_solutionDriven{,_impl}.{h,cpp} */
+  struct BrusselatorScheme_error : std::runtime_error{
+    explicit BrusselatorScheme_error(const std::string& msg)
+      : std::runtime_error
+    {"Esfem::Brusselator_scheme.\n" + msg}
+    {}
+  };
+  /*!< \brief Used in brusselator_algo{,_impl}.{h,cpp} */
 }
 
 // ----------------------------------------------------------------------
@@ -55,6 +63,9 @@ inline void Assert::dynamic<false, Esfem::Parameter_error>
 (const bool, const std::string&){};
 template<>
 inline void Assert::dynamic<false, Esfem::SolutionDriven_error>
+(const bool, const std::string&){};
+template<>
+inline void Assert::dynamic<false, Esfem::BrusselatorScheme_error>
 (const bool, const std::string&){};
 
 #endif // ESFEM_ERROR_H

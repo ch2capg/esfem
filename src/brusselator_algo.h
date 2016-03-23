@@ -1,6 +1,6 @@
 /*! \file brusselator_algo.h
     \author Christian Power
-    \date 17. March 2016
+    \date 23. March 2016
 
     \brief Numerical experiment for the solution driven paper
 
@@ -108,7 +108,7 @@
 	  = (M \nodalValue{w})^n + \tau \gamma b M^{n+1} \nodalValue{1}.
 	\f}
 
-         Created by Christian Power on 17.03.2016
+         Created by Christian Power on 23.03.2016
          Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -125,10 +125,12 @@ namespace Esfem{
   class Brusselator_scheme{
   public:
     using Scal_FEfun_set = Grid::FEfun_set<Grid::Scal_FEfun>;
+    /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R \f$ */
     using Vec_FEfun_set = Grid::FEfun_set<Grid::Vec_FEfun>;
+    /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R^3 \f$ */
     
-    explicit Brusselator_scheme(int argc, char** argv,
-				const std::string& parameter_fname);
+    Brusselator_scheme(int argc, char** argv,
+		       const std::string& parameter_fname);
     /*!< \brief The constructor that also performs the
                 first part before the loop enters
       \param argc `argc` from `main`
@@ -144,18 +146,18 @@ namespace Esfem{
                 the solution driven problem.
      */
     void intermediate_action();
-    /*!< \brief To be used between `Brusselator_scheme::prePattern_loop`
-                and `Brusselator_scheme::pattern_action()`.
+    /*!< \brief To be used between prePattern_loop()
+                and pattern_loop().
 
       The inital data has been created.  It will be saved
       and the right hand side for the surface PDE will be created. 
-      \warning Do not use `Brusselator_scheme::next_timeStep` afterwards.
+      \warning Do not use next_timeStep() afterwards.
      */
     void pattern_loop();
     /*!< \brief To be used in the second for-loop.
 
       At this stage the tumor is growing.
-      \warning Do not forget to use `Brusselator_scheme::next_timeStep` afterwards.
+      \warning Do not forget to use next_timeStep() afterwards.
      */
     void final_action();
     /*!< \brief To be used after the second for-loop to save some data. */
@@ -163,7 +165,8 @@ namespace Esfem{
   private:    
     /*! \name Data members */
     //@{
-    Io::Parameter data; /*!< Contains parameter from `tumor_parameter.txt`. */
+    Io::Parameter data;
+    /*!< \brief Contains parameter from `tumor_parameter.txt`. */
     struct Io{
       SecOrd_op::Identity identity {};
       const Esfem::Io::Dgf::Handler dgf_handler;
@@ -171,18 +174,30 @@ namespace Esfem{
       Io::Error_stream w;
       Io(const Io::Parameter&);
     } io;
-    /*!< \brief Member are used for input and output of
-                the nodal values from the finite element functions.
+    /*!< \brief Members are used for input and output of
+                the nodal values of the finite element functions
+		in #fef.
     */
-    Grid::Grid_and_time fix_grid; /*!< Non evolving grid */
+    /*! \struct Io
+     \brief Shortens Brusselator_scheme().
+     \sa `io`
+    */
+    Grid::Grid_and_time fix_grid; /*!< \brief Non evolving grid */
     struct Fef{
       Scal_FEfun_set u;
       Scal_FEfun_set w;
       Vec_FEfun_set surface;
       Fef(Grid::Grid_and_time&);
     } fef;
-    /*!< \brief All finite element functions */
+    /*!< \brief Collects all finite element functions */
+    /*! \struct Fef
+     \brief Shortens Brusselator_scheme().
+     \sa `fef`
+    */
     //@}
+
+    // ------------------------------------------------------------
+    // Helper member functions
     
     /*! \name Helper classes for the for-loops */
     //@{
@@ -191,27 +206,32 @@ namespace Esfem{
     //@}
 
     void pre_loop_action();
-    /*!< \warning Should be invoked only by the constructor. */
+    /*!< \warning Should only be invoked by Brusselator_scheme(). */
+    void intermediate_surface_rhs();
+    /*!< \warning Should only be invoked by Brusselator_scheme(). */
     void solve_surfacePDE();
     /*!< \brief Solves the surface PDE and prints out a dgf file. */
     
     /*! \name Flow control */
     //@{
     void next_timeStep(); 
-    /*!< \brief Increments the next time step for `time_provider`.
-                Use this in every for-loop.
-     */
+    /*!< \brief Increments the next time step in #fix_grid. */
     long prePattern_timeSteps() const; 
-    /*!< \brief Maximum number of time steps for the first for-loop. */
+    /*!< \brief Maximum number of time steps for prePattern_loop(). */
     long pattern_timeSteps() const; 
-    /*!< \brief Maximum number of time steps for the second for-loop. */
+    /*!< \brief Maximum number of time steps for pattern_loop(). */
     //@}
-
-
   };
   /*!< \brief Implementation of the Elliott and Styles
               full discretization of the tumor problem
   */
+
+  // ----------------------------------------------------------------------
+  // Inline implementation
+
+  inline void Brusselator_scheme::next_timeStep(){
+    fix_grid.next_timeStep(data.global_timeStep());
+  }
 }
 
 #endif // BRUSSELATOR_ALGO_H
