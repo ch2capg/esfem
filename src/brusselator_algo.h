@@ -202,7 +202,13 @@ namespace Esfem{
     /*! \name Helper classes for the for-loops */
     //@{
     friend class PrePattern_helper;
-    friend class Pattern_helper;    
+    /*!< \warning Should be only invoked by
+                  `Brusselator_scheme::prePattern_loop`.
+    */
+    friend class Pattern_helper;
+    /*!< \warning Should be only invoked by
+                  `Brusselator_scheme::pattern_loop`.
+     */
     //@}
 
     void pre_loop_action();
