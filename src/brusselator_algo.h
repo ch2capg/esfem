@@ -187,11 +187,21 @@ namespace Esfem{
     /*! \name Helper classes for the for-loops */
     //@{
     friend class PrePattern_helper;
-    friend class Pattern_helper;    
+    /*!< \warning Should be only invoked by
+                  `Brusselator_scheme::prePattern_loop`.
+    */
+    friend class Pattern_helper;
+    /*!< \warning Should be only invoked by
+                  `Brusselator_scheme::pattern_loop`.
+     */
     //@}
 
     void pre_loop_action();
-    /*!< \warning Should be invoked only by the constructor. */
+    /*!< \warning Should be only invoked by the constructor. */
+    void intermediate_surface_rhs();
+    /*!< \warning Should be only invoked by
+                  `Brusselator_scheme::intermediate_action`.
+     */
     void solve_surfacePDE();
     /*!< \brief Solves the surface PDE and prints out a dgf file. */
     
