@@ -31,11 +31,11 @@ using Bruss_error = Esfem::BrusselatorScheme_error;
 /*!< \brief Shorter name for convenience */
 using Esfem::Brusselator_scheme;
 /*!< \brief We essentially implement this class in this source file. */
-using Scal_FEfun_set = Grid::Scal_FEfun_set;
+using Scal_FEfun_set = Esfem::Grid::Scal_FEfun_set;
 /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R \f$ */
-using Vec_FEfun_set = Grid::Vec_FEfun_set;
+using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
 /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R^3 \f$ */
-using Vector_solver = SecOrd_op::Solution_driven;
+using Vector_solver = Esfem::SecOrd_op::Solution_driven;
 /*!< \brief Solver for the #X variable */
 
 void Esfem::brusselator_algo(int argc, char** argv){
@@ -48,37 +48,6 @@ void Esfem::brusselator_algo(int argc, char** argv){
   fem.pattern_loop();
   fem.final_action();
 }
-
-// // ----------------------------------------------------------------------
-// // Implementation of Brusselator_scheme::Data
-// 
-// struct Brusselator_scheme::Data{
-//   Identity identity {};
-//   Esfem::Io::Parameter data;
-//   const Esfem::Io::Dgf::Handler dgf_handler;
-//   Err_stream estream;
-//   Esfem::Grid::Grid_and_time fix_grid;
-//   Scal_FEfun_set u;
-//   Scal_FEfun_set w;
-//   Vec_FEfun_set surface;
-//   Solver solver_prePattern;
-//   Io::Paraview paraview_prePattern;
-//   Err_cal errCal_prePattern;
-//   Data(int argc, char** argv, const std::string& parameter_fname);
-// };
-// 
-// Brusselator_scheme::Data::Data(int argc, char** argv, const std::string& parameter_fname)
-//   : data {argc, argv, parameter_fname},
-//   dgf_handler {data.grid()},
-//   estream {data},
-//   fix_grid {data},
-//   u {"u", fix_grid},
-//   w {"w", fix_grid},
-//   surface {"surface", fix_grid},
-//   solver_prePattern {data, fix_grid, u, w},
-//   paraview_prePattern {data, fix_grid, u.fun, w.fun},
-//   errCal_prePattern {fix_grid, u, w}
-// {}
 
 // ----------------------------------------------------------------------
 // Brusselator_scheme implementation
@@ -108,14 +77,15 @@ catch(const std::exception&){
 // Brusselator_scheme loop action
 
 void Brusselator_scheme::prePattern_loop(){
+  std::cerr << "prePattern_timeSteps(): " << prePattern_timeSteps() << std::endl;
+    
   PrePattern_helper helper {*this};
-  for(long it = 0; it < prePattern_timeSteps(); ++it){
+  for(long it = 0; it < prePattern_timeSteps(); ++it, next_timeStep()){
     helper.finalize_rhs();
     helper.solve_pde();
     helper.prepare_rhs();
     helper.plot_errors_in_errFile();
     helper.plot_paraview();
-    next_timeStep();
   }
   // massMatrixConstOne_rhsLes(d_ptr -> solver_prePattern,
   // 			    d_ptr -> u, d_ptr -> w);
@@ -127,22 +97,25 @@ void Brusselator_scheme::prePattern_loop(){
   // paraview_loc.write();  
 }
 void Brusselator_scheme::intermediate_action(){
-  fef.u.write(io.dgf_handler, "./intermediate_");
-  fef.w.write(io.dgf_handler, "./intermediate_");
-  fef.surface.write(io.dgf_handler, "./");
-  // intermediate_surface_rhs();
+  // fef.u.write(io.dgf_handler, "./intermediate_");
+  // fef.w.write(io.dgf_handler, "./intermediate_");
+  // fef.surface.write(io.dgf_handler, "./");
+
+  fef.u.read(io.dgf_handler, "./output/brusselator/test01/u.dgf");
+  fef.w.read(io.dgf_handler, "./output/brusselator/test01/w.dgf");
 }
 void Brusselator_scheme::pattern_loop(){
-  for(long it = 0; it < pattern_timeSteps(); ++it){
+  std::cerr << "pattern_timeSteps(): " << pattern_timeSteps() << std::endl;
+  
+  for(long it = 0; it < pattern_timeSteps(); ++it, next_timeStep()){
     // solve_surfacePDE();
     rhs_and_solve_SPDE();
     Pattern_helper helper {*this};
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
-    helper.prepare_all_rhs();
+    // helper.prepare_all_rhs();
     helper.plot_errors_in_errFile();
     helper.plot_paraview();
-    next_timeStep();
   }
   // Helper_surface hs {d_ptr};
   // hs.solve_for_surface();
@@ -204,34 +177,34 @@ void Brusselator_scheme::rhs_and_solve_SPDE(){
   // fef.surface.fun = X.fun;
   // fef.surface.write(io.dgf_handler, "./");   
 }
-// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// delete this
-void Brusselator_scheme::intermediate_surface_rhs(){
-  // const Grid::Grid_and_time grid_loc 
-  //{data, compose_dgfName(fef.surface.fun.name()), 
-  //    fix_grid.time_provider().time()};
-  // Scal_FEfun_set u_loc {fef.u, grid_loc};
-  // Vec_FEfun_set surface_loc {fef.surface, grid_loc};
-  const auto& u = fef.u;
-  const auto& w = fef.w;
-  Scalar_solver solver {data, fix_grid, u, w};
-  solver.u.mass_matrix(u.rhs_les);
-  solver.w.mass_matrix(w.rhs_les);
-}
-//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-// delete this
-void Brusselator_scheme::solve_surfacePDE(){
-  const Grid::Grid_and_time grid
-  {data, compose_dgfName(fef.surface.fun.name()), 
-     fix_grid.time_provider().time()};
-  const Scal_FEfun_set u {fef.u, grid};
-  Vec_FEfun_set X {fef.surface, grid};
-  SecOrd_op::Solution_driven solver {data, grid, u};
-  solver.rhs(X.fun, X.rhs);
-  solver.solve(X.rhs, X.fun);
-  fef.surface.fun = X.fun;
-  fef.surface.write(io.dgf_handler, "./"); 
-}
+// // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// // delete this
+// void Brusselator_scheme::intermediate_surface_rhs(){
+//   // const Grid::Grid_and_time grid_loc 
+//   //{data, compose_dgfName(fef.surface.fun.name()), 
+//   //    fix_grid.time_provider().time()};
+//   // Scal_FEfun_set u_loc {fef.u, grid_loc};
+//   // Vec_FEfun_set surface_loc {fef.surface, grid_loc};
+//   const auto& u = fef.u;
+//   const auto& w = fef.w;
+//   Scalar_solver solver {data, fix_grid, u, w};
+//   solver.u.mass_matrix(u.rhs_les);
+//   solver.w.mass_matrix(w.rhs_les);
+// }
+// //!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// // delete this
+// void Brusselator_scheme::solve_surfacePDE(){
+//   const Grid::Grid_and_time grid
+//   {data, compose_dgfName(fef.surface.fun.name()), 
+//      fix_grid.time_provider().time()};
+//   const Scal_FEfun_set u {fef.u, grid};
+//   Vec_FEfun_set X {fef.surface, grid};
+//   SecOrd_op::Solution_driven solver {data, grid, u};
+//   solver.rhs(X.fun, X.rhs);
+//   solver.solve(X.rhs, X.fun);
+//   fef.surface.fun = X.fun;
+//   fef.surface.write(io.dgf_handler, "./"); 
+// }
 // void Brusselator_scheme::pre_pattern_action(){  
 //   // const Grid::Grid_and_time grid_loc 
 //   // {d_ptr -> data, 
@@ -267,25 +240,25 @@ void Brusselator_scheme::solve_surfacePDE(){
 
 // !!!!!!!!!!!!!!!!!!!!
 // TODO: delete this
-void Brusselator_scheme::pattern_action(){
-  Helper_surface hs {d_ptr};
-  hs.solve_for_surface();
-  Helper_uw huw {d_ptr};
-  huw.solve_pde();
-  huw.write_error_line();
-  huw.paraview_plot();
-  
-  const Grid::Grid_and_time grid_loc 
-  {d_ptr -> data, 
-      compose_dgfName(d_ptr -> surface.fun.name()), 
-      d_ptr -> fix_grid.time_provider().time()};
-  Scal_FEfun_set u_loc {d_ptr -> u, grid_loc};
-  Scal_FEfun_set w_loc {d_ptr -> w, grid_loc};
-  const Err_cal errCal_loc {grid_loc, u_loc, w_loc};
-  Solver solver_loc {d_ptr -> data, grid_loc, u_loc, w_loc};
-  Io::Paraview paraview_loc 
-  {d_ptr -> data, grid_loc, u_loc.fun, w_loc.fun};
-}
+// void Brusselator_scheme::pattern_action(){
+//   Helper_surface hs {d_ptr};
+//   hs.solve_for_surface();
+//   Helper_uw huw {d_ptr};
+//   huw.solve_pde();
+//   huw.write_error_line();
+//   huw.paraview_plot();
+//   
+//   const Grid::Grid_and_time grid_loc 
+//   {d_ptr -> data, 
+//       compose_dgfName(d_ptr -> surface.fun.name()), 
+//       d_ptr -> fix_grid.time_provider().time()};
+//   Scal_FEfun_set u_loc {d_ptr -> u, grid_loc};
+//   Scal_FEfun_set w_loc {d_ptr -> w, grid_loc};
+//   const Err_cal errCal_loc {grid_loc, u_loc, w_loc};
+//   Solver solver_loc {d_ptr -> data, grid_loc, u_loc, w_loc};
+//   Io::Paraview paraview_loc 
+//   {d_ptr -> data, grid_loc, u_loc.fun, w_loc.fun};
+// }
 
 // --------------------------------------------------
 // Flow control
@@ -301,13 +274,13 @@ long Brusselator_scheme::pattern_timeSteps() const{
 // Implementation of structs
 // Brusselator_scheme::Fef and Brusselator_scheme::Io
 
-struct Brusselator_scheme::Fef::Fef(Grid::Grid_and_time& gt)
+Brusselator_scheme::Fef::Fef(const Esfem::Grid::Grid_and_time& gt)
   : u {"u", gt},
   w {"w", gt},
   surface {"surface", gt}
 {}
 
-struct Brusselator_scheme::Io::Io(const Io::Parameter& p)
+Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
   : dgf_handler {p.grid()},
   u {p},
   w {p}

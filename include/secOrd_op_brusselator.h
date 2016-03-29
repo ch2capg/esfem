@@ -29,7 +29,7 @@ namespace Esfem{
     class Brusselator{
     public:
       Brusselator(const Io::Parameter&, const Grid::Grid_and_time&,
-		  const Growth);n
+		  const Growth);
       /*!< \brief This constructor creats two internal FE functions. */
       Brusselator(const Io::Parameter&, const Grid::Grid_and_time&,
 		  const Growth, const Grid::Scal_FEfun&,

@@ -27,6 +27,7 @@
 #include "secOrd_op_rhs_w.h"
 #include "secOrd_op_linearHeat.h"
 #include "secOrd_op_brusselator.h"
+#include "secOrd_op_solutionDriven.h"
 
 #endif // SECORD_OP_H
 

@@ -66,7 +66,7 @@ namespace Esfem{
     /*!< \brief Calculates the error norm for w. */
     Err_cal(const Grid::Grid_and_time&,
 	    const Grid::Scal_FEfun_set& u_set,
-	    const Grid::Vec_FEfun_set& w_set);
+	    const Grid::Scal_FEfun_set& w_set);
   };
   /*!< \brief Class that calculates errors in the \f$L^2\f$-
     and \f$H^1\f$-norm.
@@ -86,13 +86,11 @@ namespace Esfem{
     */
   private:
     Brusselator_scheme& bs; /*!< \brief Contains numerical solution. */
-    Io& io; /*!< \brief Reference to #bs.io */
-    Fef& fef; /*!< \brief Reference to #bs.fef */
     const Init_data init_data;
     Err_cal err_cal; /*!< \brief Contains two output files. */
     Io::Paraview paraview;
-    /*!< \brief Has reference to member #fun from #bs.fef.u and
-                #bs.fef.w
+    /*!< \brief Has reference to #bs.fef.u.fun and
+                #bs.fef.w.fun
      */
     Scalar_solver solver; /*!< \brief Brusselator solver */
   };
@@ -156,9 +154,7 @@ namespace Esfem{
 		#Brusselator_scheme::fef.w.
      */
   private:
-    Brusselator_scheme& bs; /*!< \brief Contains numerical solution. */
-    Io& io; /*!< \brief Reference to #bs.io */
-    Fef& fef; /*!< \brief Reference to #bs.fef */
+    Brusselator_scheme& bs; /*!< \copydoc #PreLoop_helper::bs. */
     Err_cal err_cal; /*!< \brief Contains two output files. */
     Io::Paraview paraview;
     /*!< \brief Has reference to member #fun from #bs.fef.u and
@@ -175,17 +171,18 @@ namespace Esfem{
     void scalar_massMatrix();
     void solve_surface_and_save();
   private:
-    using Vector_solver = SecOrd_op::Solution_driven;
+    using Vector_solver = Esfem::SecOrd_op::Solution_driven;
     /*!< \brief Solver for #X */
-    Brusselator_scheme::Fef& fef;
-    /*!< \brief Finite element functions from `Brusselator_scheme` */
+    
+    Brusselator_scheme& bs; /*!< \copydoc #PreLoop_helper::bs */
+    Brusselator_scheme::Fef& fef; /*!< \brief Reference to #bs.fef */
     const Grid::Grid_and_time grid;
     /*!< \brief Temporally grid, hence `const` */
-    Scal_tiny_FEfun_set u;
-    /*!< \brief #bs_fef.u.fun and #bs_fef.u.rhs_les on #grid. */
-    Scal_tiny_FEfun_set w;
-    /*!< \brief #bs_fef.w.fun and #bs_fef.w.rhs_les on #grid. */
-    Vec_tiny_FEfun_set X;
+    Grid::Scal_tiny_FEfun_set u;
+    /*!< \brief #fef.u.fun and #fef.u.rhs_les on #grid. */
+    Grid::Scal_tiny_FEfun_set w;
+    /*!< \brief #fef.w.fun and #fef.w.rhs_les on #grid. */
+    Grid::Vec_tiny_FEfun_set X;
     /*!< \brief #bs_fef.surface.fun and #bs_fef.surface.rhs_les on #grid. */
     Scalar_solver ss;
     /*!< \brief Mass matrix for #u and #w */
@@ -198,67 +195,83 @@ namespace Esfem{
   class Pattern_helper{
   public:
     Pattern_helper(Brusselator_scheme&);
-    /*!< \brief Modifies private data members of `Brusselator_scheme` */
+    /*!< \copydoc PrePattern_helper() */
+    void finalize_scalarPDE_rhs();
+    /*!< \copydoc PrePattern_helper::finalize_rhs() */
+    void solve_scalarPDE();
+    /*!< \copydoc PrePattern_helper::solve_pde() */
+    void plot_errors_in_errFile();
+    /*!< \copydoc PrePattern_helper::plot_errors_in_errFile() */
+    void plot_paraview();
+    /*!< \copydoc PrePattern_helper::plot_paraview() */
   private:
-    Grid::Grid_and_time fix_grid;    
+    Brusselator_scheme& bs; /*!< \copydoc #PreLoop_helper::bs */
+    const Grid::Grid_and_time grid;
+    /*!< \copydoc #RhsAndSolve_helper::grid brief */    
+    Grid::Scal_FEfun_set u; /*!< \brief #fef.u on #grid */
+    Grid::Scal_FEfun_set w; /*!< \brief #fef.w on #grid */
+    Err_cal err_cal; /*!< \copydoc #PrePattern_helper::err_cal */
+    Io::Paraview paraview;
+    /*!< \brief Has reference to member #u.fun and #w.fun. */
+    Scalar_solver solver; /*!< \brief Solver for #u and #w */
   };
   /*!< \brief Implementation details for 
     Brusselator_scheme::pattern_loop().
   */
-  class Helper_surface{
-  public:
-    Helper_surface(const Scal_FEfun_set& u_input, Vec_FEfun_set& surface,
-		   const Io::Parameter&, const Grid::Grid_and_time&);
-    Helper_surface(const Helper_surface&) = delete;
-    Helper_surface& operator=(const Helper_surface&) = delete;
-
-    void solve_for_surface();
-  private:
-    /*! \name Reference to container */
-    //@{
-    const Scal_FEfun_set& u;
-    Vec_FEfun_set& surface;
-    //@}
-    /*! \name Local loop variable */
-    //@{
-    const Grid::Grid_and_time gt;
-    Vec_FEfun_set surface_loc;
-    SecOrd_op::Solution_driven solver;
-    //@}
-  };
-  /*!< \brief `Esfem::Brusselator_scheme::pattern_action`
-               pattern action implementation details
-  */
-  class Helper_uw{
-  public:
-    Helper_uw(Scal_FEfun_set& u_input, Scal_FEfun_set& w_input,
-	      Vec_FEfun_set& surface, const Io::Parameter&,
-	      const Grid::Grid_and_time&);
-    Helper_uw(const Helper_uw&) = delete;
-    Helper_uw& operator=(const Helper_uw&) = delete;
-
-    void solve_pde();
-    void write_error_line();
-    void paraview_plot();
-  private:
-    /*! \name Reference to container */
-    //@{
-    Scal_FEfun_set& u; 
-    Scal_FEfun_set& w;
-    //@}
-    /*! \name Local loop variable */
-    //@{
-    const Grid::Grid_and_time gt; 
-    Scal_FEfun_set u_loc;
-    Scal_FEfun_set w_loc;
-    const Err_cal errCal;
-    Solver solver;
-    Io::Paraview paraview;
-    //@}
-  };
-  /*!< \brief `Esfem::Brusselator_scheme::pattern_action`
-               pattern action implementation details
-  */
+  // class Helper_surface{
+  // public:
+  //   Helper_surface(const Grid::Scal_FEfun_set& u_input, Grid::Vec_FEfun_set& surface,
+  // 		   const Io::Parameter&, const Grid::Grid_and_time&);
+  //   Helper_surface(const Helper_surface&) = delete;
+  //   Helper_surface& operator=(const Helper_surface&) = delete;
+  // 
+  //   void solve_for_surface();
+  // private:
+  //   /*! \name Reference to container */
+  //   //@{
+  //   const Grid::Scal_FEfun_set& u;
+  //   Grid::Vec_FEfun_set& surface;
+  //   //@}
+  //   /*! \name Local loop variable */
+  //   //@{
+  //   const Grid::Grid_and_time gt;
+  //   Vec_FEfun_set surface_loc;
+  //   SecOrd_op::Solution_driven solver;
+  //   //@}
+  // };
+  // /*!< \brief `Esfem::Brusselator_scheme::pattern_action`
+  //              pattern action implementation details
+  // */
+  // class Helper_uw{
+  // public:
+  //   Helper_uw(Scal_FEfun_set& u_input, Scal_FEfun_set& w_input,
+  // 	      Vec_FEfun_set& surface, const Io::Parameter&,
+  // 	      const Grid::Grid_and_time&);
+  //   Helper_uw(const Helper_uw&) = delete;
+  //   Helper_uw& operator=(const Helper_uw&) = delete;
+  // 
+  //   void solve_pde();
+  //   void write_error_line();
+  //   void paraview_plot();
+  // private:
+  //   /*! \name Reference to container */
+  //   //@{
+  //   Scal_FEfun_set& u; 
+  //   Scal_FEfun_set& w;
+  //   //@}
+  //   /*! \name Local loop variable */
+  //   //@{
+  //   const Grid::Grid_and_time gt; 
+  //   Scal_FEfun_set u_loc;
+  //   Scal_FEfun_set w_loc;
+  //   const Err_cal errCal;
+  //   Solver solver;
+  //   Io::Paraview paraview;
+  //   //@}
+  // };
+  // /*!< \brief `Esfem::Brusselator_scheme::pattern_action`
+  //              pattern action implementation details
+  // */
   
   // ----------------------------------------------------------------------
   // helper functions
@@ -274,42 +287,56 @@ namespace Esfem{
    */
 
 
-  // ----------------------------------------------------------------------
-  // old code
-  
-  void first_interpolate(const SecOrd_op::Identity&,
-			 const Init_data&,
-			 FEfun_set<Grid::Scal_FEfun>& u,
-			 FEfun_set<Grid::Scal_FEfun>& w,
-			 FEfun_set<Grid::Vec_FEfun>& surface);
-  void update_exactSolution(const Init_data&,
-			    FEfun_set<Grid::Scal_FEfun>& u,
-			    FEfun_set<Grid::Scal_FEfun>& w);
-  void massMatrix_rhsLes(const Solver&,
-			 FEfun_set<Grid::Scal_FEfun>& u,
-			 FEfun_set<Grid::Scal_FEfun>& w);
-  void massMatrixConstOne_rhsLes(const Solver&,
-				 FEfun_set<Grid::Scal_FEfun>& u,
-				 FEfun_set<Grid::Scal_FEfun>& w);
-  void assemble_and_addScaled_rhsLes(const Rhs&,
-				     FEfun_set<Grid::Scal_FEfun>& u,
-				     FEfun_set<Grid::Scal_FEfun>& w);
-  void solve_pde(const Solver&,
-		 FEfun_set<Grid::Scal_FEfun>& u,
-		 FEfun_set<Grid::Scal_FEfun>& w);
+// // ----------------------------------------------------------------------
+// // old code
+// 
+// void first_interpolate(const SecOrd_op::Identity&,
+// 			 const Init_data&,
+// 			 FEfun_set<Grid::Scal_FEfun>& u,
+// 			 FEfun_set<Grid::Scal_FEfun>& w,
+// 			 FEfun_set<Grid::Vec_FEfun>& surface);
+// void update_exactSolution(const Init_data&,
+// 			    FEfun_set<Grid::Scal_FEfun>& u,
+// 			    FEfun_set<Grid::Scal_FEfun>& w);
+// void massMatrix_rhsLes(const Solver&,
+// 			 FEfun_set<Grid::Scal_FEfun>& u,
+// 			 FEfun_set<Grid::Scal_FEfun>& w);
+// void massMatrixConstOne_rhsLes(const Solver&,
+// 				 FEfun_set<Grid::Scal_FEfun>& u,
+// 				 FEfun_set<Grid::Scal_FEfun>& w);
+// void assemble_and_addScaled_rhsLes(const Rhs&,
+// 				     FEfun_set<Grid::Scal_FEfun>& u,
+// 				     FEfun_set<Grid::Scal_FEfun>& w);
+// void solve_pde(const Solver&,
+// 		 FEfun_set<Grid::Scal_FEfun>& u,
+// 		 FEfun_set<Grid::Scal_FEfun>& w);
 
 
   // ------------------------------------------------------------
   // io helper functions
 
-  void generate_header_line(Err_stream&);
+  // void generate_header_line(Esfem::Io::Err_stream&);
+  // void generate_header_line(Esfem::Io::Error_stream&);
+  // void write_error_line(Io::Err_stream&, const Esfem::Grid::Grid_and_time&, const Io::Err_cal&);
+  // void write_error_line(Io::Error_stream&,
+  // 			const Grid::Grid_and_time&,
+  // 			const Io::L2H1_calculator&);
+  // void clog_uw(const FEfun_set<Grid::Scal_FEfun>& u, 
+  // 	       const FEfun_set<Grid::Scal_FEfun>& w);
 
-  void write_error_line(Err_stream&, const Esfem::Grid::Grid_and_time&, const Err_cal&);
-  void write_error_line(Io::Error_stream&,
-			const Grid::Grid_and_time&,
-			const Io::L2H1_calculator&);
-  void clog_uw(const FEfun_set<Grid::Scal_FEfun>& u, 
-	       const FEfun_set<Grid::Scal_FEfun>& w);
+  // ----------------------------------------------------------------------
+  // Inline implementation
+
+  inline void PreLoop_helper::plot_paraview(){
+    paraview.write();
+  }
+  inline void PrePattern_helper::plot_paraview(){
+    paraview.write();
+  }
+  inline void Pattern_helper::plot_paraview(){
+    paraview.write();
+  }
+  
 } // namespace Esfem
 
 #endif // BRUSSELATOR_ALGO_IMPL_H

@@ -59,10 +59,10 @@ namespace Esfem{
     */
     template<typename FEfun>
     struct Tiny_FEfun_set{
-      Grid::Scal_FEfun fun; /*!< \brief Numerical solution */
-      Grid::Scal_FEfun rhs_les; /*!< \brief Right-hand side for the solver */
+      FEfun fun; /*!< \brief Numerical solution */
+      FEfun rhs_les; /*!< \brief Right-hand side for the solver */
 
-      Tiny_FEfun_set(const FEfun_set&, const Grid::Grid_and_time&);
+      Tiny_FEfun_set(const FEfun_set<FEfun>&, const Grid::Grid_and_time&);
       /*!< \brief `FEfun_set` is a superset of `Tiny_FEfun_set`.
 	          Hence this is something like a pseudo copy constructor.
 	
@@ -132,16 +132,16 @@ namespace Esfem{
 
     template<typename FEfun>
     Tiny_FEfun_set<FEfun>::
-    Tiny_FEfun_set(const FEfun_set& fef, const Grid::Grid_and_time& gt)
-    : fun {name, gt}, 
-      rhs_les {name + "_rhs_les", gt}
+    Tiny_FEfun_set(const FEfun_set<FEfun>& fef, const Grid::Grid_and_time& gt)
+      : fun {fef.fun.name() + "_1", gt}, 
+      rhs_les {fef.rhs_les.name() + "_1", gt}
     {}
 
     // ----------------------------------------------------------------------
     // Inline implementation
 
     inline std::string compose_dgfName(const std::string& fun_name,
-				       const std::string& dir = "./"){
+				       const std::string& dir){
       constexpr auto suffix= ".dgf";
       return dir + fun_name + suffix;
     }

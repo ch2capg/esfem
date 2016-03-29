@@ -165,9 +165,9 @@ namespace Esfem{
     struct Io{
       SecOrd_op::Identity identity {};
       const Esfem::Io::Dgf::Handler dgf_handler;
-      Io::Error_stream u;
-      Io::Error_stream w;
-      Io(const Io::Parameter&);
+      Esfem::Io::Error_stream u;
+      Esfem::Io::Error_stream w;
+      Io(const Esfem::Io::Parameter&);
     } io;
     /*!< \brief Members are used for input and output of
                 the nodal values of the finite element functions
@@ -182,7 +182,7 @@ namespace Esfem{
       Grid::Scal_FEfun_set u;
       Grid::Scal_FEfun_set w;
       Grid::Vec_FEfun_set surface;
-      Fef(Grid::Grid_and_time&);
+      Fef(const Grid::Grid_and_time&);
     } fef;
     /*!< \brief Collects all finite element functions */
     /*! \struct Fef
@@ -200,6 +200,8 @@ namespace Esfem{
     
     /*! \name Helper classes for the for-loops */
     //@{
+    friend class PreLoop_helper;
+    /*!< \brief Used in pre_loop_action(). */
     friend class PrePattern_helper;
     /*!< \brief Used in prePattern_loop(). */
     friend class Pattern_helper;
@@ -220,7 +222,7 @@ namespace Esfem{
     // void intermediate_surface_rhs();
     
     /*! \name Flow control */
-    //@{
+    //@{ 
     void next_timeStep(); 
     /*!< \brief Increments the next time step in #fix_grid. */
     long prePattern_timeSteps() const; 
