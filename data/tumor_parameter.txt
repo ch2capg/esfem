@@ -10,7 +10,7 @@ fem.timeprovider.factor: 1
 
 fem.io.savestep: 0.01
 
-heat.starttime: 10. ## 0.
+heat.starttime: 0.
 tumor_growth.surface.start_growth: .001
 heat.endtime: 20.
 heat.pattern.endtime: 10.

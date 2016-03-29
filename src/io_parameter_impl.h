@@ -19,7 +19,6 @@
 
 #include <string>
 #include <vector>
-#include <dassert.h>
 
 namespace Esfem{
   namespace Impl{

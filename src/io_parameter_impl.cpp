@@ -15,11 +15,13 @@
 */
 
 #include <fstream>
+#include <dassert.h>
 #include <config.h>
 #include <dune/fem/io/parameter.hh>
 #include <dune/fem/io/file/dataoutput.hh>
 #include "io_parameter_impl.h"
 #include "grid.h"
+#include "esfem_error.h"
 
 using namespace std;
 
@@ -56,7 +58,7 @@ std::string Esfem::Impl::get_macroGrid(){
 }
 std::string Esfem::Impl::doubleVector_to_string(const std::vector<double>& vd){
   constexpr size_t max_vec_size = 100;
-  Assert::dynamic<Assert::level(1), Parameter_error>
+  Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
     (vd.size() <= max_vec_size, __FILE__, __LINE__, 
      "Vector is to big for doubleVector_to_string()");
   std::ostringstream oss;
@@ -66,10 +68,10 @@ std::string Esfem::Impl::doubleVector_to_string(const std::vector<double>& vd){
   oss <<  vd.back() << '}';
   return oss.str();
 }
-void Esfem::Impl::file_check(const std::vector<std::string>& file_list){
+void Esfem::Impl::file_check(const std::vector<std::string>& file_list){  
   for(const auto& file_name : file_list){
     fstream fs {file_name};
-    Assert::dynamic<Assert::level(1), Esfem::Impl::Parameter_error>
+    Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
       (fs.is_open(), __FILE__, __LINE__, "Could not open file " + file_name);
   }
 }

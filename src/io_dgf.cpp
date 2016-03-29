@@ -143,6 +143,7 @@ void Handler::read(const string& in_filename, Vec_FEfun& vfef) const try{
   // We assume that vertices[i] always has the same size.
   const auto dim_of_vertices = vertices.size() * vertices.front().size();
   const auto dim_of_fef = vfef.size();
+  
   if(dim_of_fef != dim_of_vertices) throw logic_error
     {"Input file is incompatible with finite element function."};
   
@@ -162,6 +163,10 @@ void Handler::read(const string& in_filename, Scal_FEfun& fef) const try{
   // We assume that vertices[i] always has the same size.
   const auto dim_of_vertices = vertices.size() * vertices.front().size();
   const auto dim_of_fef = fef.size();
+
+  std::clog << "dim_of_vertices: " << dim_of_vertices << '\n'
+	    << "dim_of_fef: " << dim_of_fef << std::endl;
+
   if(dim_of_fef != dim_of_vertices) throw logic_error
     {"Input file is incompatible with finite element function."};
   

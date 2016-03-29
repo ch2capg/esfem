@@ -97,12 +97,11 @@ void Brusselator_scheme::prePattern_loop(){
   // paraview_loc.write();  
 }
 void Brusselator_scheme::intermediate_action(){
-  // fef.u.write(io.dgf_handler, "./intermediate_");
-  // fef.w.write(io.dgf_handler, "./intermediate_");
-  // fef.surface.write(io.dgf_handler, "./");
-
-  fef.u.read(io.dgf_handler, "./output/brusselator/test01/u.dgf");
-  fef.w.read(io.dgf_handler, "./output/brusselator/test01/w.dgf");
+  fef.u.write(io.dgf_handler, "./intermediate_");
+  fef.w.write(io.dgf_handler, "./intermediate_");
+  fef.surface.write(io.dgf_handler, "./");
+  // fef.u.read(io.dgf_handler, "./output/brusselator/test01/");
+  // fef.w.read(io.dgf_handler, "./output/brusselator/test01/");
 }
 void Brusselator_scheme::pattern_loop(){
   std::cerr << "pattern_timeSteps(): " << pattern_timeSteps() << std::endl;
