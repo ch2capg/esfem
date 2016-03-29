@@ -18,10 +18,11 @@
 
 using Esfem::Rhs;
 using Esfem::Init_data;
-using Esfem::Solver;
+using Esfem::Scalar_solver;
 using Esfem::Err_cal;
 using Esfem::Err_stream;
 using Esfem::PreLoop_helper;
+using Esfem::RhsAndSolve_helper;
 using Esfem::Helper_surface;
 using Esfem::SecOrd_op::Identity;
 using Scal_FEfun_set = Esfem::FEfun_set<Esfem::Grid::Scal_FEfun>;
@@ -42,11 +43,22 @@ Init_data::Init_data(const Esfem::Io::Parameter& p)
   w {p, Growth::inhibiting}
 {}
 
-Solver::Solver(const Esfem::Io::Parameter& p, const Esfem::Grid::Grid_and_time& g,
-	       const Scal_FEfun_set& u_set,
-	       const Scal_FEfun_set& w_set)
+Scalar_solver::Scalar_solver
+(const Esfem::Io::Parameter& p,
+ const Esfem::Grid::Grid_and_time& g,
+ const Scal_FEfun_set& u_set,
+ const Scal_FEfun_set& w_set)
   : u {p, g, Growth::promoting, u_set.app, w_set.app},
   w {p, g, Growth::inhibiting, u_set.app, u_set.app}
+{}
+
+Scalar_solver::Scalar_solver
+(const Io::Parameter& p,
+ const Grid::Grid_and_time& g,
+ const Grid::Scal_tiny_FEfun_set& u_set,
+ const Grid::Scal_tiny_FEfun_set& w_set)
+  : u {p, g, Growth::promoting, u_set.fun, w_set.fun},
+  w {p, g, Growth::inhibiting, u_set.fun, u_set.fun}
 {}
 
 Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
@@ -136,6 +148,32 @@ void PrePattern_helper::plot_errors_in_errFile(){
 }
 void PrePattern_helper::plot_paraview(){
   paraview.write();
+}
+
+// ----------------------------------------------------------------------
+// Implementation RhsAndSolve_helper
+
+RhsAndSolve_helper::RhsAndSolve_helper(Brusselator_scheme& bs)
+  : fef {bs.fef},
+  grid {bs.data, compose_dgfName(fef.surface.fun.name()), 
+      bs.fix_grid.time_provider().time()},
+  u {fef.u, grid},
+  w {fef.w, grid},
+  X {fef.surface, grid},
+  ss  {data, grid, u, w},
+  vs {data, grid, u.fun}
+{}
+RhsAndSolve_helper::scalar_massMatrix(){
+  ss.u.mass_matrix(u.rhs_les);
+  ss.w.mass_matrix(w.rhs_les);
+  fef.u.rhs_les = u.rhs_les;
+  fef.w.rhs_les = w.rhs_les;
+}
+RhsAndSolve_helper::solve_surface_and_save(){
+  vs.rhs(X.fun, X.rhs_les);
+  vs.solve(X.rhs_les, X.fun);
+  fef.surface.fun = X.fun;
+  fef.surface.write(io.dgf_handler, "./");     
 }
 
 // ----------------------------------------------------------------------

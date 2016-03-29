@@ -25,19 +25,23 @@
 #include "brusselator_algo.h"
 #include "brusselator_algo_impl.h"
 #include "secOrd_op_solutionDriven.h"
+#include "esfem_error.h"
 
-
-using Brusselator_error = Esfem::BrusselatorScheme_error;
+using Bruss_error = Esfem::BrusselatorScheme_error;
+/*!< \brief Shorter name for convenience */
 using Esfem::Brusselator_scheme;
-using Scal_FEfun_set = Brusselator_scheme::Scal_FEfun_set;
-using Vec_FEfun_set = Brusselator_scheme::Vec_FEfun_set;
+/*!< \brief We essentially implement this class in this source file. */
+using Scal_FEfun_set = Grid::Scal_FEfun_set;
+/*!< \brief Four functions of type \f$ f\colon \R^3 \to \R \f$ */
+using Vec_FEfun_set = Grid::Vec_FEfun_set;
+/*!< \brief Four functions of type \f$ f\colon \R^3 \to \R^3 \f$ */
+using Vector_solver = SecOrd_op::Solution_driven;
+/*!< \brief Solver for the #X variable */
 
 void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
-
   constexpr auto parameter_file =
     "/home/power/cpp/DISS_surfaces/data/tumor_parameter.txt";  
-
   Brusselator_scheme fem {argc, argv, parameter_file};
   fem.prePattern_loop();
   fem.intermediate_action(); 
@@ -94,10 +98,10 @@ try : data {argc, argv, parameter_fname},
   pre_loop_action();
 }
 catch(const std::exception&){
-  throw_with_nested(Brusselator_error {"Constructor."}); 
+  throw_with_nested(Bruss_error {"Constructor."}); 
  }
  catch(...){
-   throw Brusselator_error {"Unknown error in constructor."};
+   throw Bruss_error {"Unknown error in constructor."};
  }
 
 // --------------------------------------------------
@@ -126,11 +130,12 @@ void Brusselator_scheme::intermediate_action(){
   fef.u.write(io.dgf_handler, "./intermediate_");
   fef.w.write(io.dgf_handler, "./intermediate_");
   fef.surface.write(io.dgf_handler, "./");
-  intermediate_surface_rhs();
+  // intermediate_surface_rhs();
 }
 void Brusselator_scheme::pattern_loop(){
   for(long it = 0; it < pattern_timeSteps(); ++it){
-    solve_surfacePDE();
+    // solve_surfacePDE();
+    rhs_and_solve_SPDE();
     Pattern_helper helper {*this};
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
@@ -175,9 +180,57 @@ void Brusselator_scheme::pre_loop_action(){
   // paraview_loc.write();
   // massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);
 }
-void Brusselator_scheme::intermediate_surface_rhs(){
+void Brusselator_scheme::rhs_and_solve_SPDE(){
+  RhsAndSolve_helper helper {*this};
+  helper.scalar_massMatrix();
+  helper.solve_surface_and_save();
+  // // constructor 
+  // const Grid::Grid_and_time grid
+  // {data, compose_dgfName(fef.surface.fun.name()), 
+  //    fix_grid.time_provider().time()};
+  // Scal_FEfun_set u {fef.u, grid};
+  // Scal_FEfun_set w {fef.w, grid};
+  // Vec_FEfun_set X {fef.surface, grid};
+  // Scalar_solver ss  {data, grid, u, w};
+  // Vector_solver vs {data, grid, u.fun};
+  // // scalar part
+  // ss.u.mass_matrix(u.rhs_les);
+  // ss.w.mass_matrix(w.rhs_les);
+  // fef.u = u;
+  // fef.w = w;
+  // // vector part
+  // vs.rhs(X.fun, X.rhs_les);
+  // vs.solve(X.rhs_les, X.fun);
+  // fef.surface.fun = X.fun;
+  // fef.surface.write(io.dgf_handler, "./");   
 }
+// !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// delete this
+void Brusselator_scheme::intermediate_surface_rhs(){
+  // const Grid::Grid_and_time grid_loc 
+  //{data, compose_dgfName(fef.surface.fun.name()), 
+  //    fix_grid.time_provider().time()};
+  // Scal_FEfun_set u_loc {fef.u, grid_loc};
+  // Vec_FEfun_set surface_loc {fef.surface, grid_loc};
+  const auto& u = fef.u;
+  const auto& w = fef.w;
+  Scalar_solver solver {data, fix_grid, u, w};
+  solver.u.mass_matrix(u.rhs_les);
+  solver.w.mass_matrix(w.rhs_les);
+}
+//!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+// delete this
 void Brusselator_scheme::solve_surfacePDE(){
+  const Grid::Grid_and_time grid
+  {data, compose_dgfName(fef.surface.fun.name()), 
+     fix_grid.time_provider().time()};
+  const Scal_FEfun_set u {fef.u, grid};
+  Vec_FEfun_set X {fef.surface, grid};
+  SecOrd_op::Solution_driven solver {data, grid, u};
+  solver.rhs(X.fun, X.rhs);
+  solver.solve(X.rhs, X.fun);
+  fef.surface.fun = X.fun;
+  fef.surface.write(io.dgf_handler, "./"); 
 }
 // void Brusselator_scheme::pre_pattern_action(){  
 //   // const Grid::Grid_and_time grid_loc 

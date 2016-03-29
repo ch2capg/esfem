@@ -48,25 +48,25 @@ namespace Esfem{
       /*!< \brief Solve `lsh` in the lineare system `A * lsh = rhs`.
 	
 	We solve precicely the equation
-	    (M_3^n + (\alpha + \varepsilon\tau) A_3^n)*lhs = rhs,
-	via conjugated gradient method.
-       */
-      /* 
-	\f{equation*}{
-	  \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} lhs = rhs,
-	\f}
+	  \f{equation*}{
+	    \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n}
+	    \nodalValue{X}^{n+1} = \nodalValue{Y},
+	  \f}
+	via conjugated gradient method, where
+	\f$\nodalValue{X}^{n+1}\f$ and \f$\nodalValue{Y}\f$ are the
+	nodal values of #rhs and #lhs.
        */
       void rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
       /*!< \brief Generates rhs for the linear system.
 
-	The new value of the finite element function will be
-       */
-      /*
+	The new value #lhs will be
 	\f{equation*}{
 	  (M_3^n + \alpha A_3^n) \nodalValue{X}^n
-	  + \tau \delta M_3^n(\nodalValue{u}^n, \nodalValue{\surfaceNormal}).
+	  + \tau \delta M_3^n(\nodalValue{u}^n, \nodalValue{\surfaceNormal}),
 	\f}
-       */
+	where \f$\nodalValue{X}^n\f$ are the nodal values of #rhs.
+	\f$u\f$ is given in the constructor. 
+      */
     private:
       struct Data;
       std::unique_ptr<Data> d_ptr;

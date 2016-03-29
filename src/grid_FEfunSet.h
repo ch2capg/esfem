@@ -33,10 +33,10 @@ namespace Esfem{
   namespace Grid{
     template<typename FEfun>
     struct FEfun_set{
-      FEfun fun; /*!< Numerical solution */
-      FEfun app; /*!< BDF approximation to the numerical solution */
-      FEfun exact; /*!< Reference solution */
-      FEfun rhs_les; /*!< Right-hand side for the solver */
+      FEfun fun; /*!< \brief Numerical solution */
+      FEfun app; /*!< \brief BDF approximation to the numerical solution */
+      FEfun exact; /*!< \brief Reference solution */
+      FEfun rhs_les; /*!< \brief Right-hand side for the solver */
       FEfun_set(const std::string& name, const Grid::Grid_and_time&);
       /*!< \brief Standard constructor
 	\param name Member get concated names like name + "_app" etc.
@@ -44,7 +44,7 @@ namespace Esfem{
       FEfun_set(const FEfun_set&, const Grid::Grid_and_time&);
       /*!< \brief Pseudo copy constructor
 	
-	`Grid::Grid_and_time` is needed to get the correct finite element space.
+	`Grid_and_time` is needed to get the correct finite element space.
       */
 
       void write(const Esfem::Io::Dgf::Handler&,
@@ -57,16 +57,44 @@ namespace Esfem{
     /*!< \brief Minimal set of finite element functions to perform
       higher order BDF-ESFEM with input output helper functions
     */
+    template<typename FEfun>
+    struct Tiny_FEfun_set{
+      Grid::Scal_FEfun fun; /*!< \brief Numerical solution */
+      Grid::Scal_FEfun rhs_les; /*!< \brief Right-hand side for the solver */
 
-    inline std::string compose_dgfName(const std::string& fun_name, const std::string& dir = "./"){
-      constexpr auto suffix= ".dgf";
-      return dir + fun_name + suffix;
-    }
+      Tiny_FEfun_set(const FEfun_set&, const Grid::Grid_and_time&);
+      /*!< \brief `FEfun_set` is a superset of `Tiny_FEfun_set`.
+	          Hence this is something like a pseudo copy constructor.
+	
+	`Grid_and_time` is needed to get the correct finite element space.
+      */
+
+    };
+    /*!< \brief A smaller version of `FEfun_set`.  This is the minimal
+      set of functions to prepare the right-hand side of the PDE.
+    */
+
+    using Scal_FEfun_set = FEfun_set<Scal_FEfun>;
+    /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R \f$ */
+    using Vec_FEfun_set = FEfun_set<Vec_FEfun>;
+    /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R^3 \f$ */
+    using Scal_tiny_FEfun_set = Tiny_FEfun_set<Scal_FEfun>;
+    /*!< \brief Two functions of type \f$ f\colon \R^3 \to \R \f$ */    
+    using Vec_tiny_FEfun_set = Tiny_FEfun_set<Vec_FEfun>;
+    /*!< \brief Two functions of type \f$ f\colon \R^3 \to \R^3 \f$ */
+
+    inline std::string compose_dgfName(const std::string& fun_name,
+				       const std::string& dir = "./");
     /*!< \brief Returns dune grid format filename
-      \param fun_name Expects the result of `Grid::Scal_FEfun::name` or `Grid::Vec_FEfun::name`
+      \param fun_name Expects the result of
+                      Grid::Scal_FEfun::name()
+		      or Grid::Vec_FEfun::name()
       \param dir Directory with trailing backslash
     */  
 
+    // ======================================================================
+    // Implemenation
+    
     // ----------------------------------------------------------------------
     // Template implementation
 
@@ -75,7 +103,7 @@ namespace Esfem{
     FEfun_set(const std::string& name,
 	      const Esfem::Grid::Grid_and_time& gt)
       : fun {name, gt}, app {name + "_app", gt},
-      nexact {name + "_exact", gt}, rhs_les {name + "_rhs_les", gt}
+      exact {name + "_exact", gt}, rhs_les {name + "_rhs_les", gt}
     {}
     template<typename FEfun>
     FEfun_set<FEfun>::
@@ -100,6 +128,22 @@ namespace Esfem{
       h.read(compose_dgfName(app.name(), dir), app);
       h.read(compose_dgfName(exact.name(), dir), exact);
       h.read(compose_dgfName(rhs_les.name(), dir), rhs_les);
+    }
+
+    template<typename FEfun>
+    Tiny_FEfun_set<FEfun>::
+    Tiny_FEfun_set(const FEfun_set& fef, const Grid::Grid_and_time& gt)
+    : fun {name, gt}, 
+      rhs_les {name + "_rhs_les", gt}
+    {}
+
+    // ----------------------------------------------------------------------
+    // Inline implementation
+
+    inline std::string compose_dgfName(const std::string& fun_name,
+				       const std::string& dir = "./"){
+      constexpr auto suffix= ".dgf";
+      return dir + fun_name + suffix;
     }
   }	// namespace Grid
 }	// namespace Esfem

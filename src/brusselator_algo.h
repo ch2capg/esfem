@@ -124,11 +124,6 @@ namespace Esfem{
   
   class Brusselator_scheme{
   public:
-    using Scal_FEfun_set = Grid::FEfun_set<Grid::Scal_FEfun>;
-    /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R \f$ */
-    using Vec_FEfun_set = Grid::FEfun_set<Grid::Vec_FEfun>;
-    /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R^3 \f$ */
-    
     Brusselator_scheme(int argc, char** argv,
 		       const std::string& parameter_fname);
     /*!< \brief The constructor that also performs the
@@ -184,14 +179,18 @@ namespace Esfem{
     */
     Grid::Grid_and_time fix_grid; /*!< \brief Non evolving grid */
     struct Fef{
-      Scal_FEfun_set u;
-      Scal_FEfun_set w;
-      Vec_FEfun_set surface;
+      Grid::Scal_FEfun_set u;
+      Grid::Scal_FEfun_set w;
+      Grid::Vec_FEfun_set surface;
       Fef(Grid::Grid_and_time&);
     } fef;
     /*!< \brief Collects all finite element functions */
     /*! \struct Fef
      \brief Shortens Brusselator_scheme().
+     \todo Add private `std::string` member that contains
+       a directory path (currently simply "./").  This is
+       reasonable to do, since this is a invariable.  Also
+       add error checking.
      \sa `fef`
     */
     //@}
@@ -202,21 +201,23 @@ namespace Esfem{
     /*! \name Helper classes for the for-loops */
     //@{
     friend class PrePattern_helper;
-    /*!< \warning Should be only invoked by
-                  `Brusselator_scheme::prePattern_loop`.
-    */
+    /*!< \brief Used in prePattern_loop(). */
     friend class Pattern_helper;
-    /*!< \warning Should be only invoked by
-                  `Brusselator_scheme::pattern_loop`.
-     */
+    /*!< \brief Used in pattern_loop(). */
+    friend class RhsAndSolve_helper;
+    /*!< \brief Used in rhs_and_solve_SPDE(). */
     //@}
 
     void pre_loop_action();
     /*!< \warning Should only be invoked by Brusselator_scheme(). */
-    void intermediate_surface_rhs();
-    /*!< \warning Should only be invoked by Brusselator_scheme(). */
-    void solve_surfacePDE();
-    /*!< \brief Solves the surface PDE and prints out a dgf file. */
+    void rhs_and_solve_SPDE();
+    /*!< \brief Helper for pattern_loop().
+      
+      Generates first part of the right-hand side for the scalar
+      SPDE.  Then solves the vector SPDE and prints out a dgf file.
+     */
+    // void solve_surfacePDE();
+    // void intermediate_surface_rhs();
     
     /*! \name Flow control */
     //@{
