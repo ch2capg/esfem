@@ -100,21 +100,20 @@ namespace Esfem{
   public:
     PrePattern_helper(Brusselator_scheme&);
     /*!< \brief Modifies private data members of `Brusselator_scheme` */
-    void finalize_rhs();
+    // void finalize_rhs();
+    void rhs();
     /*!< \brief Adds to member `rhs_les` from
                 `Brusselator_scheme::fef.u` and
 		`Brusselator_scheme::fef.w`
       
-      We assume that the `rhs_les` has been prepared with
-      PreLoop_helper::prepare_rhs() or
-      prepare_rhs().  We add
-      the following finite element function to the member
-      `rhs_les` of `Brusselator_scheme::fef.u` respectively
-      `Brusselator_scheme::fef.w`
+      The new value of 
+      `rhs_les` from `Brusselator_scheme::fef.u` respectively
+      `Brusselator_scheme::fef.w` will be
       \f{gather*}{
-        \tau \gamma a M^{n+1} \nodalValue{1}, \\
-	\tau \gamma b M^{n+1} \nodalValue{1}.
+        (M\nodalValue{u})^n + \tau \gamma a M^{n+1} \nodalValue{1}, \\
+	(M\nodalValue{w})^n + \tau \gamma b M^{n+1} \nodalValue{1}.
       \f}
+      Note that the surface is not changing at this stage.
      */
     void solve_pde();
     /*!< \brief New value for member `fun` from

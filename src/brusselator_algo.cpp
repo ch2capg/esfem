@@ -81,10 +81,11 @@ void Brusselator_scheme::prePattern_loop(){
     
   PrePattern_helper helper {*this};
   for(long it = 0; it < prePattern_timeSteps(); ++it, next_timeStep()){
-    helper.finalize_rhs();
+    // helper.finalize_rhs();
+    helper.rhs();
     helper.solve_pde();
-    helper.prepare_rhs();
-    helper.plot_errors_in_errFile();
+    // helper.prepare_rhs();
+    // helper.plot_errors_in_errFile();
     helper.plot_paraview();
   }
   // massMatrixConstOne_rhsLes(d_ptr -> solver_prePattern,
@@ -121,7 +122,7 @@ void Brusselator_scheme::pattern_loop(){
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
     // helper.prepare_all_rhs();
-    helper.plot_errors_in_errFile();
+    // helper.plot_errors_in_errFile();
     helper.plot_paraview();
   }
   // Helper_surface hs {d_ptr};
@@ -144,10 +145,11 @@ void Brusselator_scheme::pre_loop_action(){
   PreLoop_helper helper {*this};
   helper.first_interpolate();
   helper.headLine_in_errFile();
-  helper.plot_errors_in_errFile();
+  // helper.plot_errors_in_errFile();
   helper.plot_paraview();
-  helper.prepare_rhs();
-  next_timeStep();  
+  // helper.prepare_rhs();
+  next_timeStep();
+  // ----------------------------------------------------------------------
   // const Init_data initData_loc {d_ptr -> data};
   // const Err_cal errCal_loc {d_ptr -> fix_grid, d_ptr -> u, d_ptr -> w};
   // Io::Paraview paraview_loc {d_ptr -> data, d_ptr -> fix_grid, 

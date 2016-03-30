@@ -120,11 +120,14 @@ PrePattern_helper::PrePattern_helper(Brusselator_scheme& bs_input)
   solver {bs.data, bs.fix_grid, bs.fef.u, bs.fef.w}
 {}
 
-void PrePattern_helper::finalize_rhs(){
-  auto& u_rhs = bs.fef.u.rhs_les;
-  auto& w_rhs = bs.fef.w.rhs_les;
-  solver.u.add_massMatrixConstOne_to(u_rhs);
-  solver.u.add_massMatrixConstOne_to(w_rhs);
+// void PrePattern_helper::finalize_rhs(){
+void PrePattern_helper::rhs(){
+  auto& u = bs.fef.u;
+  auto& w = bs.fef.w;
+  solver.u.mass_matrix(u.fun, u.rhs_les);
+  solver.w.mass_matrix(w.fun, w.rhs_les);
+  solver.u.add_massMatrixConstOne_to(u.rhs_les);
+  solver.u.add_massMatrixConstOne_to(w.rhs_les);
 }
 void PrePattern_helper::solve_pde(){
   auto& u = bs.fef.u;
@@ -159,7 +162,15 @@ RhsAndSolve_helper::RhsAndSolve_helper(Brusselator_scheme& bs_input)
   X {bs.fef.surface, grid},
   ss  {bs.data, grid, u, w},
   vs {bs.data, grid, u.fun}
-{}
+{
+  std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;
+
+  auto it = u.fun.cbegin();
+  auto counter = 10;
+  while(--counter >= 0)
+    std::cerr << *++it << ' ';
+  std::cerr << std::endl;
+}
 void RhsAndSolve_helper::scalar_massMatrix(){
   ss.u.mass_matrix(u.fun, u.rhs_les);
   ss.w.mass_matrix(w.fun, w.rhs_les);
