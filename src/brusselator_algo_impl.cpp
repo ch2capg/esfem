@@ -167,10 +167,22 @@ void RhsAndSolve_helper::scalar_massMatrix(){
   fef.w.rhs_les = w.rhs_les;
 }
 void RhsAndSolve_helper::solve_surface_and_save(){
+  std::cerr << "RhsAndSolve_helper::solve_surface_and_save()" << std::endl;
+  std::cerr << "*X.fun.cbegin(): " << *X.fun.cbegin() << '\n'
+	    << "*X.rhs_les.cbegin(): " << *X.rhs_les.cbegin() << '\n'
+	    << "X.fun.size(): " << X.fun.size() << '\n'
+	    << "*fef.surface.fun.cbegin(): " << *fef.surface.fun.cbegin() << '\n'
+	    << "*fef.surface.rhs_les.cbegin(): " << *fef.surface.rhs_les.cbegin() << '\n'
+	    << "fef.surface.fun.size(): " << fef.surface.fun.size() 
+	    << std::endl;
   vs.rhs(X.fun, X.rhs_les);
+  std::cerr << "vs.rhs(X.fun, X.rhs_les);" << std::endl;
   vs.solve(X.rhs_les, X.fun);
+  std::cerr << "vs.solve(X.rhs_les, X.fun);" << std::endl;
   fef.surface.fun = X.fun;
-  fef.surface.write(bs.io.dgf_handler, "./");     
+  std::cerr << "fef.surface.fun = X.fun;" << std::endl;
+  fef.surface.write(bs.io.dgf_handler, "./");
+  std::cerr << "fef.surface.write(bs.io.dgf_handler, \"./\");" << std::endl;
 }
 
 // ----------------------------------------------------------------------

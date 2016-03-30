@@ -191,7 +191,7 @@ namespace Esfem{
     */
     /*! \name Data members */
     //@{
-    Io::Parameter data;
+    Esfem::Io::Parameter data;
     /*!< \brief Contains parameter from `tumor_parameter.txt`. */
     Io io;
     /*!< \brief Input output 

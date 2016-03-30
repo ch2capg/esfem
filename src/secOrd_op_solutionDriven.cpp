@@ -70,6 +70,7 @@ solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
 }
 
 void Solution_driven::rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
+  std::cerr << "Solution_driven::rhs()" << std::endl;
   const Vec_FEfun& vfef1 = rhs;
   Vec_FEfun& vfef2 = lhs;
   d_ptr -> mcf_op.rhs(vfef1, vfef2);

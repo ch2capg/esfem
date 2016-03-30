@@ -144,14 +144,14 @@ void Handler::read(const string& in_filename, Vec_FEfun& vfef) const try{
   const auto dim_of_vertices = vertices.size() * vertices.front().size();
   const auto dim_of_fef = vfef.size();
   
-  if(dim_of_fef != dim_of_vertices) throw logic_error
-    {"Input file is incompatible with finite element function."};
+  // if(dim_of_fef != dim_of_vertices) throw logic_error
+  //   {"Input file is incompatible with finite element function."};
   
   vfef << vertices;  
  }
  catch(const exception&){
    throw_with_nested
-     (runtime_error {"Error in handler::read()."});
+     (runtime_error {"Error in Handler::read()."});
  }
  catch(...){
    throw runtime_error {"Unknown error in Handler::write()."};
@@ -164,8 +164,8 @@ void Handler::read(const string& in_filename, Scal_FEfun& fef) const try{
   const auto dim_of_vertices = vertices.size() * vertices.front().size();
   const auto dim_of_fef = fef.size();
 
-  std::clog << "dim_of_vertices: " << dim_of_vertices << '\n'
-	    << "dim_of_fef: " << dim_of_fef << std::endl;
+  // std::clog << "dim_of_vertices: " << dim_of_vertices << '\n'
+  // 	    << "dim_of_fef: " << dim_of_fef << std::endl;
 
   if(dim_of_fef != dim_of_vertices) throw logic_error
     {"Input file is incompatible with finite element function."};
@@ -174,7 +174,7 @@ void Handler::read(const string& in_filename, Scal_FEfun& fef) const try{
  }
  catch(const exception&){
    throw_with_nested
-     (runtime_error {"Error in handler::read()."});
+     (runtime_error {"Error in Handler::read()."});
  }
  catch(...){
    throw runtime_error {"Unknown error in Handler::write()."};

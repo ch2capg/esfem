@@ -97,11 +97,19 @@ void Brusselator_scheme::prePattern_loop(){
   // paraview_loc.write();  
 }
 void Brusselator_scheme::intermediate_action(){
-  fef.u.write(io.dgf_handler, "./intermediate_");
-  fef.w.write(io.dgf_handler, "./intermediate_");
-  fef.surface.write(io.dgf_handler, "./");
-  // fef.u.read(io.dgf_handler, "./output/brusselator/test01/");
-  // fef.w.read(io.dgf_handler, "./output/brusselator/test01/");
+  switch(prePattern_timeSteps()){
+  case 0: // heat.starttime == heat.pattern.endtime
+    std::cerr << "heat.starttime == heat.pattern.endtime" << std::endl;
+    fef.u.read(io.dgf_handler, "./intermediate_");
+    fef.w.read(io.dgf_handler, "./intermediate_");
+    break;
+  default:
+    std::cerr << "heat.starttime != heat.pattern.endtime" << std::endl;
+    fef.u.write(io.dgf_handler, "./intermediate_");
+    fef.w.write(io.dgf_handler, "./intermediate_");
+    fef.surface.write(io.dgf_handler, "./");
+    break;
+  };
 }
 void Brusselator_scheme::pattern_loop(){
   std::cerr << "pattern_timeSteps(): " << pattern_timeSteps() << std::endl;
@@ -153,9 +161,13 @@ void Brusselator_scheme::pre_loop_action(){
   // massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);
 }
 void Brusselator_scheme::rhs_and_solve_SPDE(){
+  std::cerr << "rhs_and_solve_SPDE()." << std::endl;
   RhsAndSolve_helper helper {*this};
+  std::cerr << "RhsAndSolve_helper()." << std::endl;
   helper.scalar_massMatrix();
+  std::cerr << "helper.scalar_massMatrix()." << std::endl;
   helper.solve_surface_and_save();
+  std::cerr << "helper.solve_surface_and_save()." << std::endl;
   // // constructor 
   // const Grid::Grid_and_time grid
   // {data, compose_dgfName(fef.surface.fun.name()), 

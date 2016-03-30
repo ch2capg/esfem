@@ -1,6 +1,6 @@
 /*! \file grid_FEfunSet.h
     \author Christian Power
-    \date 22. March 2016
+    \date 30. March 2016
 
     \brief Basic struct with input output 
            member functions for a generic numerical experiment
@@ -18,7 +18,7 @@
      This header provides model classes and operator classes to solve 
      a tumor growth model proposed by Elliott and Styles via the ESFEM.  
 
-         Created by Christian Power on 17.03.2016
+         Created by Christian Power on 30.03.2016
          Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
@@ -133,8 +133,8 @@ namespace Esfem{
     template<typename FEfun>
     Tiny_FEfun_set<FEfun>::
     Tiny_FEfun_set(const FEfun_set<FEfun>& fef, const Grid::Grid_and_time& gt)
-      : fun {fef.fun.name() + "_1", gt}, 
-      rhs_les {fef.rhs_les.name() + "_1", gt}
+      : fun {fef.fun, gt}, 
+      rhs_les {fef.rhs_les, gt}
     {}
 
     // ----------------------------------------------------------------------
