@@ -1,6 +1,6 @@
 /*! \file brusselator_algo.cpp
     \author Christian Power
-    \date 23. March 2016
+    \date 30. March 2016
 
     \brief Implementation for `brusselator_algo.h`
 
@@ -17,7 +17,7 @@
      Implementation of Esfem::brusselator_algo() and
      the class `Esfem::Brusselator_scheme`
 
-         Created by Christian Power on 23.03.2016
+         Created by Christian Power on 30.03.2016
          Copyright (c) 2016 Christian Power. All rights reserved.
 */
 
