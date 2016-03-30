@@ -1,18 +1,24 @@
 /*! \file esfem.h
+    \author Christian Power
+    \date 30. March 2016
 
-    \brief <Program Name>
+    \brief Concatenate all important headers
 
-     Revision history:
+     Revision history
+     --------------------------------------------------
 
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power March 2016
           Originally written by Christian Power
                (power22c@gmail.com) Januar 2016
 
-     This programm implements a basic expression calculator.
-     Input from cin; output to cout.  The grammar for input is: etc.
+     Idea
+     --------------------------------------------------
+     
+     Includes `io.h`, `grid.h`, `secord_op.h`.  In these files more
+     headers are included.
 
-     Created by Christian Power on 19.01.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+         Created by Christian Power on 30.03.2016
+         Copyright (c) 2016 Christian Power. All rights reserved.    
  */
 
 #ifndef ESFEM_H
@@ -24,6 +30,3 @@
 #include "secOrd_op.h"
 
 #endif // ESFEM_H
-
-/*! Log:
- */
