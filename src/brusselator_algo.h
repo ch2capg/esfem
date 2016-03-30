@@ -1,6 +1,6 @@
 /*! \file brusselator_algo.h
     \author Christian Power
-    \date 23. March 2016
+    \date 30. March 2016
 
     \brief Numerical experiment for the solution driven paper
 
@@ -15,7 +15,8 @@
      --------------------------------------------------
 
      This header provides model classes and operator classes to solve 
-     a tumor growth model proposed by Elliott and Styles via the ESFEM.  
+     a tumor growth model proposed by Elliott and Styles via the ESFEM.
+     Enter path to writable directory in the macro variable FEF_PATH.
 
 
      Partial differential equation
@@ -108,7 +109,7 @@
 	  = (M \nodalValue{w})^n + \tau \gamma b M^{n+1} \nodalValue{1}.
 	\f}
 
-         Created by Christian Power on 23.03.2016
+         Created by Christian Power on 30.03.2016
          Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -118,9 +119,16 @@
 #include <string>
 #include "esfem.h"
 
+#ifndef FEF_PATH
+#error Give full path to folder in FEF_PATH
+#endif 
+
 namespace Esfem{
   void brusselator_algo(int argc, char** argv);
-  /*!< \brief ESFEM algorithm.  Only this should be invoked by main. */
+  /*!< \brief ESFEM algorithm.  Only this should be invoked by main.
+    \param argc `argc` from `main`
+    \param argv `argv` from `main`
+   */
   
   class Brusselator_scheme{
   public:
@@ -152,7 +160,7 @@ namespace Esfem{
     /*!< \brief To be used in the second for-loop.
 
       At this stage the tumor is growing.
-      \warning Do not forget to use next_timeStep() afterwards.
+      \warning Do not use next_timeStep() afterwards.
      */
     void final_action();
     /*!< \brief To be used after the second for-loop to save some data. */
@@ -176,36 +184,37 @@ namespace Esfem{
     */
     struct Fef{
       Grid::Scal_FEfun_set u;
+      /*!< \brief Container for growth promoting numerical solution */
       Grid::Scal_FEfun_set w;
+      /*!< \brief Container for growth inhibiting numerical solution */
       Grid::Vec_FEfun_set surface;
+      /*!< \brief Container for the numerical solution of the surface
+	\warning Only this container is allowed to write into and read from
+	  a dgf file.
+       */
+      const std::string tmpFile_path {FEF_PATH};
+      /*!< \brief Directory which I have read and write access.
+	\warning `FEF_PATH` is a macro variable which has be set by
+	  the makefile. 
+       */
       Fef(const Grid::Grid_and_time&);
     };
-    /*! \brief Shortens Brusselator_scheme().
+    /*!< \brief Shortens Brusselator_scheme().
 
       Collects all finite element functions and serves as a
       backup container. 
-      \todo Add private `std::string` member that contains
-       a directory path (currently simply "./").  This is
-       reasonable to do, since this is a invariable.  Also
-       add error checking.
+      \todo Add error checking for `tmpFile_path`.
     */
     /*! \name Data members */
     //@{
     Esfem::Io::Parameter data;
     /*!< \brief Contains parameter from `tumor_parameter.txt`. */
     Io io;
-    /*!< \brief Input output 
-      \sa `Io`
-    */
-    Grid::Grid_and_time fix_grid;
-    /*!< \brief Non evolving grid
-
-      Contains the time provider.
-     */
+    /*!< \brief Input output */
+    Esfem::Grid::Grid_and_time fix_grid;
+    /*!< \brief Non evolving grid but consistent time provider */
     Fef fef;
-    /*!< \brief Finite element functions 
-      \sa `Fef`
-     */
+    /*!< \brief Finite element functions */
     //@}
 
     // ------------------------------------------------------------

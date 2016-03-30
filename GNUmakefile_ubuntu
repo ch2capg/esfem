@@ -67,7 +67,7 @@ LDFLAGS ?= $(addprefix -L, ${DUNE_BASEDIR}/build/lib \
    mpi dl hwloc z m) 
    # gmp gmpxx alugrid alugrid_serial
 
-DEBUG ?= 0
+DEBUG ?= 1
 CPPFLAGS += -DDEBUG=${DEBUG}
 
 ifdef NDEBUG
@@ -246,8 +246,9 @@ PROG2_SRC += $(addprefix $(dir ${PROG2}), \
 PROG2_MSG = ${PROG2_name} - No special flags
 
 PROG2_name := $(basename $(notdir ${PROG2}))
-${PROG2_name}: CXXFLAGS +=
-${PROG2_name}: CPPFLAGS += 
+${PROG2_name}: CXXFLAGS += 
+${PROG2_name}: CPPFLAGS += -DPFILE="\"/home/power/cpp/DISS_surfaces/data/tumor_parameter.txt\"" \
+ -DFEF_PATH="\"/scratch/na31/power/numerische_experimente/solution_driven/\""
 ${PROG2_name}: LDFLAGS += # $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 
 # ------------------------------------------------------------
