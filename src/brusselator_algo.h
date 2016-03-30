@@ -158,41 +158,54 @@ namespace Esfem{
     /*!< \brief To be used after the second for-loop to save some data. */
     //@}
   private:    
-    /*! \name Data members */
-    //@{
-    Io::Parameter data;
-    /*!< \brief Contains parameter from `tumor_parameter.txt`. */
     struct Io{
-      SecOrd_op::Identity identity {};
+      SecOrd_op::Identity identity {}; /*!< \brief Functor for saving the current grid. */
       const Esfem::Io::Dgf::Handler dgf_handler;
+      /*!< \brief Converts finite element function into dgf file. */
       Esfem::Io::Error_stream u;
+      /*!< \brief File to record errors of u. */
       Esfem::Io::Error_stream w;
+      /*!< \brief File to record errors of w. */
       Io(const Esfem::Io::Parameter&);
-    } io;
-    /*!< \brief Members are used for input and output of
-                the nodal values of the finite element functions
-		in #fef.
+    };
+    /*!< \brief Shortens Brusselator_scheme().
+
+      Members are used for input and output of
+      the nodal values of the finite element functions
+      in `fef`.
     */
-    /*! \struct Io
-     \brief Shortens Brusselator_scheme().
-     \sa `io`
-    */
-    Grid::Grid_and_time fix_grid; /*!< \brief Non evolving grid */
     struct Fef{
       Grid::Scal_FEfun_set u;
       Grid::Scal_FEfun_set w;
       Grid::Vec_FEfun_set surface;
       Fef(const Grid::Grid_and_time&);
-    } fef;
-    /*!< \brief Collects all finite element functions */
-    /*! \struct Fef
-     \brief Shortens Brusselator_scheme().
-     \todo Add private `std::string` member that contains
+    };
+    /*! \brief Shortens Brusselator_scheme().
+
+      Collects all finite element functions and serves as a
+      backup container. 
+      \todo Add private `std::string` member that contains
        a directory path (currently simply "./").  This is
        reasonable to do, since this is a invariable.  Also
        add error checking.
-     \sa `fef`
     */
+    /*! \name Data members */
+    //@{
+    Io::Parameter data;
+    /*!< \brief Contains parameter from `tumor_parameter.txt`. */
+    Io io;
+    /*!< \brief Input output 
+      \sa `Io`
+    */
+    Grid::Grid_and_time fix_grid;
+    /*!< \brief Non evolving grid
+
+      Contains the time provider.
+     */
+    Fef fef;
+    /*!< \brief Finite element functions 
+      \sa `Fef`
+     */
     //@}
 
     // ------------------------------------------------------------
@@ -224,7 +237,7 @@ namespace Esfem{
     /*! \name Flow control */
     //@{ 
     void next_timeStep(); 
-    /*!< \brief Increments the next time step in #fix_grid. */
+    /*!< \brief Increments the next time step in `fix_grid`. */
     long prePattern_timeSteps() const; 
     /*!< \brief Maximum number of time steps for prePattern_loop(). */
     long pattern_timeSteps() const; 

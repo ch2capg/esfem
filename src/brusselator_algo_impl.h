@@ -89,8 +89,8 @@ namespace Esfem{
     const Init_data init_data;
     Err_cal err_cal; /*!< \brief Contains two output files. */
     Io::Paraview paraview;
-    /*!< \brief Has reference to #bs.fef.u.fun and
-                #bs.fef.w.fun
+    /*!< \brief Has reference to `bs.fef.u.fun` and
+                `bs.fef.w.fun`
      */
     Scalar_solver solver; /*!< \brief Brusselator solver */
   };
@@ -99,28 +99,28 @@ namespace Esfem{
     PrePattern_helper(Brusselator_scheme&);
     /*!< \brief Modifies private data members of `Brusselator_scheme` */
     void finalize_rhs();
-    /*!< \brief Adds to member #rhs_les from
-                #Brusselator_scheme::fef.u and
-		#Brusselator_scheme::fef.w
+    /*!< \brief Adds to member `rhs_les` from
+                `Brusselator_scheme::fef.u` and
+		`Brusselator_scheme::fef.w`
       
-      We assume that the #rhs_les has been prepared with
+      We assume that the `rhs_les` has been prepared with
       PreLoop_helper::prepare_rhs() or
       prepare_rhs().  We add
       the following finite element function to the member
-      #rhs_les of #Brusselator_scheme::fef.u respectively
-      #Brusselator_scheme::fef.w:
+      `rhs_les` of `Brusselator_scheme::fef.u` respectively
+      `Brusselator_scheme::fef.w`
       \f{gather*}{
         \tau \gamma a M^{n+1} \nodalValue{1}, \\
 	\tau \gamma b M^{n+1} \nodalValue{1}.
       \f}
      */
     void solve_pde();
-    /*!< \brief New value for member #fun from
-                #Brusselator_scheme::fef.u and
-		#Brusselator_scheme::fef.w
+    /*!< \brief New value for member `fun` from
+                `Brusselator_scheme::fef.u` and
+		`Brusselator_scheme::fef.w`
 	 
-      We assume that the #rhs_les has been prepared with
-      finalize_rhs().  The vaule of #fun will be overwritten
+      We assume that the `rhs_les` has been prepared with
+      finalize_rhs().  The vaule of `fun` will be overwritten
       with the solution of the following system for \f$u\f$ and \f$w\f$:
       \f{gather*}{
         (1+ \tau \gamma) (M\nodalValue{u})^{n+1} + \tau (A \nodalValue{u})^{n+1}
@@ -133,11 +133,11 @@ namespace Esfem{
       where \f$ \nodalValue{y}_{1,2}\f$ the right-hand side of the system is.
      */
     void prepare_rhs();
-    /*!< \brief New value for member #rhs_les from
-                #Brusselator_scheme::fef.u and
-		#Brusselator_scheme::fef.w
+    /*!< \brief New value for member `rhs_les` from
+                `Brusselator_scheme::fef.u` and
+		`Brusselator_scheme::fef.w`
       
-      #rhs_les will have the following value for \f$u\f$ respectively
+      `rhs_les` will have the following value for \f$u\f$ respectively
       \f$w\f$:
       \f{equation*}{
        (M\nodalValue{u})^n \quad \lor\quad (M \nodalValue{w})^n.
@@ -145,13 +145,13 @@ namespace Esfem{
      */
     void plot_errors_in_errFile();
     /*!< \brief Prints out time step, \f$L^2\f$-error,
-                and \f$H^1\f$-error of (#fun - #exact)
-		from #Brusselator_scheme::fef.u and
-		#Brusselator_scheme::fef.w.
+                and \f$H^1\f$-error of (`fun` - `exact`)
+		from `Brusselator_scheme::fef.u` and
+		`Brusselator_scheme::fef.w`.
      */
     void plot_paraview();
-    /*!< \brief Prints out #fun of #Brusselator_scheme::fef.u and
-		#Brusselator_scheme::fef.w.
+    /*!< \brief Prints out `fun` of `Brusselator_scheme::fef.u` and
+		`Brusselator_scheme::fef.w`.
      */
   private:
     Brusselator_scheme& bs; /*!< \copydoc #PreLoop_helper::bs. */
