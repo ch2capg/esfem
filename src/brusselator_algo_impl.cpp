@@ -52,17 +52,17 @@ Init_data::Init_data(const Esfem::Io::Parameter& p)
 Scalar_solver::Scalar_solver
 (const Esfem::Io::Parameter& p,
  const Esfem::Grid::Grid_and_time& g,
- const Scal_FEfun_set& u_set,
- const Scal_FEfun_set& w_set)
+ const Esfem::Grid::Scal_FEfun_set& u_set,
+ const Esfem::Grid::Scal_FEfun_set& w_set)
   : u {p, g, Growth::promoting, u_set.app, w_set.app},
   w {p, g, Growth::inhibiting, u_set.app, u_set.app}
 {}
 
 Scalar_solver::Scalar_solver
-(const Io::Parameter& p,
- const Grid::Grid_and_time& g,
- const Grid::Scal_tiny_FEfun_set& u_set,
- const Grid::Scal_tiny_FEfun_set& w_set)
+(const Esfem::Io::Parameter& p,
+ const Esfem::Grid::Grid_and_time& g,
+ const Esfem::Grid::Scal_tiny_FEfun_set& u_set,
+ const Esfem::Grid::Scal_tiny_FEfun_set& w_set)
   : u {p, g, Growth::promoting, u_set.fun, w_set.fun},
   w {p, g, Growth::inhibiting, u_set.fun, u_set.fun}
 {}
@@ -113,40 +113,36 @@ void PreLoop_helper::prepare_rhs(){
 // ----------------------------------------------------------------------
 // Implementation PrePattern_helper 
 
-PrePattern_helper::PrePattern_helper(Brusselator_scheme& bs_input)
-  : bs {bs_input},
-  err_cal {bs.fix_grid, bs.fef.u, bs.fef.w},
-  paraview {bs.data, bs.fix_grid, bs.fef.u.fun, bs.fef.w.fun},
-  solver {bs.data, bs.fix_grid, bs.fef.u, bs.fef.w}
+PrePattern_helper::PrePattern_helper(Brusselator_scheme& bs)
+  : io {bs.io},
+  u {bs.fef.u},
+  w {bs.fef.w},
+  tp {bs.fix_grid.time_provider()},
+  err_cal {bs.fix_grid, u, w},
+  paraview {bs.data, bs.fix_grid, u.fun, w.fun},
+  solver {bs.data, bs.fix_grid, u, w}
 {}
 
 // void PrePattern_helper::finalize_rhs(){
 void PrePattern_helper::rhs(){
-  auto& u = bs.fef.u;
-  auto& w = bs.fef.w;
   solver.u.mass_matrix(u.fun, u.rhs_les);
   solver.w.mass_matrix(w.fun, w.rhs_les);
   solver.u.add_massMatrixConstOne_to(u.rhs_les);
-  solver.u.add_massMatrixConstOne_to(w.rhs_les);
+  solver.w.add_massMatrixConstOne_to(w.rhs_les);
 }
 void PrePattern_helper::solve_pde(){
-  auto& u = bs.fef.u;
-  auto& w = bs.fef.w;
   solver.u.solve(u.rhs_les, u.fun);
   u.app = u.fun;    
   solver.w.solve(w.rhs_les, w.fun);
   w.app = w.fun;    
 }
 void PrePattern_helper::prepare_rhs(){
-  auto& u = bs.fef.u;
-  auto& w = bs.fef.w;
   solver.u.mass_matrix(u.fun, u.rhs_les);
   solver.w.mass_matrix(w.fun, w.rhs_les);
 }
 void PrePattern_helper::plot_errors_in_errFile(){
-  const auto& g = bs.fix_grid;
-  write_error_line(bs.io.u, g.time_provider(), err_cal.u);
-  write_error_line(bs.io.w, g.time_provider(), err_cal.w);
+  write_error_line(io.u, tp, err_cal.u);
+  write_error_line(io.w, tp, err_cal.w);
 }
 
 // ----------------------------------------------------------------------
@@ -163,12 +159,16 @@ RhsAndSolve_helper::RhsAndSolve_helper(Brusselator_scheme& bs_input)
   ss  {bs.data, grid, u, w},
   vs {bs.data, grid, u.fun}
 {
-  std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;
+  std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;  
+  auto counter = 0;
+  for(auto it = u.fun.cbegin(); counter < 10; ++counter, ++it)
+    std::cerr << *it << ' ';
+  std::cerr << std::endl;
 
-  auto it = u.fun.cbegin();
-  auto counter = 10;
-  while(--counter >= 0)
-    std::cerr << *++it << ' ';
+  std::cerr << "Testing X.fun by printing out first 10 nodal values. " << std::endl;
+  counter = 0;
+  for(auto it = X.fun.cbegin(); counter < 10; ++counter, ++it)
+    std::cerr << *it << ' ';
   std::cerr << std::endl;
 }
 void RhsAndSolve_helper::scalar_massMatrix(){
@@ -192,8 +192,8 @@ void RhsAndSolve_helper::solve_surface_and_save(){
   std::cerr << "vs.solve(X.rhs_les, X.fun);" << std::endl;
   fef.surface.fun = X.fun;
   std::cerr << "fef.surface.fun = X.fun;" << std::endl;
-  fef.surface.write(bs.io.dgf_handler, "./");
-  std::cerr << "fef.surface.write(bs.io.dgf_handler, \"./\");" << std::endl;
+  fef.surface.write(bs.io.dgf_handler, fef.tmpFile_path);
+  std::cerr << "fef.surface.write(bs.io.dgf_handler, fef.tmpFile_path);" << std::endl;
 }
 
 // ----------------------------------------------------------------------
@@ -210,10 +210,8 @@ Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
   solver {bs.data, grid, u, w}
 {}
 void Pattern_helper::finalize_scalarPDE_rhs(){
-  auto& u_rhs = u.rhs_les;
-  auto& w_rhs = w.rhs_les;
-  solver.u.add_massMatrixConstOne_to(u_rhs);
-  solver.u.add_massMatrixConstOne_to(w_rhs);  
+  solver.u.add_massMatrixConstOne_to(u.rhs_les);
+  solver.w.add_massMatrixConstOne_to(w.rhs_les);  
 }
 void Pattern_helper::solve_scalarPDE(){
   solver.u.solve(u.rhs_les, u.fun);

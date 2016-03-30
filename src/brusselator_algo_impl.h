@@ -155,12 +155,17 @@ namespace Esfem{
 		`Brusselator_scheme::fef.w`.
      */
   private:
-    Brusselator_scheme& bs; /*!< \copydoc #PreLoop_helper::bs. */
+    Brusselator_scheme::Io& io;
+    /*!< \brief Reference to `Brusselator_scheme::io` */
+    Grid::Scal_FEfun_set& u;
+    /*!< \brief Reference to `Brusselator_scheme::fef.u` */
+    Grid::Scal_FEfun_set& w;
+    /*!< \brief Reference to `Brusselator_scheme::fef.w` */
+    const Dune::Fem::TimeProviderBase& tp;
+    /*!< From `Brusselator_scheme::fix_grid` */
     Err_cal err_cal; /*!< \brief Contains two output files. */
     Io::Paraview paraview;
-    /*!< \brief Has reference to member #fun from #bs.fef.u and
-                #bs.fef.w
-     */
+    /*!< \brief Has reference to member `fun` from `u` and `w` */
     Scalar_solver solver; /*!< \brief Brusselator solver */
   };
   /*!< \brief Implementation details for

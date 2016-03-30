@@ -27,6 +27,10 @@
 #include "secOrd_op_solutionDriven.h"
 #include "esfem_error.h"
 
+#ifndef PFILE
+#error Give a complete path for parameter file in macro variable PFILE.
+#endif
+
 using Bruss_error = Esfem::BrusselatorScheme_error;
 /*!< \brief Shorter name for convenience */
 using Esfem::Brusselator_scheme;
@@ -36,12 +40,11 @@ using Scal_FEfun_set = Esfem::Grid::Scal_FEfun_set;
 using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
 /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R^3 \f$ */
 using Vector_solver = Esfem::SecOrd_op::Solution_driven;
-/*!< \brief Solver for the #X variable */
+/*!< \brief Solver for the `X` respectively `surface` variable */
 
 void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
-  constexpr auto parameter_file =
-    "/home/power/cpp/DISS_surfaces/data/tumor_parameter.txt";  
+  constexpr auto parameter_file = PFILE;
   Brusselator_scheme fem {argc, argv, parameter_file};
   fem.prePattern_loop();
   fem.intermediate_action(); 

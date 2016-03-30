@@ -2,7 +2,7 @@
     \author Christian Power
     \date 30. March 2016
 
-    \brief Concatenate all important headers
+    \brief Concatenates all public esfem headers
 
      Revision history
      --------------------------------------------------

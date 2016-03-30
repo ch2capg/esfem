@@ -30,14 +30,18 @@ tumor_growth.surface.alpha: 0 ##1e-3
 tumor_growth.surface.delta: .4
 
 fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_3.dgf
-fem.io.errorFile: /home/power/cpp/DISS_surfaces/output/brusselator/sphere3_v00.log
+# fem.io.errorFile: /home/power/cpp/DISS_surfaces/output/brusselator/sphere3_v00.log
+fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/sphere3_v00.log
 
-fem.prefix: /home/power/cpp/DISS_surfaces
-fem.io.path: output/test01
+# fem.prefix: /home/power/cpp/DISS_surfaces
+fem.prefix: /scratch/na31/power/numerische_experimente/solution_driven
+fem.io.path: vid01
 fem.io.outputName: brusselator-
 
-tumor_growth.io.u_init_dof: /home/power/cpp/DISS_surfaces/output/u_dof.log
-tumor_growth.io.w_init_dof: /home/power/cpp/DISS_surfaces/output/w_dof.log
+# tumor_growth.io.u_init_dof: /home/power/cpp/DISS_surfaces/output/u_dof.log
+# tumor_growth.io.w_init_dof: /home/power/cpp/DISS_surfaces/output/w_dof.log
+tumor_growth.io.u_init_dof: /scratch/na31/power/numerische_experimente/solution_driven/u_dof.log
+tumor_growth.io.w_init_dof: /scratch/na31/power/numerische_experimente/solution_driven/w_dof.log
 
 tumor_growth.prefix: /home/power/cpp/DISS_surfaces/
 tumor_growth.io.u_prefix: output/test_video/u_Sphere_4.txt
