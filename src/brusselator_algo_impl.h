@@ -1,5 +1,7 @@
 /*! \file brusselator_algo_impl.h
-
+    \author Christian Power
+    \date 29. March 2016
+    
     \brief Implementation details for brusselator_algo.cpp
 
      Revision history
@@ -14,7 +16,7 @@
 
      To do.
 
-         Created by Christian Power on 17.03.2016
+         Created by Christian Power on 29.03.2016
          Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 

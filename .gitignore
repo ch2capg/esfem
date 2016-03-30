@@ -2,6 +2,7 @@
 *.o
 *.log
 *.png
+intermediate_*
 bin/*
 lib/*
 doc/*

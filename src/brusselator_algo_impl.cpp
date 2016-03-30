@@ -1,17 +1,23 @@
 /*! \file brusselator_algo_impl.cpp
+    \author Christian Power
+    \date 29. March 2016
+    
+    \brief Implementation details for brusselator_algo_impl.h
 
-    \brief <Program Name>
-
-     Revision history:
+     Revision history
+     --------------------------------------------------
 
           Revised by Christian Power March 2016
           Originally written by Christian Power
-               (power22c@gmail.com) March 2016
+               (power22c@gmail.com) February 2016
 
-     Implementation details for brusselator_algo_impl.h
+     Idea
+     --------------------------------------------------
 
-     Created by Christian Power on 16.03.2016
-     Copyright (c) 2016 Christian Power. All rights reserved.
+     To do.
+
+         Created by Christian Power on 29.03.2016
+         Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
 #include "brusselator_algo_impl.h"
