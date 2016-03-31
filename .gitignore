@@ -12,6 +12,7 @@ output/*
 Makefile
 src/config/config.h
 dgfparser.log
+data/tumor_parameter.txt
 data/sphere/test.cpp
 data/sphere/triceratops.off
 data/sphere/raw_data/count*

@@ -3,6 +3,7 @@
 #
 #  Revision history:
 #
+#       Revised by Christian Power March 2016
 #	Revised by Christian Power Januar 2016
 #	Originally written by Christian Power
 #		(power22c@gmail.com) Decembre 2016
@@ -11,7 +12,7 @@
 #   - PROJECT_DIR is created and contains
 #     include src src/doc test
 #   - BUILD_DIR is created and contains
-#     bin lib obj
+#     bin lib obj doc/developer doc/user
 #  
 #  How to use:
 #  - Set PROJECT_DIR in this makefile.  Enter an absolute path.
@@ -34,16 +35,16 @@
 #  Copyright (c) 2016 Christian Power.  All rights reserved.
 # ----------------------------------------------------------------------
 
-CPP_DIR := /Users/christianpower/cpp
-PROJECT_DIR := ${CPP_DIR}/DISS_surfaces
+HOME := $(shell echo ~)
+PROJECT_DIR := ${HOME}/cpp/DISS_surfaces
 BUILD_DIR ?= ${PROJECT_DIR}
 
-DUNE_DIR := /Users/christianpower/cpp/dune
-ALU_DIR := /Users/christianpower/cpp/ALUGrid-1.52/build
-ALBERTA_DIR := /Users/christianpower/cpp/alberta-3.0.1/build
+DUNE_DIR := ${HOME}/cpp/dune
+ALU_DIR := ${HOME}/cpp/ALUGrid-1.52/build
+ALBERTA_DIR := ${HOME}/cpp/alberta-3.0.1/build
 
 CXX := clang++
-CPPFLAGS ?= $(addprefix -I${PROJECT_DIR}/, include src test) \
+CPPFLAGS ?= $(addprefix -I${PROJECT_DIR}/, include src test src/config) \
  -I${CPP_DIR}/dassert/include \
  $(addprefix -I${DUNE_DIR}/, build/include dune-common dune-geometry \
    dune-istl dune-localfunctions dune-grid dune-fem dune-alugrid) \
@@ -58,7 +59,7 @@ LDFLAGS ?= $(addprefix -L, ${DUNE_DIR}/build/lib ${ALU_DIR}/lib \
    dunealugrid dunefem alugrid alugrid_serial dunealbertagrid_3d \
    lapack blas z m gmp gmpxx)
 
-DEBUG ?= 0
+DEBUG ?= 1
 CPPFLAGS += -DDEBUG=${DEBUG}
 
 ifdef NDEBUG
@@ -67,15 +68,6 @@ endif
 
 CURRENT_MODE ?= Mode::throw_ #Mode::terminate_, Mode::ignore_
 CPPFLAGS += -DCURRENT_MODE=${CURRENT_MODE}
-
-# DEBUG ?= 0
-# ifeq (${DEBUG}, 0)
-# BUILD_DIR ?= ${PROJECT_DIR}
-# CXXFLAGS += -O3
-# else
-# BUILD_DIR ?= ${PROJECT_DIR}/debug
-# CPPFLAGS += -DDEBUG=${DEBUG}
-# endif
 
 # ----------------------------------------------------------------------
 # Basic makefile rules
@@ -94,7 +86,7 @@ all: ${targets} doc
 # ${BUILD_DIR}/doc/header_dep.png: ${BUILD_DIR}/src/header_dep.dot
 # 	dot -Tpng $< > $@
 doc:
-	doxygen ${PROJECT_DIR}/src/doc/doxy.config
+	doxygen ${PROJECT_DIR}/src/doc/developer_doxy.config
 
 help:
 	@ echo Some general variables:
@@ -206,11 +198,15 @@ PROG2 := ${PROJECT_DIR}/src/brusselator
 PROG2_SRC := $(addprefix $(dir ${PROG2}), \
  brusselator_main.cpp brusselator_algo.cpp \
  secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp \
+ secOrd_op_solutionDriven.cpp secOrd_op_solutionDriven_impl.cpp \
 )
 PROG2_SRC += $(addprefix $(dir ${PROG2}), \
- io_parameter.cpp io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp io_dgf.cpp \
+ io_parameter.cpp io_parameter_impl.cpp \
+ io_l2h1Calculator.cpp io_errorStream.cpp io_paraview.cpp io_dgf.cpp \
  grid_deformation.cpp grid_GridAndTime.cpp grid_GridAndTime_impl.cpp \
+ grid_fef.cpp \
  secOrd_op_initData.cpp secOrd_op_initData_impl.cpp\
+ secOrd_op_identity.cpp \
  secOrd_op_rhs.cpp secOrd_op_linearHeat.cpp \
  secOrd_op_initData_u.cpp secOrd_op_initData_w.cpp \
  secOrd_op_rhs_u.cpp secOrd_op_rhs_w.cpp \
@@ -219,7 +215,8 @@ PROG2_MSG = ${PROG2_name} - No special flags
 
 PROG2_name := $(basename $(notdir ${PROG2}))
 ${PROG2_name}: CXXFLAGS +=
-${PROG2_name}: CPPFLAGS += 
+${PROG2_name}: CPPFLAGS += -DPFILE="\"/Users/christianpower/cpp/DISS_surface/data/tumor_parameter.txt\"" \
+ -DFEF_PATH="\"/Users/christianpower/cpp/DISS_surface/output/\""
 ${PROG2_name}: LDFLAGS += # $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 
 # ------------------------------------------------------------
@@ -236,7 +233,7 @@ PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
 
 ${PROG2_name}: ${PROG2_bin}
 ${PROG2_bin}: ${PROG2_obj}
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+	${CXX} $^ ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ 
 
 # ----------------------------------------------------------------------
 # PROG3
@@ -381,8 +378,8 @@ ${TEST2_bin}: ${TEST2_obj}
 # pattern rules
 
 ${BUILD_DIR}/obj/%.o:		${PROJECT_DIR}/src/%.cpp
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<
+	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ 
 ${BUILD_DIR}/obj/%_pic.o:	${PROJECT_DIR}/src/%.cpp
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -fPIC -MMD -c -o $@ $<
+	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -fPIC -MMD -c -o $@ 
 ${BUILD_DIR}/obj/%_test.o:		${PROJECT_DIR}/test/%.cpp
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ $<
+	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ 
