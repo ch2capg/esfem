@@ -36,7 +36,7 @@
 # ----------------------------------------------------------------------
 
 HOME := $(shell echo ~)
-PROJECT_DIR := ${HOME}/cpp/DISS_surfaces
+PROJECT_DIR := ${HOME}/cpp/DISS_surface
 BUILD_DIR ?= ${PROJECT_DIR}
 
 DUNE_DIR := ${HOME}/cpp/dune
@@ -45,7 +45,7 @@ ALBERTA_DIR := ${HOME}/cpp/alberta-3.0.1/build
 
 CXX := clang++
 CPPFLAGS ?= $(addprefix -I${PROJECT_DIR}/, include src test src/config) \
- -I${CPP_DIR}/dassert/include \
+ -I${HOME}/cpp/dassert/include \
  $(addprefix -I${DUNE_DIR}/, build/include dune-common dune-geometry \
    dune-istl dune-localfunctions dune-grid dune-fem dune-alugrid) \
  $(addprefix -D, HAVE_CONFIG_H ENABLE_GMP=1 ALUGRID_SIMPLEX \
@@ -197,6 +197,7 @@ ${PROG1_bin}: ${PROG1_obj}
 PROG2 := ${PROJECT_DIR}/src/brusselator
 PROG2_SRC := $(addprefix $(dir ${PROG2}), \
  brusselator_main.cpp brusselator_algo.cpp \
+ brusselator_algo_impl.cpp \
  secOrd_op_brusselator.cpp secOrd_op_brusselator_impl.cpp \
  secOrd_op_solutionDriven.cpp secOrd_op_solutionDriven_impl.cpp \
 )
