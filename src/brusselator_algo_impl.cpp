@@ -202,7 +202,7 @@ void RhsAndSolve_helper::scalar_massMatrix(){
   fef.w.rhs_les = w.rhs_les;
 }
 void RhsAndSolve_helper::solve_surface_and_save(){
-  std::cerr << "RhsAndSolve_helper::solve_surface_and_save()" << std::endl;
+  // std::cerr << "RhsAndSolve_helper::solve_surface_and_save()" << std::endl;
   // std::cerr << "*X.fun.cbegin(): " << *X.fun.cbegin() << '\n'
   // 	    << "*X.rhs_les.cbegin(): " << *X.rhs_les.cbegin() << '\n'
   // 	    << "X.fun.size(): " << X.fun.size() << '\n'
@@ -232,7 +232,9 @@ void RhsAndSolve_helper::solve_surface_and_save(){
 
 Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
   : bs {bs_input},
-  grid {bs.data, Grid::compose_dgfName(bs.fef.surface.fun.name()), 
+    grid
+  {bs.data,
+      Grid::compose_dgfName(bs.fef.surface.fun.name(), bs.fef.tmpFile_path ), 
       bs.fix_grid.time_provider().time()},
   u {bs.fef.u, grid},
   w {bs.fef.w, grid},

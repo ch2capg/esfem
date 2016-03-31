@@ -57,26 +57,26 @@ MCF_op::MCF_op(const Io::Parameter& p,
   tp {g.time_provider()},
   u {u_input}
 {
-  std::cerr << "Printing some values of u_input\n"
-	    << "u_input.size(): " << u_input.size() << '\n'
-	    << "First 10 values of u_input"
-	    << std::endl;
-  {
-    auto pointer = u_input.dbegin();
-    for(int i = 0; i < 10; ++i, ++pointer)
-      std::cerr << *pointer << ' ';
-    std::cerr << std::endl;
-  }
-  std::cerr << "Printing some values of u\n"
-	    << "u.size(): " << u.size() << '\n'
-	    << "First 10 values of u"
-	    << std::endl;
-  {
-    auto pointer = u.dbegin();
-    for(int i = 0; i < 10; ++i, ++pointer)
-      std::cerr << *pointer << ' ';
-    std::cerr << std::endl;
-  }
+  // std::cerr << "Printing some values of u_input\n"
+  // 	    << "u_input.size(): " << u_input.size() << '\n'
+  // 	    << "First 10 values of u_input"
+  // 	    << std::endl;
+  // {
+  //   auto pointer = u_input.dbegin();
+  //   for(int i = 0; i < 10; ++i, ++pointer)
+  //     std::cerr << *pointer << ' ';
+  //   std::cerr << std::endl;
+  // }
+  // std::cerr << "Printing some values of u\n"
+  // 	    << "u.size(): " << u.size() << '\n'
+  // 	    << "First 10 values of u"
+  // 	    << std::endl;
+  // {
+  //   auto pointer = u.dbegin();
+  //   for(int i = 0; i < 10; ++i, ++pointer)
+  //     std::cerr << *pointer << ' ';
+  //   std::cerr << std::endl;
+  // }
 
 }
 
@@ -96,34 +96,34 @@ void MCF_op::operator()(const Vector_fef& rhs, Vector_fef& lhs) const{
 
 void MCF_op::rhs(const Vector_fef& rhs, Vector_fef& lhs) const{
   // (M + alpha * A) X + tau * delta * M(u^n, surfaceNormal)
-  std::cerr << "MCF_op::rhs()" << std::endl;
+  // std::cerr << "MCF_op::rhs()" << std::endl;
   lhs.clear();
 
-  std::cerr << "Printing some values of u\n"
-	    << "u.size(): " << u.size() << '\n'
-	    << "First 10 values of u"
-	    << std::endl;
-  {
-    auto pointer = u.dbegin();
-    for(int i = 0; i < 10; ++i, ++pointer)
-      std::cerr << *pointer << ' ';
-    std::cerr << std::endl;
-  }
+  // std::cerr << "Printing some values of u\n"
+  // 	    << "u.size(): " << u.size() << '\n'
+  // 	    << "First 10 values of u"
+  // 	    << std::endl;
+  // {
+  //   auto pointer = u.dbegin();
+  //   for(int i = 0; i < 10; ++i, ++pointer)
+  //     std::cerr << *pointer << ' ';
+  //   std::cerr << std::endl;
+  // }
 
   const auto& df_space = lhs.space();
   for(const auto& entity : df_space){
     const auto& geometry = entity.geometry();
-    std::cerr << "const auto& geometry = entity.geometry();" << std::endl;
+    // std::cerr << "const auto& geometry = entity.geometry();" << std::endl;
     const auto rhs_loc = rhs.localFunction(entity);
-    std::cerr << "const auto rhs_loc = rhs.localFunction(entity);" << std::endl;
+    // std::cerr << "const auto rhs_loc = rhs.localFunction(entity);" << std::endl;
     const auto u_loc = u.localFunction(entity);	// Scalar valued
-    std::cerr << "const auto u_loc = u.localFunction(entity);	// Scalar valued " << std::endl;
+    // std::cerr << "const auto u_loc = u.localFunction(entity);	// Scalar valued " << std::endl;
     auto lhs_loc = lhs.localFunction(entity);
-    std::cerr << "auto lhs_loc = lhs.localFunction(entity);" << std::endl;
+    // std::cerr << "auto lhs_loc = lhs.localFunction(entity);" << std::endl;
     Quadrature quad {entity, rhs_loc.order() + lhs_loc.order()};
-    std::cerr << "Quadrature quad {entity, rhs_loc.order() + lhs_loc.order()};" << std::endl;
+    // std::cerr << "Quadrature quad {entity, rhs_loc.order() + lhs_loc.order()};" << std::endl;
     mcf_rhs_matrixFree_assembly(geometry, quad, rhs_loc, u_loc, lhs_loc);
-    std::cerr << "mcf_rhs_matrixFree_assembly(geometry, quad, rhs_loc, u_loc, lhs_loc);" << std::endl;
+    // std::cerr << "mcf_rhs_matrixFree_assembly(geometry, quad, rhs_loc, u_loc, lhs_loc);" << std::endl;
   }
   lhs.communicate();
 }
@@ -154,14 +154,14 @@ void MCF_op::mcf_rhs_matrixFree_assembly(const Geometry& g,
 					 const Local_function<Vector_fef>& cf,
 					 const Local_function<Scalar_fef>& u_loc,
 					 Local_function<Vector_fef>& f) const{
-  std::cerr << "MCF_op::mcf_rhs_matrixFree_assembly()" << std::endl;
+  // std::cerr << "MCF_op::mcf_rhs_matrixFree_assembly()" << std::endl;
   for(size_t pt = 0; pt < q.nop(); ++pt){
     // (M + alpha * A) X + tau * delta * M(u^n, surfaceNormal)
     const auto& x = q.point(pt);
     const auto integral_factor = q.weight(pt) * g.integrationElement(x);
 
     auto n_p = surface_normal(g);
-    std::cerr << "surface_normal(g)" << std::endl;
+    // std::cerr << "surface_normal(g)" << std::endl;
       
     const auto u_p = evaluate(pt, q, u_loc);
     n_p *= u_p * tp.deltaT() * delta * integral_factor;
