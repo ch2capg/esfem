@@ -151,12 +151,13 @@ void PrePattern_helper::plot_errors_in_errFile(){
 RhsAndSolve_helper::RhsAndSolve_helper(Brusselator_scheme& bs_input)
   : bs {bs_input},
   fef {bs.fef},
-  grid {bs.data, Grid::compose_dgfName(bs.fef.surface.fun.name()), 
+  grid {bs.data,
+      Grid::compose_dgfName(fef.surface.fun.name(), fef.tmpFile_path), 
       bs.fix_grid.time_provider().time()},
-  u {bs.fef.u, grid},
-  w {bs.fef.w, grid},
-  X {bs.fef.surface, grid},
-  ss  {bs.data, grid, u, w},
+  u {fef.u, grid},
+  w {fef.w, grid},
+  X {fef.surface, grid},
+  ss {bs.data, grid, u, w},
   vs {bs.data, grid, u.fun}
 {
   std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;  
