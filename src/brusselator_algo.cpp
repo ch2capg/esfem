@@ -101,7 +101,7 @@ void Brusselator_scheme::prePattern_loop(){
   // paraview_loc.write();  
 }
 void Brusselator_scheme::intermediate_action(){
-  const auto uw_path = tmpFile_path + "intermediate_";
+  const auto uw_path = fef.tmpFile_path + "intermediate_";
   switch(prePattern_timeSteps()){
   case 0: // heat.starttime == heat.pattern.endtime
     std::cerr << "heat.starttime == heat.pattern.endtime" << std::endl;
@@ -112,7 +112,7 @@ void Brusselator_scheme::intermediate_action(){
     std::cerr << "heat.starttime != heat.pattern.endtime" << std::endl;
     fef.u.write(io.dgf_handler, uw_path);
     fef.w.write(io.dgf_handler, uw_path);
-    fef.surface.write(io.dgf_handler, tmpFile_path);
+    fef.surface.write(io.dgf_handler, fef.tmpFile_path);
     break;
   };
 }
