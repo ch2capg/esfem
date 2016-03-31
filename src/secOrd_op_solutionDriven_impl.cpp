@@ -80,10 +80,10 @@ void MCF_op::rhs(const Vector_fef& rhs, Vector_fef& lhs){
   for(const auto& entity : df_space){
     const auto& geometry = entity.geometry();
     std::cerr << "const auto& geometry = entity.geometry();" << std::endl;
-    const auto& rhs_loc = rhs.localFunction(entity);
-    std::cerr << "const auto& rhs_loc = rhs.localFunction(entity);" << std::endl;
-    const auto& u_loc = u.localFunction(entity);	// Scalar valued
-    std::cerr << "const auto& u_loc = u.localFunction(entity);	// Scalar valued " << std::endl;
+    const auto rhs_loc = rhs.localFunction(entity);
+    std::cerr << "const auto rhs_loc = rhs.localFunction(entity);" << std::endl;
+    const auto u_loc = u.localFunction(entity);	// Scalar valued
+    std::cerr << "const auto u_loc = u.localFunction(entity);	// Scalar valued " << std::endl;
     auto lhs_loc = lhs.localFunction(entity);
     std::cerr << "auto lhs_loc = lhs.localFunction(entity);" << std::endl;
     Quadrature quad {entity, rhs_loc.order() + lhs_loc.order()};

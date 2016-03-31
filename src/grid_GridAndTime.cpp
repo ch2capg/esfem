@@ -16,16 +16,15 @@
 #include <config.h>
 #include <stdexcept>
 #include <dune/fem/solver/timeprovider.hh>
+#include <dune/common/exceptions.hh>
 #include "grid.h"
 #include "grid_GridAndTime_impl.h"
 #include "io_parameter.h"
-
-#ifdef DEBUG
-#include <iostream>
-#endif
+#include "esfem_error.h"
 
 using namespace std;
 
+using Esfem::Grid_error;
 using Deformation = Esfem::Grid::Deformation;
 using Host_grid = Esfem::Grid::Grid_and_time::Host_grid;
 using HGrid_ptr = Dune::GridPtr<Host_grid>;
@@ -92,11 +91,16 @@ Esfem::Grid::Grid_and_time::Grid_and_time(const Io::Parameter& p)
 try : d_ptr {std::make_unique<Data>(p)}
 {}
 catch(const std::exception&){
-  throw_with_nested
-    (runtime_error {"Error in constructor of Grid_and_time."});
+  throw_with_nested(Grid_error {"Constructor"});
+ }
+ catch(const Dune::Exception& e){
+   ostringstream oss;
+   oss << "Constructor\n"
+       << "Dune error: " << e << std::endl;
+   throw Grid_error {oss.str()};
  }
  catch(...){
-   throw runtime_error {"Unknown error in constructor of Grid_and_time."};
+   throw Grid_error {"Constructor, unknown error"};
  }
 
 Esfem::Grid::Grid_and_time::
@@ -104,11 +108,16 @@ Grid_and_time(const Io::Parameter& p, const std::string& dgf_file, const double 
 try : d_ptr {std::make_unique<Data>(p, dgf_file, t0)}
 {}
 catch(const std::exception&){
-  throw_with_nested
-    (runtime_error {"Error in constructor of Grid_and_time."});
+  throw_with_nested(Grid_error {"Constructor"});
+ }
+ catch(const Dune::Exception& e){
+   ostringstream oss;
+   oss << "Constructor\n"
+       << "Dune error: " << e << std::endl;
+   throw Grid_error {oss.str()};
  }
  catch(...){
-   throw runtime_error {"Unknown error in constructor of Grid_and_time."};
+   throw Grid_error {"Constructor, unknown error"};
  }
 
 Esfem::Grid::Grid_and_time::~Grid_and_time() = default;

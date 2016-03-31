@@ -32,6 +32,7 @@ namespace Esfem{
   struct Parameter_error;
   struct SolutionDriven_error;
   struct BrusselatorScheme_error;
+  struct Grid_error;
   
   struct Parameter_error : std::runtime_error{
     explicit Parameter_error(const std::string& msg) 
@@ -53,6 +54,14 @@ namespace Esfem{
     {}
   };
   /*!< \brief Used in brusselator_algo{,_impl}.{h,cpp} */
+  struct Grid_error : std::runtime_error{
+    explicit Grid_error(const std::string& msg)
+      : std::runtime_error
+      {"Esfem::Grid::Grid_and_time.\n" + msg}
+    {}
+  };
+  /*!< \brief Used in grid.h */
+
 }
 
 // ----------------------------------------------------------------------
@@ -66,6 +75,9 @@ inline void Assert::dynamic<false, Esfem::SolutionDriven_error>
 (const bool, const std::string&){};
 template<>
 inline void Assert::dynamic<false, Esfem::BrusselatorScheme_error>
+(const bool, const std::string&){};
+template<>
+inline void Assert::dynamic<false, Esfem::Grid_error>
 (const bool, const std::string&){};
 
 #endif // ESFEM_ERROR_H

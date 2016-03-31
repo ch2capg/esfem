@@ -21,7 +21,18 @@
 */
 
 #include "brusselator_algo_impl.h"
+#include "esfem_error.h"
 
+/*! \name Convenience typedefs */
+//@{
+using Bruss_error = Esfem::BrusselatorScheme_error;
+using Esfem::SecOrd_op::Identity;
+using Scal_FEfun_set = Esfem::Grid::Scal_FEfun_set;
+using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
+//@}
+
+/*! \name Implemented in this file */
+//@{
 using Esfem::Rhs;
 using Esfem::Init_data;
 using Esfem::Scalar_solver;
@@ -30,9 +41,7 @@ using Esfem::PrePattern_helper;
 using Esfem::PreLoop_helper;
 using Esfem::RhsAndSolve_helper;
 using Esfem::Pattern_helper;
-using Esfem::SecOrd_op::Identity;
-using Scal_FEfun_set = Esfem::Grid::Scal_FEfun_set;
-using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
+//@}
 
 // ----------------------------------------------------------------------
 // Implementation of structs 
@@ -149,7 +158,7 @@ void PrePattern_helper::plot_errors_in_errFile(){
 // Implementation RhsAndSolve_helper
 
 RhsAndSolve_helper::RhsAndSolve_helper(Brusselator_scheme& bs_input)
-  : bs {bs_input},
+try : bs {bs_input},
   fef {bs.fef},
   grid {bs.data,
       Grid::compose_dgfName(fef.surface.fun.name(), fef.tmpFile_path), 
@@ -172,6 +181,12 @@ RhsAndSolve_helper::RhsAndSolve_helper(Brusselator_scheme& bs_input)
     std::cerr << *it << ' ';
   std::cerr << std::endl;
 }
+catch(std::exception&){
+  std::throw_with_nested(Bruss_error {"RhsAndSolve_helper()"});
+ }
+ catch(...){
+   throw Bruss_error {"RhsAndSolve_helper(), unknown error"};
+ }
 void RhsAndSolve_helper::scalar_massMatrix(){
   ss.u.mass_matrix(u.fun, u.rhs_les);
   ss.w.mass_matrix(w.fun, w.rhs_les);
