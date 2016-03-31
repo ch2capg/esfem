@@ -47,9 +47,16 @@ struct Solution_driven::Data{
 
 Solution_driven::Data::Data(const Io::Parameter& p, const Grid::Grid_and_time& g,
 			    const Grid::Scal_FEfun& u_wrapper)
-  : mcf_op {p, g, static_cast<FEfun>(u_wrapper)},
+  : mcf_op {p, g, u_wrapper},
   cg_solver {mcf_op, p.eps(), p.eps()}
-{}
+{
+  // std::cerr << "Solution_driven::Data()\n"
+  // 	    << "Testing u_wrapper by printing out first 10 nodal values. " << std::endl;  
+  // auto counter = 0;
+  // for(auto it = u_wrapper.cbegin(); counter < 10; ++counter, ++it)
+  //   std::cerr << *it << ' ';
+  // std::cerr << std::endl;  
+}
 
 // ----------------------------------------------------------------------
 // Implementation of Solution_driven
@@ -70,7 +77,7 @@ solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
 }
 
 void Solution_driven::rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
-  std::cerr << "Solution_driven::rhs()" << std::endl;
+  // std::cerr << "Solution_driven::rhs()" << std::endl;  
   const Vec_FEfun& vfef1 = rhs;
   Vec_FEfun& vfef2 = lhs;
   d_ptr -> mcf_op.rhs(vfef1, vfef2);

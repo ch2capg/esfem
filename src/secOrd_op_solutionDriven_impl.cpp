@@ -56,7 +56,29 @@ MCF_op::MCF_op(const Io::Parameter& p,
   eps {p.eps()},
   tp {g.time_provider()},
   u {u_input}
-{}
+{
+  std::cerr << "Printing some values of u_input\n"
+	    << "u_input.size(): " << u_input.size() << '\n'
+	    << "First 10 values of u_input"
+	    << std::endl;
+  {
+    auto pointer = u_input.dbegin();
+    for(int i = 0; i < 10; ++i, ++pointer)
+      std::cerr << *pointer << ' ';
+    std::cerr << std::endl;
+  }
+  std::cerr << "Printing some values of u\n"
+	    << "u.size(): " << u.size() << '\n'
+	    << "First 10 values of u"
+	    << std::endl;
+  {
+    auto pointer = u.dbegin();
+    for(int i = 0; i < 10; ++i, ++pointer)
+      std::cerr << *pointer << ' ';
+    std::cerr << std::endl;
+  }
+
+}
 
 void MCF_op::operator()(const Vector_fef& rhs, Vector_fef& lhs) const{
   // (M + (alpha + epsilon * tau) A) X
@@ -72,10 +94,22 @@ void MCF_op::operator()(const Vector_fef& rhs, Vector_fef& lhs) const{
   lhs.communicate();
 }
 
-void MCF_op::rhs(const Vector_fef& rhs, Vector_fef& lhs){
+void MCF_op::rhs(const Vector_fef& rhs, Vector_fef& lhs) const{
   // (M + alpha * A) X + tau * delta * M(u^n, surfaceNormal)
   std::cerr << "MCF_op::rhs()" << std::endl;
   lhs.clear();
+
+  std::cerr << "Printing some values of u\n"
+	    << "u.size(): " << u.size() << '\n'
+	    << "First 10 values of u"
+	    << std::endl;
+  {
+    auto pointer = u.dbegin();
+    for(int i = 0; i < 10; ++i, ++pointer)
+      std::cerr << *pointer << ' ';
+    std::cerr << std::endl;
+  }
+
   const auto& df_space = lhs.space();
   for(const auto& entity : df_space){
     const auto& geometry = entity.geometry();

@@ -169,17 +169,17 @@ try : bs {bs_input},
   ss {bs.data, grid, u, w},
   vs {bs.data, grid, u.fun}
 {
-  std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;  
-  auto counter = 0;
-  for(auto it = u.fun.cbegin(); counter < 10; ++counter, ++it)
-    std::cerr << *it << ' ';
-  std::cerr << std::endl;
+  // std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;  
+  // auto counter = 0;
+  // for(auto it = u.fun.cbegin(); counter < 10; ++counter, ++it)
+  //   std::cerr << *it << ' ';
+  // std::cerr << std::endl;
 
-  std::cerr << "Testing X.fun by printing out first 10 nodal values. " << std::endl;
-  counter = 0;
-  for(auto it = X.fun.cbegin(); counter < 10; ++counter, ++it)
-    std::cerr << *it << ' ';
-  std::cerr << std::endl;
+  // std::cerr << "Testing X.fun by printing out first 10 nodal values. " << std::endl;
+  // counter = 0;
+  // for(auto it = X.fun.cbegin(); counter < 10; ++counter, ++it)
+  //   std::cerr << *it << ' ';
+  // std::cerr << std::endl;
 }
 catch(std::exception&){
   std::throw_with_nested(Bruss_error {"RhsAndSolve_helper()"});
@@ -188,6 +188,14 @@ catch(std::exception&){
    throw Bruss_error {"RhsAndSolve_helper(), unknown error"};
  }
 void RhsAndSolve_helper::scalar_massMatrix(){
+  // std::cerr << "RhsAndSolve_helper::scalar_massMatrix()" << std::endl;
+
+  // std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;  
+  // auto counter = 0;
+  // for(auto it = u.fun.cbegin(); counter < 10; ++counter, ++it)
+  //   std::cerr << *it << ' ';
+  // std::cerr << std::endl;
+
   ss.u.mass_matrix(u.fun, u.rhs_les);
   ss.w.mass_matrix(w.fun, w.rhs_les);
   fef.u.rhs_les = u.rhs_les;
@@ -195,21 +203,28 @@ void RhsAndSolve_helper::scalar_massMatrix(){
 }
 void RhsAndSolve_helper::solve_surface_and_save(){
   std::cerr << "RhsAndSolve_helper::solve_surface_and_save()" << std::endl;
-  std::cerr << "*X.fun.cbegin(): " << *X.fun.cbegin() << '\n'
-	    << "*X.rhs_les.cbegin(): " << *X.rhs_les.cbegin() << '\n'
-	    << "X.fun.size(): " << X.fun.size() << '\n'
-	    << "*fef.surface.fun.cbegin(): " << *fef.surface.fun.cbegin() << '\n'
-	    << "*fef.surface.rhs_les.cbegin(): " << *fef.surface.rhs_les.cbegin() << '\n'
-	    << "fef.surface.fun.size(): " << fef.surface.fun.size() 
-	    << std::endl;
+  // std::cerr << "*X.fun.cbegin(): " << *X.fun.cbegin() << '\n'
+  // 	    << "*X.rhs_les.cbegin(): " << *X.rhs_les.cbegin() << '\n'
+  // 	    << "X.fun.size(): " << X.fun.size() << '\n'
+  // 	    << "*fef.surface.fun.cbegin(): " << *fef.surface.fun.cbegin() << '\n'
+  // 	    << "*fef.surface.rhs_les.cbegin(): " << *fef.surface.rhs_les.cbegin() << '\n'
+  // 	    << "fef.surface.fun.size(): " << fef.surface.fun.size() 
+  // 	    << std::endl;
+
+  // std::cerr << "Testing u.fun by printing out first 10 nodal values. " << std::endl;  
+  // auto counter = 0;
+  // for(auto it = u.fun.cbegin(); counter < 10; ++counter, ++it)
+  //   std::cerr << *it << ' ';
+  // std::cerr << std::endl;
+
   vs.rhs(X.fun, X.rhs_les);
-  std::cerr << "vs.rhs(X.fun, X.rhs_les);" << std::endl;
+  // std::cerr << "vs.rhs(X.fun, X.rhs_les);" << std::endl;
   vs.solve(X.rhs_les, X.fun);
-  std::cerr << "vs.solve(X.rhs_les, X.fun);" << std::endl;
+  // std::cerr << "vs.solve(X.rhs_les, X.fun);" << std::endl;
   fef.surface.fun = X.fun;
-  std::cerr << "fef.surface.fun = X.fun;" << std::endl;
+  // std::cerr << "fef.surface.fun = X.fun;" << std::endl;
   fef.surface.write(bs.io.dgf_handler, fef.tmpFile_path);
-  std::cerr << "fef.surface.write(bs.io.dgf_handler, fef.tmpFile_path);" << std::endl;
+  // std::cerr << "fef.surface.write(bs.io.dgf_handler, fef.tmpFile_path);" << std::endl;
 }
 
 // ----------------------------------------------------------------------

@@ -70,7 +70,7 @@ namespace Esfem{
 	  \nodalValue{X}^{n+1} 
 	\f}
        */
-      void rhs(const Vector_fef& rhs, Vector_fef& lhs);
+      void rhs(const Vector_fef& rhs, Vector_fef& lhs) const;
       /*!< \brief Generates rhs for the linear system.
 
 	The new value of the finite element function will be

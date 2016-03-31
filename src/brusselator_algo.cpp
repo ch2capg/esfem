@@ -80,7 +80,7 @@ catch(const std::exception&){
 // Brusselator_scheme loop action
 
 void Brusselator_scheme::prePattern_loop(){
-  std::cerr << "prePattern_timeSteps(): " << prePattern_timeSteps() << std::endl;
+  // std::cerr << "prePattern_timeSteps(): " << prePattern_timeSteps() << std::endl;
     
   PrePattern_helper helper {*this};
   for(long it = 0; it < prePattern_timeSteps(); ++it, next_timeStep()){
@@ -104,12 +104,12 @@ void Brusselator_scheme::intermediate_action(){
   const auto uw_path = fef.tmpFile_path + "intermediate_";
   switch(prePattern_timeSteps()){
   case 0: // heat.starttime == heat.pattern.endtime
-    std::cerr << "heat.starttime == heat.pattern.endtime" << std::endl;
+    // std::cerr << "heat.starttime == heat.pattern.endtime" << std::endl;
     fef.u.read(io.dgf_handler, uw_path);
     fef.w.read(io.dgf_handler, uw_path);
     break;
   default:
-    std::cerr << "heat.starttime != heat.pattern.endtime" << std::endl;
+    // std::cerr << "heat.starttime != heat.pattern.endtime" << std::endl;
     fef.u.write(io.dgf_handler, uw_path);
     fef.w.write(io.dgf_handler, uw_path);
     fef.surface.write(io.dgf_handler, fef.tmpFile_path);
@@ -117,7 +117,7 @@ void Brusselator_scheme::intermediate_action(){
   };
 }
 void Brusselator_scheme::pattern_loop(){
-  std::cerr << "pattern_timeSteps(): " << pattern_timeSteps() << std::endl;
+  // std::cerr << "pattern_timeSteps(): " << pattern_timeSteps() << std::endl;
   
   for(long it = 0; it < pattern_timeSteps(); ++it, next_timeStep()){
     // solve_surfacePDE();
@@ -167,13 +167,13 @@ void Brusselator_scheme::pre_loop_action(){
   // massMatrix_rhsLes(solver, d_ptr -> u, d_ptr -> w);
 }
 void Brusselator_scheme::rhs_and_solve_SPDE(){
-  std::cerr << "rhs_and_solve_SPDE()." << std::endl;
+  // std::cerr << "rhs_and_solve_SPDE()." << std::endl;
   RhsAndSolve_helper helper {*this};
-  std::cerr << "RhsAndSolve_helper()." << std::endl;
+  // std::cerr << "RhsAndSolve_helper()." << std::endl;
   helper.scalar_massMatrix();
-  std::cerr << "helper.scalar_massMatrix()." << std::endl;
+  // std::cerr << "helper.scalar_massMatrix()." << std::endl;
   helper.solve_surface_and_save();
-  std::cerr << "helper.solve_surface_and_save()." << std::endl;
+  // std::cerr << "helper.solve_surface_and_save()." << std::endl;
   // // constructor 
   // const Grid::Grid_and_time grid
   // {data, compose_dgfName(fef.surface.fun.name()), 
