@@ -3,6 +3,7 @@
 #
 #  Revision history:
 #
+#       Revised by Christian Power April 2016
 #       Revised by Christian Power March 2016
 #	Revised by Christian Power Januar 2016
 #	Originally written by Christian Power
@@ -23,7 +24,12 @@
 #  - doxygen -g ${PROJECT_DIR}/src/doc/doxy.config
 #    Change in the doxygen file:
 #    * EXCLUDE_PATTERNS = */test/*
-#    * 
+#    * INPUT = ${BUILD_DIR}/
+#    * RECURSIVE = YES
+#    * SOURCE_BROWSER = YES
+#    * USE_HTAGS = YES
+#    * OUTPUT_DIRECTORY = ${BUILD_DIR}/doc/
+#    * HAVE_DOT = YES
 #  - Change compiler flags if needed
 #  - For libraries copy the template LIB1 
 #  - For programs copy the template PROG1
@@ -31,7 +37,7 @@
 # TODO: add 'global' resp. 'tags' and 'doxygen' resp. 'doc'
 #       doc should depend on tags
 #
-#  Created by Christian Power on 07.03.2016
+#  Created by Christian Power on 07.04.2016
 #  Copyright (c) 2016 Christian Power.  All rights reserved.
 # ----------------------------------------------------------------------
 
@@ -39,35 +45,34 @@ HOME := $(shell echo ~)
 PROJECT_DIR := ${HOME}/cpp/DISS_surface
 BUILD_DIR ?= ${PROJECT_DIR}
 
+DEBUG ?= 1
+CURRENT_MODE ?= Mode::throw_ #Mode::terminate_, Mode::ignore_
+
 DUNE_DIR := ${HOME}/cpp/dune
 ALU_DIR := ${HOME}/cpp/ALUGrid-1.52/build
 ALBERTA_DIR := ${HOME}/cpp/alberta-3.0.1/build
 
 CXX := clang++
+
 CPPFLAGS ?= $(addprefix -I${PROJECT_DIR}/, include src test src/config) \
  -I${HOME}/cpp/dassert/include \
  $(addprefix -I${DUNE_DIR}/, build/include dune-common dune-geometry \
    dune-istl dune-localfunctions dune-grid dune-fem dune-alugrid) \
+ $(addprefix -I, /Users/christianpower/cpp/ODE_Solver) \
  $(addprefix -D, HAVE_CONFIG_H ENABLE_GMP=1 ALUGRID_SIMPLEX \
    ALBERTA_DIM=3 ENABLE_ALBERTA ENABLE_ZLIB=1 \
    GRIDDIM=2 WORLDDIM=3 POLORDER=1) \
- $(addprefix -I, /Users/christianpower/cpp/ODE_Solver) 
-CXXFLAGS ?= -std=c++1y $(addprefix -W, all extra) -g
+ $(addprefix -D, DEBUG=${DEBUG} CURRENT_MODE=${CURRENT_MODE})
+ifdef NDEBUG
+CPPFLAGS += -DNDEBUG
+endif
+
+CXXFLAGS ?= -std=c++1y $(addprefix -W, all extra) -g -O3 -stdlib=libc++
 LDFLAGS ?= $(addprefix -L, ${DUNE_DIR}/build/lib ${ALU_DIR}/lib \
              ${ALBERTA_DIR}/lib) \
  $(addprefix -l, dunecommon dunegeometry dunegrid \
    dunealugrid dunefem alugrid alugrid_serial dunealbertagrid_3d \
    lapack blas z m gmp gmpxx)
-
-DEBUG ?= 1
-CPPFLAGS += -DDEBUG=${DEBUG}
-
-ifdef NDEBUG
-CPPFLAGS += -DNDEBUG
-endif
-
-CURRENT_MODE ?= Mode::throw_ #Mode::terminate_, Mode::ignore_
-CPPFLAGS += -DCURRENT_MODE=${CURRENT_MODE}
 
 # ----------------------------------------------------------------------
 # Basic makefile rules
@@ -78,7 +83,7 @@ makefile: ;
 Makefile: ;
 GNUmakefile: ;
 
-targets = ${libraries} ${progs} doc clean help
+targets = ${libraries} ${progs} 
 .PHONY:	all ${targets} doc clean help
 all: ${targets} doc
 
@@ -114,7 +119,7 @@ clean:
 # ----------------------------------------------------------------------
 # LIB1
 
-LIB1 := CHANGE
+LIB1 := LIBNAME
 VERSION1 := 0
 SUBVERSION1 :=  0
 PATCHVERSION1 := 0
@@ -189,7 +194,7 @@ PROG1_bin := ${BUILD_DIR}/bin/${PROG1_name}
 
 ${PROG1_name}: ${PROG1_bin}
 ${PROG1_bin}: ${PROG1_obj}
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+	${CXX} -o $@ $^ ${CXXFLAGS} ${LDFLAGS} 
 
 # ----------------------------------------------------------------------
 # PROG2
@@ -234,7 +239,7 @@ PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
 
 ${PROG2_name}: ${PROG2_bin}
 ${PROG2_bin}: ${PROG2_obj}
-	${CXX} $^ ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ 
+	${CXX} -o $@ $^ ${CXXFLAGS} ${LDFLAGS} 
 
 # ----------------------------------------------------------------------
 # PROG3
@@ -264,7 +269,7 @@ PROG3_bin := ${BUILD_DIR}/bin/${PROG3_name}
 
 ${PROG3_name}: ${PROG3_bin}
 ${PROG3_bin}: ${PROG3_obj}
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+	${CXX} -o $@ $^ ${CXXFLAGS} ${LDFLAGS} 
 
 # ----------------------------------------------------------------------
 # PROG4
@@ -307,7 +312,7 @@ PROG4_bin := ${BUILD_DIR}/bin/${PROG4_name}
 
 ${PROG4_name}: ${PROG4_bin}
 ${PROG4_bin}: ${PROG4_obj}
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+	${CXX} -o $@ $^ ${CXXFLAGS} ${LDFLAGS} 
 
 # ----------------------------------------------------------------------
 # TEST1
@@ -343,7 +348,7 @@ TEST1_bin := ${BUILD_DIR}/bin/${TEST1_name}
 
 ${TEST1_name}: ${TEST1_bin}
 ${TEST1_bin}: ${TEST1_obj} 
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+	${CXX} -o $@ $^ ${CXXFLAGS} ${LDFLAGS} 
 
 # ----------------------------------------------------------------------
 # TEST2
@@ -372,15 +377,15 @@ TEST2_obj := $(addprefix ${BUILD_DIR}/obj/, \
 TEST2_bin := ${BUILD_DIR}/bin/${TEST2_name}
 
 ${TEST2_name}: ${TEST2_bin}
-${TEST2_bin}: ${TEST2_obj} 
-	${CXX} ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -o $@ $^
+${TEST2_bin}: ${TEST2_obj}
+	${CXX} -o $@ $^ ${CXXFLAGS} ${LDFLAGS} 
 
 #----------------------------------------------------------------------
 # pattern rules
 
-${BUILD_DIR}/obj/%.o:		${PROJECT_DIR}/src/%.cpp
-	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ 
-${BUILD_DIR}/obj/%_pic.o:	${PROJECT_DIR}/src/%.cpp
-	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -fPIC -MMD -c -o $@ 
-${BUILD_DIR}/obj/%_test.o:		${PROJECT_DIR}/test/%.cpp
-	${CXX} $< ${CXXFLAGS} ${CPPFLAGS} ${LDFLAGS} -MMD -c -o $@ 
+${BUILD_DIR}/obj/%.o: ${PROJECT_DIR}/src/%.cpp
+	${CXX} -o $@ $< ${CPPFLAGS} ${CXXFLAGS} -MMD -c 
+${BUILD_DIR}/obj/%_pic.o: ${PROJECT_DIR}/src/%.cpp
+	${CXX} -o $@ $< ${CPPFLAGS} ${CXXFLAGS} -fPIC -MMD -c 
+${BUILD_DIR}/obj/%_test.o: ${PROJECT_DIR}/test/%.cpp
+	${CXX} -o $@ $< ${CPPFLAGS} ${CXXFLAGS} -MMD -c

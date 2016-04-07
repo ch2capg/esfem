@@ -95,7 +95,7 @@ doc:
 
 help:
 	@ echo Some general variables:
-	@ echo CXXFLAGS CPPFLAGS LDFLAGS CXX BUILD_DIR DEBUG=1-9
+	@ echo CXXFLAGS CPPFLAGS LDFLAGS CXX BUILD_DIR DEBUG=1-9 NDEBUG=1
 	@ echo 
 	@ echo Possible targets - with usage or explanation:
 	@ echo all - generates "${targets}"
