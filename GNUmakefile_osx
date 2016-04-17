@@ -42,8 +42,14 @@
 # ----------------------------------------------------------------------
 
 HOME := $(shell echo ~)
-PROJECT_DIR := ${HOME}/cpp/DISS_surface
-BUILD_DIR ?= ${PROJECT_DIR}
+PROJECT_DIR := .
+BUILD_DIR ?= ${PROJECT_DIR}/build
+BIN_DIR ?= ${BUILD_DIR}/bin
+LIB_DIR ?= ${BUILD_DIR}/lib
+DOC_DIR ?= ${BUILD_DIR}/doc
+DEPS_DIR ?= ${BUILD_DIR}/.deps
+build_dirs := ${BUILD_DIR} ${BIN_DIR} ${LIB_DIR} ${DOC_DIR} ${DEPS_DIR}
+build_dirs += ${BUILD_DIR}/output
 
 DEBUG ?= 1
 CURRENT_MODE ?= Mode::throw_ #Mode::terminate_, Mode::ignore_
@@ -78,21 +84,14 @@ LDFLAGS ?= $(addprefix -L, ${DUNE_DIR}/build/lib ${ALU_DIR}/lib \
 # Basic makefile rules
 
 .SUFFIXES:
-# .RECIPEPREFIX = >
-makefile: ;
-Makefile: ;
-GNUmakefile: ;
+.SUFFIXES: .o .cpp .h
 
-targets = ${libraries} ${progs} 
-.PHONY:	all ${targets} doc clean help
-all: ${targets} doc
+targets = brusselator
 
-# doc:  ${BUILD_DIR}/doc/header_dep.png
-# ${BUILD_DIR}/doc/header_dep.png: ${BUILD_DIR}/src/header_dep.dot
-# 	dot -Tpng $< > $@
-doc:
-	doxygen ${PROJECT_DIR}/src/doc/developer_doxy.config
-
+.PHONY:	all ${targets} doc clean help checkDirs FORCEMAKE
+all: checkDirs ${targets} 
+doc: $(addprefix ${PROJECT_DIR}/src/doc/, $(addsuffix .config, doxy vc capg))
+	doxygen $<
 help:
 	@ echo Some general variables:
 	@ echo CXXFLAGS CPPFLAGS LDFLAGS CXX BUILD_DIR DEBUG=1-9
@@ -110,11 +109,8 @@ help:
 	@ echo ${PROG4_MSG}
 	@ echo ${TEST1_MSG}
 	@ echo 
-clean: 
-	find ${BUILD_DIR}/lib ( -type f -or -type l ) -exec rm -f {} +
-	find ${BUILD_DIR}/bin ( -type f -or -type l ) -exec rm -f {} +
-	find ${BUILD_DIR}/obj ( -type f -or -type l ) -exec rm -f {} +
-	find ${BUILD_DIR}/doc ( -type f -or -type l ) -exec rm -f {} +
+clean:
+	rm -rf ${BUILD_DIR}
 
 # ----------------------------------------------------------------------
 # LIB1
@@ -134,8 +130,6 @@ ${LIB1}: LDFLAGS +=
 # ------------------------------------------------------------
 # do not change
 
-libraries += ${LIB1}
-
 LIB1_a_obj := $(addprefix ${BUILD_DIR}/obj/, \
 	       $(patsubst %.cpp, %.o, \
 	        $(notdir ${LIB1_SRC}))) 
@@ -144,19 +138,20 @@ LIB1_dylib_obj := $(addprefix ${BUILD_DIR}/obj/, \
 		    $(notdir ${LIB1_SRC})))
 -include $(patsubst %.o, %.d, ${LIB1_dylib_obj} ${LIB1_a_obj})
 
-LIB1_dylib := ${BUILD_DIR}/lib/lib${LIB1}.dylib
-LIB1_dylib_v := ${BUILD_DIR}/lib/lib${LIB1}.${VERSION1}.dylib
-LIB1_dylib_vv := ${BUILD_DIR}/lib/lib${LIB1}.${VERSION1}.${SUBVERSION1}.dylib
-LIB1_dylib_vvp := ${BUILD_DIR}/lib/lib${LIB1}.${VERSION1}.${SUBVERSION1}.${PATCHVERSION1}.dylib
-lib1_a := ${BUILD_DIR}/lib/lib${LIB1}_s.a
+LIB1_dylib := lib${LIB1}.dylib
+LIB1_dylib_v := lib${LIB1}.${VERSION1}.dylib
+LIB1_dylib_vv := lib${LIB1}.${VERSION1}.${SUBVERSION1}.dylib
+LIB1_dylib_vvp := lib${LIB1}.${VERSION1}.${SUBVERSION1}.${PATCHVERSION1}.dylib
+lib1_a := ${LIB_DIR}/lib${LIB1}_s.a
 
 ${LIB1}: ${lib1_a} ${LIB1_dylib_vvp}
-${lib1_a}: ${LIB1_a_obj}
+${lib1_a}: ${LIB1_a_obj} 
 	ar -cvr $@ $^
 ${LIB1_dylib_vvp}: ${LIB1_dylib_obj}
-	${CXX} -dynamiclib -flat_namespace -o $@ $^
-	ln -sf $@ ${LIB1_dylib_vv}
-	ln -sf ${LIB1_dylib_vv} ${LIB1_dylib_v}
+	${CXX} -o $@ $^ -dynamiclib -flat_namespace
+	cd ${LIB_DIR} && \
+	ln -sf $@ ${LIB1_dylib_vv} && \
+	ln -sf ${LIB1_dylib_vv} ${LIB1_dylib_v} && \
 	ln -sf ${LIB1_dylib_v} ${LIB1_dylib}
 
 # ----------------------------------------------------------------------
@@ -183,14 +178,12 @@ ${PROG1_name}: LDFLAGS += # $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 # ------------------------------------------------------------
 # do not change
 
-progs += ${PROG1_name}
-
-PROG1_obj := $(addprefix ${BUILD_DIR}/obj/, \
+PROG1_obj := $(addprefix ${DEPS_DIR}/, \
                $(patsubst %.cpp, %.o, \
                  $(notdir ${PROG1_SRC})))
 -include $(patsubst %.o, %.d, ${PROG1_obj})
 
-PROG1_bin := ${BUILD_DIR}/bin/${PROG1_name}
+PROG1_bin := ${BIN_DIR}/${PROG1_name}
 
 ${PROG1_name}: ${PROG1_bin}
 ${PROG1_bin}: ${PROG1_obj}
@@ -228,14 +221,12 @@ ${PROG2_name}: LDFLAGS += # $(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 # ------------------------------------------------------------
 # do not change
 
-progs += ${PROG2_name}
-
-PROG2_obj := $(addprefix ${BUILD_DIR}/obj/, \
+PROG2_obj := $(addprefix ${DEPS_DIR}/, \
                $(patsubst %.cpp, %.o, \
                  $(notdir ${PROG2_SRC})))
 -include $(patsubst %.o, %.d, ${PROG2_obj})
 
-PROG2_bin := ${BUILD_DIR}/bin/${PROG2_name}
+PROG2_bin := ${BIN_DIR}/${PROG2_name}
 
 ${PROG2_name}: ${PROG2_bin}
 ${PROG2_bin}: ${PROG2_obj}
@@ -258,9 +249,7 @@ ${PROG3_name}: LDFLAGS += #$(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 # ------------------------------------------------------------
 # do not change
 
-progs += ${PROG3_name}
-
-PROG3_obj := $(addprefix ${BUILD_DIR}/obj/, \
+PROG3_obj := $(addprefix ${DEPS_DIR}/, \
                $(patsubst %.cpp, %.o, \
                  $(notdir ${PROG3_SRC})))
 -include $(patsubst %.o, %.d, ${PROG3_obj})
@@ -301,14 +290,12 @@ ${PROG4_name}: LDFLAGS += #$(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 # ------------------------------------------------------------
 # do not change
 
-progs += ${PROG4_name}
-
 PROG4_obj := $(addprefix ${BUILD_DIR}/obj/, \
                $(patsubst %.cpp, %_esfem.o, \
                  $(notdir ${PROG4_SRC})))
 -include $(patsubst %.o, %.d, ${PROG4_obj})
 
-PROG4_bin := ${BUILD_DIR}/bin/${PROG4_name}
+PROG4_bin := ${BIN_DIR}/${PROG4_name}
 
 ${PROG4_name}: ${PROG4_bin}
 ${PROG4_bin}: ${PROG4_obj}
@@ -334,17 +321,15 @@ ${TEST1_name}: LDFLAGS +=
 # ------------------------------------------------------------
 # do not change
 
-progs += ${TEST1_name}
-
-TEST1_obj := $(addprefix ${BUILD_DIR}/obj/, \
+TEST1_obj := $(addprefix ${DEPS_DIR}/, \
                $(patsubst %.cpp, %_test.o, \
                  $(notdir ${TEST1_SRC})))
-TEST1_obj += $(addprefix ${BUILD_DIR}/obj/, \
+TEST1_obj += $(addprefix ${DEPS_DIR}/, \
 	       $(patsubst %.cpp, %.o, \
 	         $(notdir ${TEST1_EXTERNAL_SRC})))
 -include $(patsubst %.o, %.d, ${TEST1_obj})
 
-TEST1_bin := ${BUILD_DIR}/bin/${TEST1_name}
+TEST1_bin := ${BIN_DIR}/${TEST1_name}
 
 ${TEST1_name}: ${TEST1_bin}
 ${TEST1_bin}: ${TEST1_obj} 
@@ -367,14 +352,12 @@ ${TEST2_name}: LDFLAGS +=
 # ------------------------------------------------------------
 # do not change
 
-progs += ${TEST2_name}
-
-TEST2_obj := $(addprefix ${BUILD_DIR}/obj/, \
+TEST2_obj := $(addprefix ${DEPS_DIR}/, \
                $(patsubst %.cpp, %_test.o, \
                  $(notdir ${TEST2_SRC})))
 -include $(patsubst %.o, %.d, ${TEST2_obj})
 
-TEST2_bin := ${BUILD_DIR}/bin/${TEST2_name}
+TEST2_bin := ${BIN_DIR}/${TEST2_name}
 
 ${TEST2_name}: ${TEST2_bin}
 ${TEST2_bin}: ${TEST2_obj}
@@ -383,9 +366,44 @@ ${TEST2_bin}: ${TEST2_obj}
 #----------------------------------------------------------------------
 # pattern rules
 
-${BUILD_DIR}/obj/%.o: ${PROJECT_DIR}/src/%.cpp
+${DEPS_DIR}/%.o: ${PROJECT_DIR}/src/%.cpp
 	${CXX} -o $@ $< ${CPPFLAGS} ${CXXFLAGS} -MMD -c 
-${BUILD_DIR}/obj/%_pic.o: ${PROJECT_DIR}/src/%.cpp
+${DEPS_DIR}/%_pic.o: ${PROJECT_DIR}/src/%.cpp
 	${CXX} -o $@ $< ${CPPFLAGS} ${CXXFLAGS} -fPIC -MMD -c 
-${BUILD_DIR}/obj/%_test.o: ${PROJECT_DIR}/test/%.cpp
+${DEPS_DIR}/%_test.o: ${PROJECT_DIR}/test/%.cpp
 	${CXX} -o $@ $< ${CPPFLAGS} ${CXXFLAGS} -MMD -c
+
+# ----------------------------------------------------------------------
+# Documentation
+
+${PROJECT_DIR}/src/doc/doxy.config: 
+	doxygen -g $@
+	echo "@INCLUDE_PATH = ${PROJECT_DIR}/src/doc" >> $@
+	echo "@INCLUDE = vc.config" >> $@
+	echo "@INCLUDE = capg.config" >> $@
+${PROJECT_DIR}/src/doc/vc.config: FORCEMAKE
+	echo PROJECT_NUMBER = `git describe --tags` > $@
+${PROJECT_DIR}/src/doc/capg.config:
+	echo "EXCLUDE_PATTERNS = */test/*" > $@
+	echo "INPUT = ${PROJECT_DIR}/" >> $@
+	echo "RECURSIVE = YES" >> $@
+	echo "SOURCE_BROWSER = YES" >> $@
+	echo "USE_HTAGS = YES" >> $@
+	echo "OUTPUT_DIRECTORY = ${BUILD_DIR}/doc/" >> $@
+	echo "HAVE_DOT = YES" >> $@
+	echo "EXTRACT_PRIVATE = YES" >> $@
+
+# ----------------------------------------------------------------------
+# build directories
+
+checkDirs: ${build_dirs}
+${build_dirs}:
+	mkdir -p $@
+
+# ----------------------------------------------------------------------
+# Do not rebuild makefile
+
+
+makefile: ;
+Makefile: ;
+GNUmakefile: ;

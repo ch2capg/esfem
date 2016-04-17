@@ -1,17 +1,21 @@
 /*! \file io_parameter_impl.cpp
+    \brief Implementation of `io_parameter_impl.h`
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power April 2016
           Originally written by Christian Power
                (power22c@gmail.com) March 2016
 
-     Implementation details for io_parameter_impl.h
+     Idea
+     --------------------------------------------------
 
-     Created by Christian Power on 15.03.2016
-     Copyright (c) 2016 Christian Power. All rights reserved.
+     Implementation of some helper functions.
+
+     \author Christian Power
+     \date 16. April 2016
+     \copyright Copyright (c) 2016 Christian Power. All rights reserved.
 */
 
 #include <fstream>
@@ -59,8 +63,9 @@ std::string Esfem::Impl::get_macroGrid(){
 std::string Esfem::Impl::doubleVector_to_string(const std::vector<double>& vd){
   constexpr size_t max_vec_size = 100;
   Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
-    (vd.size() <= max_vec_size, __FILE__, __LINE__, 
-     "Vector is to big for doubleVector_to_string()");
+    (vd.size() <= max_vec_size,
+     Assert::compose(__FILE__, __LINE__, 
+		     "Vector is to big for doubleVector_to_string()"));
   std::ostringstream oss;
   oss << '{';
   for(std::size_t it = 0; it < vd.size() - 1; ++it)
@@ -72,6 +77,7 @@ void Esfem::Impl::file_check(const std::vector<std::string>& file_list){
   for(const auto& file_name : file_list){
     fstream fs {file_name};
     Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
-      (fs.is_open(), __FILE__, __LINE__, "Could not open file " + file_name);
+      (fs.is_open(),
+       Assert::compose(__FILE__, __LINE__, "Could not open file " + file_name));
   }
 }

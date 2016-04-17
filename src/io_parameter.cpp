@@ -95,12 +95,14 @@ Esfem::Io::Parameter::Data::Data()
       ("tumor_growth.io.w_init_dof", Esfem::Impl::project_dir() + "output/w_dof.log")}
 {
   Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
-    (eps > 0, __FILE__, __LINE__, "Non positive tolerance.");
+    (eps > 0, Assert::compose(__FILE__, __LINE__, "Non positive tolerance."));
   Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
-    ( dT > eps, __FILE__, __LINE__, "Time step too small.");
+    ( dT > eps, Assert::compose(__FILE__, __LINE__, "Time step too small."));
   Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
-    ( (t_0 <= t_end_pattern) && (t_end_pattern <= t_end), __FILE__, __LINE__, 
-     "Something is wrong with heat.starttime, heat.endtime or heat.pattern.starttime.");
+    ((t_0 <= t_end_pattern) && (t_end_pattern <= t_end),
+     Assert::compose
+     (__FILE__, __LINE__, "Something is wrong with heat.starttime, "
+      "heat.endtime or heat.pattern.starttime."));
   Esfem::Impl::file_check({grid_dgf, error_log, u_init_dof, w_init_dof});
 }
 

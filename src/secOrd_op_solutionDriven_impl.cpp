@@ -184,7 +184,8 @@ MCF_op::surface_normal(const Geometry& g) const{
   auto normal = nonUnit_normal(basis);
   const auto norm = euclidean_norm(normal);
   Assert::dynamic<Assert::level(7), Esfem::SolutionDriven_error>
-    (norm > eps, __FILE__, __LINE__, "Norm of normal vector almost vanishes.");
+    (norm > eps,
+     Assert::compose(__FILE__, __LINE__, "Norm of normal vector almost vanishes."));
   normal /= norm;
   return normal;
 }
