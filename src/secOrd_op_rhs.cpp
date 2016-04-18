@@ -18,9 +18,7 @@
      \copyright Copyright (c) 2016 Christian Power. All rights reserved.
  */
 
-#include <cmath>
 #include <config.h>
-#include <dune/fem/quadrature/cachingquadrature.hh>
 #include "secOrd_op_rhs.h"
 #include "secOrd_op_rhs_impl.h"
 
@@ -41,10 +39,9 @@ Rhs::Rhs(const Grid::Grid_and_time& gt)
 {}
 Rhs::~Rhs() = default;
 void Rhs::assemble_and_addScaled_to(Grid::Scal_FEfun& fef){
-  static FE_function load_vector {"local_tmp", d_ptr -> fe_space};
-  assemble_RHS(d_ptr -> rhs, load_vector);
+  assemble_RHS(d_ptr -> rhs, d_ptr -> load_vector);
   FE_function& dune_fef = fef;
-  dune_fef.axpy(d_ptr -> tp.deltaT(), load_vector); 
+  dune_fef.axpy(d_ptr -> tp.deltaT(), d_ptr -> load_vector); 
 }
 
 // ----------------------------------------------------------------------
@@ -53,22 +50,22 @@ void Rhs::assemble_and_addScaled_to(Grid::Scal_FEfun& fef){
 Vec_rhs::Vec_rhs(const Grid::Grid_and_time& gt)
   :d_ptr {std::make_unique<Data>(gt)}
 {}
-Vec_rhs::~Vec_rhs = default;
+Vec_rhs::~Vec_rhs() = default;
 void Vec_rhs::assemble_and_addScaled_to(Grid::Vec_FEfun& vfef){
-  assemble_vecRhs(d_ptr -> vec_rhs, vec_load_vector);
+  assemble_RHS(d_ptr -> rhs, d_ptr -> load_vector);
   Vec_FE_function& dune_vfef = vfef;
-  dune_vfef.axpy(d_ptr -> tp.deltaT(), vfef_rhs);
+  dune_vfef.axpy(d_ptr -> tp.deltaT(), d_ptr -> load_vector);
 }
 
 // ----------------------------------------------------------------------
 // Implementation of Rhs::Data and Vec_rhs::Data
 
 Rhs::Data::Data(const Grid::Grid_and_time& gt)
-  :rhs {gt.time_provider()}, tp {gt.time_provider()},
-   fe_space {gt.fe_space()}
+  :tp {gt.time_provider()}, rhs {tp},
+   load_vector {"load_vector", gt.fe_space()}
 {}
 
 Vec_rhs::Data::Data(const Grid::Grid_and_time& gt)
-  :rhs {gt.time_provider()}, tp {gt.time_provider()},
-   fe_space {gt.fe_space()}
+  :tp {gt.time_provider()}, rhs {tp},
+   load_vector {"vec_load_vector", gt.vec_fe_space()}
 {}

@@ -3,13 +3,11 @@
 *.log
 *.png
 intermediate_*
-bin/*
-lib/*
-doc/*
-obj/*
-debug/*
+build/*
 output/*
 Makefile
+src/doc/capg.config
+src/doc/vc.config
 src/config/config.h
 dgfparser.log
 data/tumor_parameter.txt
@@ -33,3 +31,4 @@ surface.dgf
 surface_app.dgf
 surface_exact.dgf
 surface_rhs_les.dgf
+				

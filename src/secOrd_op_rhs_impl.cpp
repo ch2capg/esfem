@@ -18,34 +18,61 @@
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
+#include <cmath>
 #include "secOrd_op_rhs_impl.h"
 
-using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
+//! Scalar valued dune finite element function
+using Scal_fef = Esfem::Grid::Scal_FEfun::Dune_FEfun;
+//! Vector valued dune finite element function
+using Vec_fef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+//! Geometry for an element
 using Geometry
-= FE_function::DiscreteFunctionSpaceType::IteratorType::Entity::Geometry;
-using Grid_part = FE_function::GridPartType;
+= Scal_fef::DiscreteFunctionSpaceType::IteratorType::Entity::Geometry;
+//! Technicality for quadrature 
+using Grid_part = Scal_fef::GridPartType;
+//! Quadrature on a straight element
 using Quadrature = Dune::Fem::CachingQuadrature<Grid_part, 0>;
+//! Implementing this
+using Esfem::Impl::Rhs_fun;
+//! Implementing this
+using Esfem::Impl::Vec_rhs_fun;
 
 // ----------------------------------------------------------------------
-// Implementation of RHS_data
+// Implementation of Rhs_fun
 
-RHS_data::RHS_data(const Dune::Fem::TimeProviderBase& tpb)
+Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb)
   : tp {tpb}
 {}
-void RHS_data::evaluate(const Domain& d, Range& r) const{
-  static_assert(Domain::dimension == 3, "Bad domain dimension.");
-  static_assert(Range::dimension == 1, "Bad range dimension.");
+void Rhs_fun::evaluate(const Domain& d, Range& r) const{
   const double x = d[0];
   const double y = d[1];
-  const double z = d[2];
+  // const double z = d[2];
   const double t = tp.time();
   r = std::exp(-6.*t)*x*y;
-  // r =
-    // #include "u_rhs.txt"
-    // #include "/Users/christianpower/cpp/syntax/data/harmonicSphere_cpp.txt"
-    ;
 }
-RHS_data::Range RHS_data::operator()(const Domain& d) const{
+Rhs_fun::Range Rhs_fun::operator()(const Domain& d) const{
+  Range r {0};
+  evaluate(d,r);
+  return r;
+}
+
+// ----------------------------------------------------------------------
+// Implementation of Vec_rhs_fun
+
+Vec_rhs_fun::Vec_rhs_fun(const Dune::Fem::TimeProviderBase& tpb)
+  : tp {tpb}
+{}
+
+void Vec_rhs_fun::evaluate(const Domain& d, Range& r) const{
+  const double x = d[0];
+  const double y = d[1];
+  // const double z = d[2];
+  const double t = tp.time();
+  r[0] = std::exp(-6.*t)*x*y;
+  r[1] = 0;
+  r[2] = 0;
+}
+Vec_rhs_fun::Range Vec_rhs_fun::operator()(const Domain& d) const{
   Range r {0};
   evaluate(d,r);
   return r;
@@ -54,26 +81,36 @@ RHS_data::Range RHS_data::operator()(const Domain& d) const{
 // ----------------------------------------------------------------------
 // Helper functions
 
-void Esfem::Impl::assemble_RHS(const RHS_data& rhs_fun, FE_function& fef){
-  fef.clear();
-  const auto& df_space = fef.space();
-  for(const auto& entity : df_space){
-    const auto& geometry = entity.geometry();
-    const Quadrature quad {entity, 2 * df_space.order() + 1};
-    auto fef_local = fef.localFunction(entity);
-    massMatrix_for_entity(geometry, quad, rhs_fun, fef_local);
-  }
-  fef.communicate();    
-}
-
-void Esfem::Impl::massMatrix_for_entity(const Geometry& g, const Quadrature& q,
-					const RHS_data& rhs_fun,
-					FE_function::LocalFunctionType& f_loc){
-  for(std::size_t pt = 0; pt < q.nop(); ++pt){
-    const auto& x = q.point(pt);
-    RHS_data::Range fx {rhs_fun(g.global(x))};
-    // rhs_fun.evaluate(g.global(x), fx);
-    fx *= q.weight(pt) * g.integrationElement(x);
-    f_loc.axpy(q[pt], fx);
-  }  
-}
+// void Esfem::Impl::assemble_RHS(const Rhs_fun& rhs_fun, Scal_fef& fef){
+//   fef.clear();
+//   const auto& df_space = fef.space();
+//   for(const auto& entity : df_space){
+//     const auto& geometry = entity.geometry();
+//     const Quadrature quad {entity, 2 * df_space.order() + 1};
+//     auto fef_local = fef.localFunction(entity);
+//     for(std::size_t pt = 0; pt < quad.nop(); ++pt){
+//       const auto& x = quad.point(pt);
+//       Rhs_fun::Range fx {rhs_fun(geometry.global(x))};
+//       // rhs_fun.evaluate(geometry.global(x), fx);
+//       fx *= quad.weight(pt) * geometry.integrationElement(x);
+//       fef_local.axpy(quad[pt], fx);
+//     }  
+//   }
+//   fef.communicate();    
+// }
+// void Esfem::Impl::assemble_RHS(const Vec_rhs_fun& rhs_fun, Vec_fef& vfef){
+//   vfef.clear();
+//   const auto& df_space = vfef.space();
+//   for(const auto& entity: df_space){
+//     const auto& geometry = entity.geometry();
+//     const Quadrature quad {entity, 2 * df_space.order() + 1};
+//     auto vfef_local = vfef.localFunction(entity);
+//     for(std::size_t pt = 0; pt < quad.nop(); ++pt){
+//       const auto& x = quad.point(pt);
+//       Vec_rhs_fun::Range fx {rhs_fun(geometry.global(x))};
+//       fx *= quad.weight(pt) * geometry.integrationElement(x);
+//       vfef_local.axpy(quad[pt], fx);
+//     }
+//   }
+//   vfef.communicate();
+// }

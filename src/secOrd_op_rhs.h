@@ -46,7 +46,7 @@ namespace Esfem{
     public:
       //! \copydoc Rhs::Rhs()
       explicit Vec_rhs(const Grid::Grid_and_time&);
-      //! \copydoc Rhs:~Rhs()
+      //! \copydoc Rhs::~Rhs()
       ~Vec_rhs();
 
       //! \copydoc Rhs::assemble_and_addScaled_to()

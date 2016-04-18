@@ -206,7 +206,8 @@ PROG2_SRC += $(addprefix $(dir ${PROG2}), \
  grid_fef.cpp \
  secOrd_op_initData.cpp secOrd_op_initData_impl.cpp\
  secOrd_op_identity.cpp \
- secOrd_op_rhs.cpp secOrd_op_linearHeat.cpp \
+ secOrd_op_rhs.cpp secOrd_op_rhs_impl.cpp\
+ secOrd_op_linearHeat.cpp \
  secOrd_op_initData_u.cpp secOrd_op_initData_w.cpp \
  secOrd_op_rhs_u.cpp secOrd_op_rhs_w.cpp \
 )
