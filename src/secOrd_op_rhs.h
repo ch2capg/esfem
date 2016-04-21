@@ -28,8 +28,9 @@ namespace Esfem{
     //! Scalar valued right-hand side of a PDE
     class Rhs{
     public:
-      //! Get space-time and finite element space
-      explicit Rhs(const Grid::Grid_and_time&);
+      //! Get time, finite element space and indicator if right-hand side for `u` or `w`
+      /*! \warning If time provider outlives this object, then you have a problem. */
+      explicit Rhs(const Grid::Grid_and_time&, const Growth);
       //! Needed for the pointer to data implementation technique
       ~Rhs();
 

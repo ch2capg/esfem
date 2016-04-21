@@ -34,8 +34,8 @@ using Vec_FE_function = Esfem::Grid::Vec_FEfun::Dune_FEfun;
 // ----------------------------------------------------------------------
 // Implementation of Rhs
 
-Rhs::Rhs(const Grid::Grid_and_time& gt)
-  :d_ptr {std::make_unique<Data>(gt)}
+Rhs::Rhs(const Grid::Grid_and_time& gt, const Growth type)
+  :d_ptr {std::make_unique<Data>(gt, type)}
 {}
 Rhs::~Rhs() = default;
 void Rhs::assemble_and_addScaled_to(Grid::Scal_FEfun& fef){
@@ -60,8 +60,8 @@ void Vec_rhs::assemble_and_addScaled_to(Grid::Vec_FEfun& vfef){
 // ----------------------------------------------------------------------
 // Implementation of Rhs::Data and Vec_rhs::Data
 
-Rhs::Data::Data(const Grid::Grid_and_time& gt)
-  :tp {gt.time_provider()}, rhs {tp},
+Rhs::Data::Data(const Grid::Grid_and_time& gt, const Growth type)
+  :tp {gt.time_provider()}, rhs {tp, type},
    load_vector {"load_vector", gt.fe_space()}
 {}
 

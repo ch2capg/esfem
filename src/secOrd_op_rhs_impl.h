@@ -21,6 +21,7 @@
 #ifndef SECORD_OP_RHS_IMPL_H
 #define SECORD_OP_RHS_IMPL_H 
 
+#include <functional>
 #include <config.h>
 #include <dune/fem/quadrature/cachingquadrature.hh>
 #include "grid.h"
@@ -46,9 +47,11 @@ namespace Esfem{
       static_assert(Domain::dimension == 3, "Bad Domain dimension");
       static_assert(Range::dimension == 1, "Bad Range dimension");
       
-      //! Get time and time step
-      explicit Rhs_fun(const Dune::Fem::TimeProviderBase&);
-      //! No copy construct
+      //! Get time, time step and indicate right-hand side for `u` or `w`
+      /*! \warning If time provider outlives `this`, then you are in problem. */
+      Rhs_fun(const Dune::Fem::TimeProviderBase&,
+	      const Growth);
+      //! No copy constructor
       Rhs_fun(const Rhs_fun&) = delete;
       //! No copy assignment 
       Rhs_fun& operator=(const Rhs_fun&) = delete;
@@ -60,6 +63,8 @@ namespace Esfem{
     private:
       //! Current time and time step
       const Dune::Fem::TimeProviderBase& tp;
+      //! Right-hand side for `u` or `w`
+      std::function<void(const Domain&,Range&)> fun_impl;
     };
 
     //! Vector valued right-hand side for the mean curvature equation
@@ -78,7 +83,8 @@ namespace Esfem{
       static_assert(Domain::dimension == 3, "Bad Domain dimension");
       static_assert(Range::dimension == 3, "Bad Range dimension");
 
-      //! \copybrief Rhs_fun::Rhs_fun()
+      //! Get time and time step
+      /*! \copydetails Rhs_fun::Rhs_fun() */
       explicit Vec_rhs_fun(const Dune::Fem::TimeProviderBase&);
       //! No copy construct
       Vec_rhs_fun(const Vec_rhs_fun&) = delete;
@@ -97,13 +103,10 @@ namespace Esfem{
     //! Assemble load vector
     /*! \tparam Rhs Insert Rhs_fun or Vec_rhs_fun
       \tparam Fef Insert 
-      Esfem::Grid::Scal_FEfun::Dune_FEfun or
-      Esfem::Grid::Vec_FEfun::Dune_FEfun
+      Scal_FEfun::Dune_FEfun or Vec_FEfun::Dune_FEfun
      */
     template<typename Rhs, typename Fef>
     void assemble_RHS(const Rhs& rhs, Fef& fef);
-    // void assemble_RHS(const Rhs_fun&, Grid::Scal_FEfun::Dune_FEfun&);
-    // void assemble_RHS(const Vec_rhs_fun&, Grid::Vec_FEfun::Dune_FEfun&);
   } // namespace Impl
 
   //! %Data details of Rhs
@@ -116,7 +119,7 @@ namespace Esfem{
     Esfem::Grid::Scal_FEfun::Dune_FEfun load_vector;
 
     //! Get space-time manifold and finite element space
-    Data(const Grid::Grid_and_time&);
+    Data(const Grid::Grid_and_time&, const Growth);
   };
 
   //! %Data details of Vec_rhs
@@ -130,7 +133,7 @@ namespace Esfem{
     
     //! \copybrief Rhs::Data::Data()
     Data(const Grid::Grid_and_time&);
-  };  
+  };
 } // namespace Esfem
 
 // ----------------------------------------------------------------------
@@ -157,6 +160,24 @@ void Esfem::Impl::assemble_RHS(const Rhs& rhs, Fef& fef){
     }  
   }
   fef.communicate();    
+}
+
+// ----------------------------------------------------------------------
+// Inline implementation
+
+inline void Esfem::Impl::Rhs_fun::evaluate(const Domain& d, Range& r) const{
+  fun_impl(d,r);
+  // const double x = d[0];
+  // const double y = d[1];
+  // // const double z = d[2];
+  // const double t = tp.time();
+  // r = std::exp(-6.*t)*x*y;
+}
+inline Esfem::Impl::Rhs_fun::Range
+Esfem::Impl::Rhs_fun::operator()(const Domain& d) const{
+  Range r {0};
+  evaluate(d,r);
+  return r;
 }
 
 #endif // SECORD_OP_RHS_IMPL_H

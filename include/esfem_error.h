@@ -61,7 +61,13 @@ namespace Esfem{
     {}
   };
   /*!< \brief Used in grid.h */
-
+  //! Used for secOrd_op_rhs.h
+  struct Rhs_error : std::runtime_error{
+    //! Inherit constructor and prefix one line to `msg`
+    explicit Rhs_error(const std::string& msg)
+      :std::runtime_error {"Esfem::Rhs.\n" + msg}
+    {}
+  };
 }
 
 // ----------------------------------------------------------------------
@@ -78,6 +84,9 @@ inline void Assert::dynamic<false, Esfem::BrusselatorScheme_error>
 (const bool, const std::string&){};
 template<>
 inline void Assert::dynamic<false, Esfem::Grid_error>
+(const bool, const std::string&){};
+template<>
+inline void Assert::dynamic<false, Esfem::Rhs_error>
 (const bool, const std::string&){};
 
 #endif // ESFEM_ERROR_H
