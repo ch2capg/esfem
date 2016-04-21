@@ -25,8 +25,8 @@ tumor_growth.heat.b: .9
 tumor_growth.heat.Dc: 10.
 tumor_growth.heat.gamma: 30. 
 
-tumor_growth.surface.epsilon: .01
-tumor_growth.surface.alpha: 0 ##1e-3
+tumor_growth.surface.epsilon: 0
+tumor_growth.surface.alpha: 0.01
 tumor_growth.surface.delta: .4
 
 fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_3.dgf
@@ -35,7 +35,7 @@ fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/sph
 
 # fem.prefix: /home/power/cpp/DISS_surfaces
 fem.prefix: /scratch/na31/power/numerische_experimente/solution_driven
-fem.io.path: vid01
+fem.io.path: vid02
 fem.io.outputName: brusselator-
 
 # tumor_growth.io.u_init_dof: /home/power/cpp/DISS_surfaces/output/u_dof.log

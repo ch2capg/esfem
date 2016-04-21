@@ -31,4 +31,5 @@ surface.dgf
 surface_app.dgf
 surface_exact.dgf
 surface_rhs_les.dgf
-				
+final_*
+doc/*
