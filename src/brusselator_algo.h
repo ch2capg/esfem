@@ -124,12 +124,33 @@
 #endif 
 
 namespace Esfem{
-  void brusselator_algo(int argc, char** argv);
-  /*!< \brief ESFEM algorithm.  Only this should be invoked by main.
-    \param argc `argc` from `main`
+  //! ESFEM algorithm.  Only this should be invoked by main.
+  /*! \param argc `argc` from `main`
     \param argv `argv` from `main`
+
+    As exact solution for the scalar valued surface equation I chose
+    \f{equation*}{
+     u(x,y,z,t) = x y e^{-6t} \quad \text{and}\quad
+     w(x,y,z,t) = y z e^{-6t}.
+    \f}
+    For the surface evolution I chose
+    \f{equation*}{
+     \Phi(x,t) := r(t) x, \quad
+     r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})},
+    \f}
+    where \f$ r(t)\f$ is the logistic growth function, which satisfies the
+    following ODE
+    \f{equation*}{
+     \dot{r} = k \Bigl( 1 - \frac{r}{r_{end}}\Bigr) r,\quad r(0) = r_0.
+    \f}
+    From this it follows easily that the velocity is given by
+    \f{equation*}{
+     v(x,t) = k \Bigl(1 - \frac{r}{r_{end}}\Bigr) x.
+    \f}
    */
-  
+  void brusselator_algo(int argc, char** argv);
+
+  //! Implementation of the Elliott and Styles full discretization of the tumor problem
   class Brusselator_scheme{
   public:
     Brusselator_scheme(int argc, char** argv,
@@ -253,9 +274,6 @@ namespace Esfem{
     /*!< \brief Maximum number of time steps for pattern_loop(). */
     //@}
   };
-  /*!< \brief Implementation of the Elliott and Styles
-              full discretization of the tumor problem
-  */
 
   // ----------------------------------------------------------------------
   // Inline implementation
