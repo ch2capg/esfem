@@ -29,11 +29,12 @@ namespace Esfem{
     //! Initial data for ESFEM experiments
     class Init_data{
     public:
-      //! Constructor for explicit initial function 
-      explicit Init_data(const Grid::Grid_and_time&);
-      //! Constructor for random initial data
+      //! Constructor for an analytic given initial function
+      /*! \warning Input Grid_and_time must outlive this object. */
+      explicit Init_data(const Grid::Grid_and_time&, const Growth);
+      //! Constructor for an random initial function
       explicit Init_data(const Io::Parameter&, const Growth);
-      //! Required by pointer to implementation technique.
+      //! Required for the pointer to implementation technique.
       ~Init_data();
 
       //! Overrides the nodal values of the input

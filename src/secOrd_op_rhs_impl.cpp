@@ -64,7 +64,7 @@ Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
     };
     break;
   default:
-    throw Rhs_error {"Impossible error in Rhs_fun()"};
+    throw Rhs_error {Assert::compose(__FILE__, __LINE__, "Rhs_fun()")};
     break;
   };
 }

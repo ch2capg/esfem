@@ -29,11 +29,6 @@
 #include "dassert.h"
 
 namespace Esfem{
-  struct Parameter_error;
-  struct SolutionDriven_error;
-  struct BrusselatorScheme_error;
-  struct Grid_error;
-  
   struct Parameter_error : std::runtime_error{
     explicit Parameter_error(const std::string& msg) 
       : std::runtime_error {"Esfem::Io::Parameter.\n" + msg}
@@ -68,6 +63,13 @@ namespace Esfem{
       :std::runtime_error {"Esfem::Rhs.\n" + msg}
     {}
   };
+  //! Used for secOrd_op_initData.h
+  struct InitData_error : std::runtime_error{
+    //! Inherit constructor and prefix one line to `msg`
+    explicit InitData_error(const std::string& msg)
+      :std::runtime_error {"Esfem::InitData.\n" + msg}
+    {}
+  };
 }
 
 // ----------------------------------------------------------------------
@@ -87,6 +89,9 @@ inline void Assert::dynamic<false, Esfem::Grid_error>
 (const bool, const std::string&){};
 template<>
 inline void Assert::dynamic<false, Esfem::Rhs_error>
+(const bool, const std::string&){};
+template<>
+inline void Assert::dynamic<false, Esfem::InitData_error>
 (const bool, const std::string&){};
 
 #endif // ESFEM_ERROR_H

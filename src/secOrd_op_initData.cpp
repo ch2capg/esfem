@@ -18,52 +18,26 @@
 #include "secOrd_op_initData.h"
 #include "secOrd_op_initData_impl.h"
 #include "io_dof.h"
+#include "esfem_error.h"
 
+//! For convenience 
 using namespace std;
-using Esfem::Explicit_initial_data;
-using Esfem::Random_initial_data;
+//! Implementing this
+using Esfem::SecOrd_op::Init_data;
 
-struct Esfem::SecOrd_op::Init_data::Data{  
-  const std::string dof_io_filename {};
-  unique_ptr<Explicit_initial_data> eid_ptr;
-  unique_ptr<Random_initial_data> rid_ptr;
-  Data(const Grid::Grid_and_time&);
-  // eid_ptr constructor
-  Data(const Io::Parameter&, const Growth);
-  // rid_ptr constructor
-  // ~Data();
-};
-
-Esfem::SecOrd_op::Init_data::Init_data(const Grid::Grid_and_time& gt) 
-try : d_ptr {make_unique<Data>(gt)}
+Esfem::SecOrd_op::Init_data::
+Init_data(const Grid::Grid_and_time& gt, const Growth type) 
+  :d_ptr {make_unique<Data>(gt, type)}
 {}
-catch(const std::exception&){
-  std::throw_with_nested(logic_error {"Error in constructor of Init_data."});
- }
- catch(...){
-   throw logic_error {"Unknown error in constructor of Init_data."};
- }
 
 Esfem::SecOrd_op::Init_data::Init_data(const Io::Parameter& p,
 				       const Growth type) 
-try : d_ptr {make_unique<Data>(p, type)}
+  :d_ptr {make_unique<Data>(p, type)}
 {}
-catch(const std::exception&){
-  std::throw_with_nested(std::logic_error{"Error in constructor of Init_data."});
-}
-catch(...){
-  throw logic_error{"Unknown error in constructor of Init_data."};
-}
 
  Esfem::SecOrd_op::Init_data::~Init_data() = default;
-// {
-//   delete d_ptr;
-//   d_ptr = nullptr;
-// #ifdef DEBUG
-//   std::cerr << "~Init_data(): delete d_ptr.\n";
-// #endif
-// }
-void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const try{
+
+void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const{
   using std::begin;
   using std::end;
   using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
@@ -81,46 +55,5 @@ void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const try{
     Io::dof_to_file(begin(fef), end(fef), ofname);
   }
   else
-    throw logic_error {"No valid pointer"};
- }
- catch(const std::exception&){
-   std::throw_with_nested(logic_error {"Error in Init_data::interpolate()."});
- }
-// ----------------------------------------------------------------------
-// Implementation Init_data::Data
-
-Esfem::SecOrd_op::Init_data::Data::Data(const Grid::Grid_and_time& gt)
-  try : eid_ptr {make_unique<Explicit_initial_data>(gt)}
- {}
- catch(const std::exception&){
-   std::throw_with_nested(logic_error{"Error in constructor of "
-	 "Init_data::Data."});
- }
- catch(...){
-   throw logic_error {"Unkown error in constructor of Init_data::Data."};
- }
-
-Esfem::SecOrd_op::Init_data::Data::Data(const Io::Parameter& p, const Growth type)
-try : dof_io_filename {dof_filename(p, type)},
-  rid_ptr {make_unique<Random_initial_data>(p, type)}
-{}
- catch(const std::exception&){
-   std::throw_with_nested(logic_error
-			  {"Error in constructor of Init_data::Data."});
- }
- catch(...){
-   throw logic_error {"Unkown error in constructor of Init_data::Data."};
- }
-
-// Esfem::SecOrd_op::Init_data::Data::~Data(){
-//   delete eid_ptr;
-//   eid_ptr = nullptr;
-//   delete rid_ptr;
-//   rid_ptr = nullptr;
-// #ifdef DEBUG
-//   std::cerr << "~Init_data::Data(): delete eid_ptr, delete rid_ptr.\n";
-// #endif 
-// }
-
-/*! Log:
- */
+    throw InitData_error {Assert::compose(__FILE__, __LINE__, "Null pointer")};
+}
