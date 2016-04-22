@@ -1,18 +1,21 @@
 /*! \file secOrd_op_initData.h
+    \brief Providing initial data for the experiment
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power April 2016
           Originally written by Christian Power
                (power22c@gmail.com) Januar 2016
 
-     This programm implements a basic expression calculator.
-     Input from cin; output to cout.  The grammar for input is: etc.
+     Idea
+     --------------------------------------------------
 
-     Created by Christian Power on 30.01.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+     Wrapper class for the dune function class.
+
+     \author Christian Power 
+     \date 22. April 2016
+     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef SECORD_OP_INITDATA_H
@@ -23,25 +26,24 @@
 
 namespace Esfem{
   namespace SecOrd_op{
+    //! Initial data for ESFEM experiments
     class Init_data{
     public:
+      //! Constructor for explicit initial function 
       explicit Init_data(const Grid::Grid_and_time&);
-      // Constructor for explicit initial function
+      //! Constructor for random initial data
       explicit Init_data(const Io::Parameter&, const Growth);
-      // Constructor for random initial data
+      //! Required by pointer to implementation technique.
       ~Init_data();
-      Init_data(const Init_data&) = delete;
-      Init_data& operator=(const Init_data&) = delete;
-      
+
+      //! Overrides the nodal values of the input
       void interpolate(Grid::Scal_FEfun&) const;
     private:
       struct Data;
+      //! Pointer to data members
       std::unique_ptr<Data> d_ptr;
     };
   }
 }
 
 #endif // SECORD_OP_INITDATA_H
-
-/*! Log:
- */

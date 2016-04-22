@@ -1,12 +1,10 @@
 /*! \file brusselator_algo.h
-    \author Christian Power
-    \date 30. March 2016
-
     \brief Numerical experiment for the solution driven paper
 
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power April 2016
           Revised by Christian Power March 2016
           Originally written by Christian Power
                (power22c@gmail.com) February 2016
@@ -27,7 +25,7 @@
 
      - \f$a,b, D_{c} \in \R\f$ for the scalar equation with  
        \f$\gamma \sim \vol(\surface)\f$.
-     - \f$\varepsilon, \delta, a \in \R\f$ for the surface equation, where 
+     - \f$\varepsilon, \delta, \alpha \in \R\f$ for the surface equation, where 
        \f$\varepsilon\f$ and \f$\alpha\f$ are small regularization parameter.
 
      Smooth problem
@@ -37,21 +35,23 @@
      \f$w\colon \surface \to \R\f$ (growth-inhibiting) and
      \f$X\colon \surface_{0} \times [0,T] \to \R^{m+1}\f$ such that
      \f{gather*}{
-       \matd u + u \diver(v) - \laplaceBeltrami u = f_1(u,w), \\
-       \matd w + w \diver(v) - D_c \laplaceBeltrami w = f_2(u,w),
+       \matd u + u \diver(v) - \laplaceBeltrami u = f_1(u,w) + f_{(1)}, \\
+       \matd w + w \diver(v) - D_c \laplaceBeltrami w = f_2(u,w) + f_{(2)},
      \f}
      where for \f$f_1,\, f_2\f$ we use the Brusselator model
      \f{equation*}{
        f_1(u,w) = \gamma (a - u + u^2 w) \quad \land \quad f_2(u,w)
        = \gamma (b - u^2 w),
      \f}
+     and \f$ f_{(1)}\f$ and \f$ f_{(2)}\f$ are some forcing terms,
      and for the surface 
      \f{align*}{
        v - \alpha \laplaceBeltrami v = {} &  
        \parentheses[\big]{\varepsilon (-\meanCurvature) + \delta u} \surfaceNormal
-       = \varepsilon \laplaceBeltrami X + \delta u \surfaceNormal, \\
-       \dell_{t} X = {} & v(X).
+       = \varepsilon \laplaceBeltrami X + \delta u \surfaceNormal + g, \\
+       \dell_{t} X = {} & v(X),
      \f}
+     where \f$ g\f$ is a forcing term.
 
      Finite element discretization
      --------------------------------------------------
@@ -62,15 +62,20 @@
      \f$\nodalValue{X}\colon I \to \R^{3N}\f$ (surface nodal values) such that
      \f{gather*}{
        \parentheses[\big]{M(X) + \alpha A(X)} \dell_t X = 
-       \varepsilon A(X) + \delta M(u,\nodalValue{\surfaceNormal}), \\
+       \varepsilon A(X)X + \delta M(u,\nodalValue{\surfaceNormal})
+       + G, \\
        \dell_t \parentheses[\big]{M(X) \nodalValue{u} } + A(X) \nodalValue{u}
        = \gamma \parentheses[\big]{b M(X) \nodalValue{1} 
-       + M(X; \nodalValue{u},\nodalValue{w}) \nodalValue{u}}, \\
+       + M(X; \nodalValue{u},\nodalValue{w}) \nodalValue{u}}
+       + F_{(1)} \\
        \dell_t \parentheses[\big]{M(X) \nodalValue{w}} 
        + D_c A(X) \nodalValue{w}
        = \gamma \parentheses[\big]{b M(X) \nodalValue{1} 
-       - M(X; \nodalValue{u},\nodalValue{u}) \nodalValue{w}}.
+       - M(X; \nodalValue{u},\nodalValue{u}) \nodalValue{w}}
+       + F_{(2)}.
      \f}
+     We note that instead of the \f$ L^2\f$-projection we use the interpolation
+     of \f$ g\f$, \f$ f_{(1)}\f$ respectively \f$ f_{(2)}\f$. 
 
      Full discretization (Elliott+Styles discretization)
      --------------------------------------------------
@@ -84,7 +89,7 @@
 	  \nodalValue{X}^{n+1} 
 	  =  (M_3^n + \alpha A_3^n) \nodalValue{X}^n
 	  + \tau \delta M_3^n(\nodalValue{u}^n, 
-	  \nodalValue{\surfaceNormal}),
+	  \nodalValue{\surfaceNormal}) + G^n,
 	\f}
        where \f$\nodalValue{\surfaceNormal}^n\f$ is elementwise normal.  
      2. Given \f$\nodalValue{X}^{n+1},\, \nodalValue{u}^n,\, \nodalValue{w}^n\f$
@@ -93,7 +98,8 @@
 	  (1+ \tau \gamma) (M\nodalValue{u})^{n+1} + \tau (A \nodalValue{u})^{n+1}
 	  - \tau \gamma M^{n+1}(\nodalValue{u}^n, \nodalValue{w}^n)
 	  \nodalValue{u}^{n+1}
-	  = (M\nodalValue{u})^n + \tau \gamma a M^{n+1} \nodalValue{1},
+	  = (M\nodalValue{u})^n + \tau \gamma a M^{n+1} \nodalValue{1}
+	  + F^{n+1}_{(1)},
 	\f} 
        where \f$M(a,b)\f$ a \f$4\f$ tensor is, namely 
        \f$M_{ijkl} = \int \chi_i \chi_j \chi_k \chi_l\f$ 
@@ -106,11 +112,13 @@
 	  (M\nodalValue{w})^{n+1} + \tau D_c (A \nodalValue{w})^{n+1} 
 	  + \tau \gamma M^{n+1}(\nodalValue{u}^{n+1}, \nodalValue{u}^{n+1})
 	  \nodalValue{w}^{n+1}
-	  = (M \nodalValue{w})^n + \tau \gamma b M^{n+1} \nodalValue{1}.
+	  = (M \nodalValue{w})^n + \tau \gamma b M^{n+1} \nodalValue{1}
+	  + F^{n+1}_{(2)}.
 	\f}
 
-         Created by Christian Power on 30.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
+    \author Christian Power
+    \date 22. April 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef BRUSSELATOR_ALGO_H

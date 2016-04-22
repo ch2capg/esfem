@@ -28,23 +28,33 @@
 #include "brusselator_algo.h"
 
 namespace Esfem{
+  //! For the EOC experiments
   struct Rhs{
-    SecOrd_op::Rhs_u u; /*!< Right-hand side for u */
-    SecOrd_op::Rhs_w w; /*!< Right-hand side for w */
-    explicit Rhs(const Io::Parameter&, const Grid::Grid_and_time&);
+    //! Right-hand side for \f$ u \f$
+    SecOrd_op::Rhs u;
+    //! Right-hand side for \f$ w \f$
+    SecOrd_op::Rhs w;
+    //! Get time provider
+    /*! \todo Right-hand side is currently so coded, that the parameter 
+      are not used.  Change this!
+    */
+    explicit Rhs(const Grid::Grid_and_time&);
+    // Rhs(const Io::Parameter&, const Grid::Grid_and_time&);
   };
-  /*!< \brief Used to test the other components. */
+  
+  //! Initial data for the numerical experiment. 
   struct Init_data{
     // Esfem::SecOrd_op::Init_data_u u;
     // Esfem::SecOrd_op::Init_data_w w;
     SecOrd_op::Init_data u; /*!< Initial data for u */
     SecOrd_op::Init_data w; /*!< Initial data for w */
+    //! Currently not available
+    /*! \todo Revise this constructor. */
     explicit Init_data(const Grid::Grid_and_time&) = delete;
-    /*!< \todo Revise this constructor.  */
+    //! Provides uniform distributed random inital values. 
     explicit Init_data(const Io::Parameter&);
-    /*!< \brief Provides uniform distributed random inital values. */
   };
-  /*!< \brief Initial data for the numerical experiment. */
+
   struct Scalar_solver{
     SecOrd_op::Brusselator u; /*!< PDE with solver for u */
     SecOrd_op::Brusselator w; /*!< PDE with solver for w */
