@@ -63,7 +63,7 @@ namespace Esfem{
     private:
       //! Current time and time step
       const Dune::Fem::TimeProviderBase& tp;
-      //! Right-hand side for `u` or `w`
+      //! Right-hand side for \f$ u\f$ or \f$ w\f$
       std::function<void(const Domain&,Range&)> fun_impl;
     };
 
