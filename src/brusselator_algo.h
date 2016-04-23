@@ -89,7 +89,7 @@
 	  \nodalValue{X}^{n+1} 
 	  =  (M_3^n + \alpha A_3^n) \nodalValue{X}^n
 	  + \tau \delta M_3^n(\nodalValue{u}^n, 
-	  \nodalValue{\surfaceNormal}) + G^n,
+	  \nodalValue{\surfaceNormal}) + \tau G^n,
 	\f}
        where \f$\nodalValue{\surfaceNormal}^n\f$ is elementwise normal.  
      2. Given \f$\nodalValue{X}^{n+1},\, \nodalValue{u}^n,\, \nodalValue{w}^n\f$
@@ -99,7 +99,7 @@
 	  - \tau \gamma M^{n+1}(\nodalValue{u}^n, \nodalValue{w}^n)
 	  \nodalValue{u}^{n+1}
 	  = (M\nodalValue{u})^n + \tau \gamma a M^{n+1} \nodalValue{1}
-	  + F^{n+1}_{(1)},
+	  + \tau F^{n+1}_{(1)},
 	\f} 
        where \f$M(a,b)\f$ a \f$4\f$ tensor is, namely 
        \f$M_{ijkl} = \int \chi_i \chi_j \chi_k \chi_l\f$ 
@@ -113,7 +113,7 @@
 	  + \tau \gamma M^{n+1}(\nodalValue{u}^{n+1}, \nodalValue{u}^{n+1})
 	  \nodalValue{w}^{n+1}
 	  = (M \nodalValue{w})^n + \tau \gamma b M^{n+1} \nodalValue{1}
-	  + F^{n+1}_{(2)}.
+	  + \tau F^{n+1}_{(2)}.
 	\f}
 
     \author Christian Power
@@ -165,8 +165,8 @@ namespace Esfem{
 		       const std::string& parameter_fname);
     /*!< \brief The constructor that also performs the
                 first part before the loop enters
-      \param argc `argc` from `main`
-      \param argv `argv` from `main`
+      \param[in] argc `argc` from `main`
+      \param[in] argv `argv` from `main`
       \param parameter_fname Preferable absolute path to parameter file.
       \warning Absolute path differs on different operating systems.
      */
@@ -234,8 +234,7 @@ namespace Esfem{
       backup container. 
       \todo Add error checking for `tmpFile_path`.
     */
-    /*! \name Data members */
-    //@{
+
     Esfem::Io::Parameter data;
     /*!< \brief Contains parameter from `tumor_parameter.txt`. */
     Io io;
@@ -244,7 +243,6 @@ namespace Esfem{
     /*!< \brief Non evolving grid but consistent time provider */
     Fef fef;
     /*!< \brief Finite element functions */
-    //@}
 
     // ------------------------------------------------------------
     // Helper member functions

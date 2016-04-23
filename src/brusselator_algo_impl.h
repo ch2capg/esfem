@@ -183,27 +183,43 @@ namespace Esfem{
   */
   class RhsAndSolve_helper{
   public:
+    //! Get private members 
     RhsAndSolve_helper(Brusselator_scheme&);
+    //! Assemble \f$ (M\nodalValue{u})^n \f$ and \f$ (M\nodalValue{w})^n \f$
     void scalar_massMatrix();
+    /*! \brief \f$
+          (M_3^n + \alpha A_3^n) \nodalValue{X}^n
+	  + \tau \delta M_3^n(\nodalValue{u}^n, 
+	  \nodalValue{\surfaceNormal}) + \tau G^n
+	\f$
+     */
+    void surface_rhs();
+    /*! \brief \f$ 
+      \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} \nodalValue{X}^{n+1}
+      = \nodalValue{Y}
+      \f$
+     */
     void solve_surface_and_save();
   private:
+    //! Solver for `X`
     using Vector_solver = Esfem::SecOrd_op::Solution_driven;
-    /*!< \brief Solver for #X */
-    
-    Brusselator_scheme& bs; /*!< \copydoc #PreLoop_helper::bs */
-    Brusselator_scheme::Fef& fef; /*!< \brief Reference to #bs.fef */
+
+    //! \copybrief PreLoop_helper::bs
+    Brusselator_scheme& bs;
+    //! Reference to `bs.fef`
+    Brusselator_scheme::Fef& fef;
+    //! Temporally grid, hence `const` 
     const Grid::Grid_and_time grid;
-    /*!< \brief Temporally grid, hence `const` */
+    //! `fef.u.fun` and `fef.u.rhs_les` on `grid`
     Grid::Scal_tiny_FEfun_set u;
-    /*!< \brief #fef.u.fun and #fef.u.rhs_les on #grid. */
+    //! `fef.w.fun` and `fef.w.rhs_les` on `grid` 
     Grid::Scal_tiny_FEfun_set w;
-    /*!< \brief #fef.w.fun and #fef.w.rhs_les on #grid. */
+    //! `bs_fef.surface.fun` and `bs_fef.surface.rhs_les` on `grid` 
     Grid::Vec_tiny_FEfun_set X;
-    /*!< \brief #bs_fef.surface.fun and #bs_fef.surface.rhs_les on #grid. */
+    //! Mass matrix for `u` and `w`
     Scalar_solver ss;
-    /*!< \brief Mass matrix for #u and #w */
+    //! Solver for `X`
     Vector_solver vs;
-    /*!< \brief Solver for #X */
   };
   /*!< \brief Implementation details for 
     Brusselator_scheme::rhs_and_solve_SPDE().

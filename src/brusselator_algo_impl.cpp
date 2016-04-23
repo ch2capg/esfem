@@ -181,9 +181,11 @@ void RhsAndSolve_helper::scalar_massMatrix(){
   fef.u.rhs_les = u.rhs_les;
   fef.w.rhs_les = w.rhs_les;
 }
-void RhsAndSolve_helper::solve_surface_and_save(){
+void RhsAndSolve_helper::surface_rhs(){
   vs.rhs(X.fun, X.rhs_les);	
   // vs.addScaled_loadVector(X.rhs_les);
+}
+void RhsAndSolve_helper::solve_surface_and_save(){
   vs.solve(X.rhs_les, X.fun);
   fef.surface.fun = X.fun;
   fef.surface.write(bs.io.dgf_handler, fef.tmpFile_path);
