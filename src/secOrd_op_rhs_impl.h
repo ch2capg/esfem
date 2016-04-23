@@ -101,8 +101,8 @@ namespace Esfem{
     };    
 
     //! Assemble load vector
-    /*! \tparam Rhs Insert Rhs_fun or Vec_rhs_fun
-      \tparam Fef Insert 
+    /*! \tparam Rhs Deduce Rhs_fun or Vec_rhs_fun
+      \tparam Fef Deduce 
       Scal_FEfun::Dune_FEfun or Vec_FEfun::Dune_FEfun
      */
     template<typename Rhs, typename Fef>

@@ -14,7 +14,7 @@
      Implementation of classes `Rhs` and `Vec_rhs`.
 
      \author Christian Power
-     \date 16. April 2016
+     \date 23. April 2016
      \copyright Copyright (c) 2016 Christian Power. All rights reserved.
  */
 
