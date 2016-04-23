@@ -69,8 +69,9 @@ solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
   d_ptr -> cg_solver(vfef1, vfef2);
 }
 
-void Solution_driven::rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const{
+void Solution_driven::brusselator_rhs(const Grid::Vec_FEfun& rhs,
+				      Grid::Vec_FEfun& lhs) const{
   const Vec_FEfun& vfef1 = rhs;
   Vec_FEfun& vfef2 = lhs;
-  d_ptr -> mcf_op.rhs(vfef1, vfef2);
+  d_ptr -> mcf_op.brusselator_rhs(vfef1, vfef2);
 }

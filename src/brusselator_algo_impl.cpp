@@ -167,7 +167,8 @@ try :bs {bs_input},
   w {fef.w, grid},
   X {fef.surface, grid},
   ss {bs.data, grid, u, w},
-  vs {bs.data, grid, u.fun}
+  vs {bs.data, grid, u.fun},
+  v_rhs {bs.fix_grid}
 {}
 catch(std::exception&){
   std::throw_with_nested(Bruss_error {"RhsAndSolve_helper()"});
@@ -181,9 +182,11 @@ void RhsAndSolve_helper::scalar_massMatrix(){
   fef.u.rhs_les = u.rhs_les;
   fef.w.rhs_les = w.rhs_les;
 }
-void RhsAndSolve_helper::surface_rhs(){
-  vs.rhs(X.fun, X.rhs_les);	
-  // vs.addScaled_loadVector(X.rhs_les);
+void RhsAndSolve_helper::brusselator_rhs(){
+  vs.brusselator_rhs(X.fun, X.rhs_les);	
+}
+void RhsAndSolve_helper::addScaled_surfaceLoadVector(){
+  v_rhs.assemble_and_addScaled_to(X.rhs_les);
 }
 void RhsAndSolve_helper::solve_surface_and_save(){
   vs.solve(X.rhs_les, X.fun);

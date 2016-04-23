@@ -30,47 +30,43 @@ namespace Esfem{
   namespace SecOrd_op{
     class Solution_driven{
     public:
-      Solution_driven(const Io::Parameter&, const Grid::Grid_and_time&,
-		      const Grid::Scal_FEfun& u_wrapper);
-      /*!< Extracts from `Io::Parameter` the parameter \f$ \alpha \f$ 
+      //! Get PDE parameter, time and growth promoting function \f$u\f$.
+      /*! Extracts from `Io::Parameter` the parameter \f$ \alpha \f$ 
 	and \f$ \delta \f$.
 	`Grid::Grid_and_time` provides dynamical time steps via `time_provider`.
-	`u` is consistent with the \f$ u \f$ in the description above.
 	More precisely we need the method `velocity_regularization`,
 	`surface_growthFactor` and `mcf_regularization` from `Io::Parameter`.
-	\post Grid_and_time and u_wrapper outlives this object. 
+	\post Grid_and_time and `u_wrapper` outlive this object. 
        */
+      Solution_driven(const Io::Parameter&, const Grid::Grid_and_time&,
+		      const Grid::Scal_FEfun& u_wrapper);
       //! Required for the pointer to implementation technique.
       ~Solution_driven();
 
       //! Solve regularized mean curvature equation
-      /*! We solve precicely the equation
-	  \f{equation*}{
-	    \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n}
-	    \nodalValue{X}^{n+1} = \nodalValue{Y},
-	  \f}
-	via conjugated gradient method, where
-	\f$\nodalValue{X}^{n+1}\f$ and \f$\nodalValue{Y}\f$ are the
-	nodal values of `rhs` and `lhs`.
-	\param rhs Right-hand side of the linear system
-	\param[out] lhs Return value
+      /*! \param rhs \f$\nodalValue{Y}\f$
+	\retval lhs Solution of
+	\f$
+	\parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n}
+	\nodalValue{X}^{n+1} = \nodalValue{Y}
+	\f$
+	\remark The solver is the conjugated gradient method.
 	\pre Parameter `rhs` must be assembled.
+	\sa brusselator_rhs(), Vec_rhs
        */      
       void solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
-      
-      //! Generates rhs for the linear system.
-      /*! The new value `lhs` will be
-	\f{equation*}{
-	  (M_3^n + \alpha A_3^n) \nodalValue{X}^n
-	  + \tau \delta M_3^n(\nodalValue{u}^n, \nodalValue{\surfaceNormal}),
-	\f}
-	where \f$\nodalValue{X}^n\f$ are the nodal values of `rhs`.
-	\f$u\f$ is given in the constructor. 
-	\param rhs Apply mass matrix on this 
-	\param[out] lhs Return value
-	\pre Parameter `rhs` should be identity.
+      //! Generates right-hand side without load vector for the linear system.
+      /*! \param rhs \f$\nodalValue{X}^n\f$
+	\retval lhs 
+	\f$ 
+	(M_3^n + \alpha A_3^n) \nodalValue{X}^n
+	+ \tau \delta M_3^n(\nodalValue{u}^n, \nodalValue{\surfaceNormal})
+	\f$
+	\pre \f$u\f$, which is given in the constructor, is still valid.  
+	The nodal values of `rhs` should be the nodes itself.
+	\sa Identity
       */
-      void rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
+      void brusselator_rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
     private:
       struct Data;
       //! Pointer to data members

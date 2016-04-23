@@ -188,13 +188,14 @@ namespace Esfem{
     RhsAndSolve_helper(Brusselator_scheme&);
     //! Assemble \f$ (M\nodalValue{u})^n \f$ and \f$ (M\nodalValue{w})^n \f$
     void scalar_massMatrix();
-    /*! \brief \f$
+    /*! \brief \f$ 
           (M_3^n + \alpha A_3^n) \nodalValue{X}^n
 	  + \tau \delta M_3^n(\nodalValue{u}^n, 
-	  \nodalValue{\surfaceNormal}) + \tau G^n
-	\f$
+	  \nodalValue{\surfaceNormal}) \f$
      */
-    void surface_rhs();
+    void brusselator_rhs();
+    //! Adds \f$ \tau G^n\f$
+    void addScaled_surfaceLoadVector();
     /*! \brief \f$ 
       \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} \nodalValue{X}^{n+1}
       = \nodalValue{Y}
@@ -221,6 +222,8 @@ namespace Esfem{
     Scalar_solver ss;
     //! Solver for `X`
     Vector_solver vs;
+    //! Right-hand side for the surface PDE
+    SecOrd_op::Vec_rhs v_rhs;
   };
   /*!< \brief Implementation details for 
     Brusselator_scheme::rhs_and_solve_SPDE().

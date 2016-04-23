@@ -196,13 +196,15 @@ namespace Esfem{
     //@}
   private:    
     struct Io{
-      SecOrd_op::Identity identity {}; /*!< \brief Functor for saving the current grid. */
+      //! Functor for saving the current grid. 
+      SecOrd_op::Identity identity {}; 
       const Esfem::Io::Dgf::Handler dgf_handler;
       /*!< \brief Converts finite element function into dgf file. */
       Esfem::Io::Error_stream u;
       /*!< \brief File to record errors of u. */
       Esfem::Io::Error_stream w;
       /*!< \brief File to record errors of w. */
+      //! Get file name for error streams.
       Io(const Esfem::Io::Parameter&);
     };
     /*!< \brief Shortens Brusselator_scheme().

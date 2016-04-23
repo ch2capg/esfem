@@ -131,7 +131,8 @@ void Brusselator_scheme::pre_loop_action(){
 void Brusselator_scheme::rhs_and_solve_SPDE(){
   RhsAndSolve_helper helper {*this};
   helper.scalar_massMatrix();
-  helper.addScaled_loadVector();
+  helper.brusselator_rhs();
+  helper.addScaled_surfaceLoadVector();
   helper.solve_surface_and_save();
 }
 
