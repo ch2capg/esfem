@@ -1,13 +1,10 @@
 /*! \file secOrd_op_solutionDriven.h
-    \author Christian Power
-    \date 17. March 2016
-
     \brief Surface operator for the solution driven paper
 
      Revision history
      --------------------------------------------------
 
-          Revised by Christian Power March 2016
+          Revised by Christian Power April 2016
           Originally written by Christian Power
                (power22c@gmail.com) March 2016
 
@@ -18,9 +15,9 @@
      scheme with an additional right-hand side.
 
 
-         Created by Christian Power on 17.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
-
+    \author Christian Power
+    \date 23. April 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
 #ifndef SECORD_OP_SOLUTIONDRIVEN_H
@@ -41,34 +38,42 @@ namespace Esfem{
 	`u` is consistent with the \f$ u \f$ in the description above.
 	More precisely we need the method `velocity_regularization`,
 	`surface_growthFactor` and `mcf_regularization` from `Io::Parameter`.
+	\post Grid_and_time and u_wrapper outlives this object. 
        */
+      //! Required for the pointer to implementation technique.
       ~Solution_driven();
 
-      void solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
-      /*!< \brief Solve `lsh` in the lineare system `A * lsh = rhs`.
-	
-	We solve precicely the equation
+      //! Solve regularized mean curvature equation
+      /*! We solve precicely the equation
 	  \f{equation*}{
 	    \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n}
 	    \nodalValue{X}^{n+1} = \nodalValue{Y},
 	  \f}
 	via conjugated gradient method, where
 	\f$\nodalValue{X}^{n+1}\f$ and \f$\nodalValue{Y}\f$ are the
-	nodal values of #rhs and #lhs.
-       */
-      void rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
-      /*!< \brief Generates rhs for the linear system.
-
-	The new value #lhs will be
+	nodal values of `rhs` and `lhs`.
+	\param rhs Right-hand side of the linear system
+	\param[out] lhs Return value
+	\pre Parameter `rhs` must be assembled.
+       */      
+      void solve(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
+      
+      //! Generates rhs for the linear system.
+      /*! The new value `lhs` will be
 	\f{equation*}{
 	  (M_3^n + \alpha A_3^n) \nodalValue{X}^n
 	  + \tau \delta M_3^n(\nodalValue{u}^n, \nodalValue{\surfaceNormal}),
 	\f}
-	where \f$\nodalValue{X}^n\f$ are the nodal values of #rhs.
+	where \f$\nodalValue{X}^n\f$ are the nodal values of `rhs`.
 	\f$u\f$ is given in the constructor. 
+	\param rhs Apply mass matrix on this 
+	\param[out] lhs Return value
+	\pre Parameter `rhs` should be identity.
       */
+      void rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
     private:
       struct Data;
+      //! Pointer to data members
       std::unique_ptr<Data> d_ptr;
     };
     /*!< \brief Solve the surface partial differential equation for
@@ -101,9 +106,8 @@ namespace Esfem{
      For given \f$\nodalValue{u}\colon I \to \R^{N}\f$ search for
      \f$\nodalValue{X}\colon I \to \R^{3N}\f$ (surface nodal values) such that
      \f{equation*}{
-       \dell_t \parentheses[\big]{M(X) w} + D_c A(X) w
-       = \gamma \parentheses[\big]{b M(X) \nodalValue{1} 
-       - M(X; u,u) w}.
+       \parentheses[\big]{M(X) + \alpha A(X)} \dell_t X = 
+       \varepsilon A(X)X + \delta M(u,\nodalValue{\surfaceNormal})
      \f}
 
      Full discretization
@@ -112,8 +116,10 @@ namespace Esfem{
      For given \f$\nodalValue{X}^n\f$ and \f$\nodalValue{u}^n\f$ solve for 
      \f$\nodalValue{X}^{n+1}\f$
         \f{equation*}{
-	  \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} \nodalValue{X}^{n+1} 
-	  =  (M_3^n + \alpha A_3^n) \nodalValue{X}^n + \tau \delta M_3^n(\nodalValue{u}^n, 
+	  \parentheses[\big]{M_3^n + (\alpha + \varepsilon\tau) A_3^n} 
+	  \nodalValue{X}^{n+1} 
+	  =  (M_3^n + \alpha A_3^n) \nodalValue{X}^n 
+	  + \tau \delta M_3^n(\nodalValue{u}^n, 
 	  \nodalValue{\surfaceNormal}),
 	\f}
      where \f$\nodalValue{\surfaceNormal}^n\f$ is elementwise normal.  

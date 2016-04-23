@@ -1,12 +1,10 @@
 /*! \file brusselator_algo_impl.h
-    \author Christian Power
-    \date 29. March 2016
-    
     \brief Implementation details for brusselator_algo.cpp
 
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power April 2016
           Revised by Christian Power March 2016
           Originally written by Christian Power
                (power22c@gmail.com) February 2016
@@ -14,10 +12,13 @@
      Idea
      --------------------------------------------------
 
-     To do.
+     Providing many helper classes for the Brusselator_scheme.  
+     Since the we solve two scalar equation I have provided several
+     struct to avoid word repetition.  
 
-         Created by Christian Power on 29.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
+    \author Christian Power
+    \date 23. April 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef BRUSSELATOR_ALGO_IMPL_H
