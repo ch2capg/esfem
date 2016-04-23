@@ -289,6 +289,12 @@ namespace Esfem{
   inline void Brusselator_scheme::next_timeStep(){
     fix_grid.next_timeStep(data.global_timeStep());
   }
+  inline long Brusselator_scheme::prePattern_timeSteps() const{
+    return data.prePattern_timeSteps();
+  }
+  inline long Brusselator_scheme::pattern_timeSteps() const{
+    return data.pattern_timeSteps();
+  }
 }
 
 #endif // BRUSSELATOR_ALGO_H
