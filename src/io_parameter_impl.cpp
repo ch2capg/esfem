@@ -75,9 +75,9 @@ std::string Esfem::Impl::doubleVector_to_string(const std::vector<double>& vd){
 }
 void Esfem::Impl::file_check(const std::vector<std::string>& file_list){  
   for(const auto& file_name : file_list){
-    fstream fs {file_name};
+    ofstream fs {file_name, ios_base::app};
     Assert::dynamic<Assert::level(1), Esfem::Parameter_error>
-      (fs.is_open(),
-       Assert::compose(__FILE__, __LINE__, "Could not open file " + file_name));
+      (!fs.fail(),
+       Assert::compose(__FILE__, __LINE__, file_name + ".fail() == true"));
   }
 }

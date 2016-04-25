@@ -124,7 +124,8 @@ void Brusselator_scheme::final_action(){
 
 void Brusselator_scheme::pre_loop_action(){
   PreLoop_helper helper {*this};
-  helper.first_interpolate();
+  // helper.random_initialValues();
+  helper.analytic_initialValues();
   helper.headLine_in_errFile();
   helper.plot_errors_in_errFile();
   helper.plot_paraview();

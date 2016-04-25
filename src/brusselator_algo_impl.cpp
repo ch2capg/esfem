@@ -87,7 +87,12 @@ PreLoop_helper::PreLoop_helper(Brusselator_scheme& bs_input)
   solver {bs.data, bs.fix_grid, bs.fef.u, bs.fef.w}
 {}
 
-void PreLoop_helper::first_interpolate(){
+void PreLoop_helper::analytic_initialValues(){
+  interpolate(bs.exact.u, bs.fef.u);
+  interpolate(bs.exact.w, bs.fef.w);
+  bs.io.identity.interpolate(bs.fef.surface.fun);
+}
+void PreLoop_helper::random_initialValues(){
   interpolate(init_data.u, bs.fef.u);
   interpolate(init_data.w, bs.fef.w);
   bs.io.identity.interpolate(bs.fef.surface.fun);

@@ -76,9 +76,17 @@ namespace Esfem{
     //! Get access to 
     explicit PreLoop_helper(Brusselator_scheme&);
     /*!< \brief Modifies private data members of `Brusselator_scheme` */
-    void first_interpolate();
+    //! Initial values via an analytic expression
+    /*! \sa Rhs */
+    void analytic_initialValues();
+    //! Initial values via a random distribution
+    /*! \sa Rhs */
+    void random_initialValues();
+    //! First line in the error file
     void headLine_in_errFile();
+    //! Should plot zeros
     void plot_errors_in_errFile();
+    //! Paraview output 
     void plot_paraview();
     void prepare_rhs();
     /*!< \brief Applies the mass matrix on the
