@@ -1,13 +1,11 @@
 /*! \file grid_FEfunSet.h
-    \author Christian Power
-    \date 30. March 2016
-
     \brief Basic struct with input output 
            member functions for a generic numerical experiment
 
     Revision history
     --------------------------------------------------
 
+          Revised by Christian Power April 2016
           Revised by Christian Power March 2016
           Originally written by Christian Power
                (power22c@gmail.com) March 2016
@@ -18,8 +16,9 @@
      This header provides model classes and operator classes to solve 
      a tumor growth model proposed by Elliott and Styles via the ESFEM.  
 
-         Created by Christian Power on 30.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
+    \author Christian Power
+    \date 22. April 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
 #ifndef GRID_FEFFUNSET_H
@@ -30,6 +29,7 @@
 #include "grid.h"
 
 namespace Esfem{
+  //! Analytically given evolving grids and finite element functions
   namespace Grid{
     template<typename FEfun>
     struct FEfun_set{

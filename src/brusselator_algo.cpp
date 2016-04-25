@@ -61,12 +61,13 @@ void Esfem::brusselator_algo(int argc, char** argv){
 Brusselator_scheme::
 Brusselator_scheme(int argc, char** argv,
 		   const std::string& parameter_fname)
-try : data {argc, argv, parameter_fname},
+try :data {argc, argv, parameter_fname},
   io {data},
   fix_grid {data},
-  fef {fix_grid}
+  fef {fix_grid},
+  exact {data}
 {
-  pre_loop_action();
+  pre_loop_action(); // initialize member fef
 }
 catch(const std::exception&){
   throw_with_nested(Bruss_error {"Constructor."}); 
@@ -142,13 +143,15 @@ void Brusselator_scheme::rhs_and_solve_SPDE(){
 // Brusselator_scheme::Fef and Brusselator_scheme::Io
 
 Brusselator_scheme::Fef::Fef(const Esfem::Grid::Grid_and_time& gt)
-  :u {"u", gt},
-   w {"w", gt},
-   surface {"surface", gt}
+  :u {"u", gt}, w {"w", gt}, surface {"surface", gt}
 {}
 
 Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
-  :dgf_handler {p.grid()},
-   u {p},
-   w {p}
+  :dgf_handler {p.grid()}, u {p}, w {p}
+{}
+Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt)
+  : u {gt, Growth::promoting}, w {gt, Growth::inhibiting}
+{}
+Brusselator_scheme::Init_data::Init_data(const Esfem::Io::Parameter& p)
+  :u {p, Growth::promoting}, w {p, Growth::inhibiting} 
 {}

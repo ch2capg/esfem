@@ -33,7 +33,6 @@ using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
 
 using Esfem::SecOrd_op::Identity;
 using Esfem::Rhs;
-using Esfem::Init_data;
 using Esfem::Scalar_solver;
 using Esfem::Err_cal;
 using Esfem::PrePattern_helper;
@@ -46,9 +45,6 @@ using Esfem::Pattern_helper;
 
 Rhs::Rhs(const Grid::Grid_and_time& gt)
   :u {gt, Growth::promoting}, w {gt, Growth::inhibiting}
-{}
-Init_data::Init_data(const Esfem::Io::Parameter& p)
-  :u {p, Growth::promoting}, w {p, Growth::inhibiting}
 {}
 
 Scalar_solver::Scalar_solver
@@ -85,7 +81,8 @@ Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
 
 PreLoop_helper::PreLoop_helper(Brusselator_scheme& bs_input)
   :bs {bs_input},
-  init_data {bs.data},
+// init_data {bs.data},
+  init_data {bs.exact},
   err_cal {bs.fix_grid, bs.fef.u, bs.fef.w},
   paraview {bs.data, bs.fix_grid, bs.fef.u.fun, bs.fef.w.fun},
   solver {bs.data, bs.fix_grid, bs.fef.u, bs.fef.w}
@@ -116,7 +113,7 @@ void PreLoop_helper::prepare_rhs(){
 // Implementation PrePattern_helper 
 
 PrePattern_helper::PrePattern_helper(Brusselator_scheme& bs)
-  : io {bs.io},
+  :io {bs.io},
   u {bs.fef.u},
   w {bs.fef.w},
   tp {bs.fix_grid.time_provider()},
@@ -190,7 +187,6 @@ void RhsAndSolve_helper::solve_surface_and_save(){
 // ----------------------------------------------------------------------
 // Implementation Pattern_helper
 
-/*! \todo scalar valued rhs is missing */
 Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
   :bs {bs_input},
    grid
@@ -201,14 +197,15 @@ Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
    w {bs.fef.w, grid},
    err_cal {grid, u, w},
    paraview {bs.data, grid, u.fun, w.fun},
-   solver {bs.data, grid, u, w}
+  solver {bs.data, grid, u, w},
+  load_vector {grid}
 {}
-/*! \todo add_load_vector() calls are missing. */
+
 void Pattern_helper::finalize_scalarPDE_rhs(){
   solver.u.add_massMatrixConstOne_to(u.rhs_les);
-  // rhs.u.add_scaled(u.rhs_les);
+  load_vector.u.assemble_and_addScaled_to(u.rhs_les);
   solver.w.add_massMatrixConstOne_to(w.rhs_les);
-  // rhs.w.add_scaled(w.rhs_les);
+  load_vector.w.assemble_and_addScaled_to(w.rhs_les);
 }
 void Pattern_helper::solve_scalarPDE(){
   solver.u.solve(u.rhs_les, u.fun);
@@ -219,7 +216,8 @@ void Pattern_helper::solve_scalarPDE(){
   bs.fef.w = w;
 }
 void Pattern_helper::update_exactSolutions(){
-  
+  bs.exact.u.interpolate(bs.fef.u.exact);
+  bs.exact.w.interpolate(bs.fef.w.exact);
 }
 void Pattern_helper::plot_errors_in_errFile(){
   const auto& tp = grid.time_provider();
