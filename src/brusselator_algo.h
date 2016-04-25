@@ -134,7 +134,7 @@
 namespace Esfem{
   //! ESFEM algorithm.  Only this should be invoked by main.
   /*! \param argc `argc` from `main`
-    \param argv `argv` from `main`
+    \param[in] argv `argv` from `main`
 
     As exact solution for the scalar valued surface equation I chose
     \f{equation*}{
@@ -165,7 +165,7 @@ namespace Esfem{
 		       const std::string& parameter_fname);
     /*!< \brief The constructor that also performs the
                 first part before the loop enters
-      \param[in] argc `argc` from `main`
+      \param argc `argc` from `main`
       \param[in] argv `argv` from `main`
       \param parameter_fname Preferable absolute path to parameter file.
       \warning Absolute path differs on different operating systems.

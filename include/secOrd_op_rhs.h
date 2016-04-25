@@ -1,18 +1,21 @@
 /*! \file secOrd_op_rhs.h
+    \brief Load vector for ESFEM discretization of a scalar or vector valued PDE 
 
-    \brief <Program Name>
-
-     Revision history:
+     Revision history
+     --------------------------------------------------
 
           Revised by Christian Power dd.mm.yyyy
           Originally written by Christian Power
                (power22c@gmail.com) Januar 2016
 
-     This programm implements a basic expression calculator.
-     Input from cin; output to cout.  The grammar for input is: etc.
+     Idea
+     --------------------------------------------------
 
-     Created by Christian Power on 28.01.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+     Wrapper class for the dune implementation.
+
+     \author Christian Power
+     \date 23. April 2016
+     \copyright Copyright (c) 2016 Christian Power. All rights reserved.
  */
 
 #ifndef SECORD_OP_RHS_H
@@ -25,13 +28,24 @@
 namespace Esfem{
   //! Parabolic and elliptic second order operators
   namespace SecOrd_op{
-    //! Scalar valued right-hand side of a PDE
+    //! Load vector for scalar valued PDE
+    /*! 
+      Useful formulas
+      --------------------------------------------------
+
+      \f{gather*}{
+      \diver_{\surface}(X) = \diver_{\R^{n+1}}(\bar{X}) 
+      - \surfaceNormal^T (D_{\R^{n+1}}\bar{X}) \surfaceNormal, \\
+      \laplaceBeltrami f = \Delta_{\R^{n+1}}\bar{f} - \surfaceNormal^T
+      (D_{\R^{n+1}}^2\bar{f}) \surfaceNormal - H \surfaceNormal^T D_{\R^{n+1}}f.
+      \f}
+     */
     class Rhs{
     public:
-      //! Get time, finite element space and indicator if right-hand side for `u` or `w`
-      /*! \warning If time provider outlives this object, then you have a problem. */
+      //! Get time, finite element space and an indicator 
+      /*! \post Grid_and_time must outlive this object. */
       explicit Rhs(const Grid::Grid_and_time&, const Growth);
-      //! Needed for the pointer to data implementation technique
+      //! Needed for the pointer to data implementation technique.
       ~Rhs();
 
       //! Assemble the load vector and add with some scale to the input.      
@@ -42,15 +56,16 @@ namespace Esfem{
       std::unique_ptr<Data> d_ptr;
     };
 
-    //! Vector valued right-hand side of a PDE
+    //! Load vector for vector valued PDE
     class Vec_rhs{
     public:
-      //! \copydoc Rhs::Rhs()
+      //! Get time and finite element space
+      /*! \post Grid_and_time must outlive this object. */
       explicit Vec_rhs(const Grid::Grid_and_time&);
-      //! \copydoc Rhs::~Rhs()
+      //! Needed for the pointer to data implementation technique.
       ~Vec_rhs();
 
-      //! \copydoc Rhs::assemble_and_addScaled_to()
+      //! Assemble the load vector and add with some scale to the input.      
       void assemble_and_addScaled_to(Grid::Vec_FEfun&);
     private:
       struct Data;
