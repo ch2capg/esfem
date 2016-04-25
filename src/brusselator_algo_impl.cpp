@@ -197,6 +197,7 @@ void RhsAndSolve_helper::solve_surface_and_save(){
 // ----------------------------------------------------------------------
 // Implementation Pattern_helper
 
+/*! \todo scalar valued rhs is missing */
 Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
   :bs {bs_input},
    grid
@@ -208,7 +209,9 @@ Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
    err_cal {grid, u, w},
    paraview {bs.data, grid, u.fun, w.fun},
    solver {bs.data, grid, u, w}
+   // 
 {}
+/*! \todo add_load_vector() calls are missing. */
 void Pattern_helper::finalize_scalarPDE_rhs(){
   solver.u.add_massMatrixConstOne_to(u.rhs_les);
   // rhs.u.add_scaled(u.rhs_les);

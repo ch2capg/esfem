@@ -45,8 +45,8 @@ void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
   constexpr auto parameter_file = PFILE;
   Brusselator_scheme fem {argc, argv, parameter_file};
-  fem.prePattern_loop();
-  fem.intermediate_action(); 
+  // fem.prePattern_loop();
+  // fem.intermediate_action(); 
   fem.pattern_loop();
   fem.final_action();
 }
@@ -106,6 +106,7 @@ void Brusselator_scheme::pattern_loop(){
     Pattern_helper helper {*this};
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
+    helper.update_exactSolutions();
     helper.plot_errors_in_errFile();
     helper.plot_paraview();
   }

@@ -55,7 +55,8 @@ namespace Esfem{
                AnalyticalCoordFunction<double, world_dim(), world_dim(), Deformation>
     {
     public:
-      using Base = Dune::AnalyticalCoordFunction<double, world_dim(), world_dim(), Deformation>;
+      using Base = Dune::AnalyticalCoordFunction
+	<double, world_dim(), world_dim(), Deformation>;
       using Domain = Base::DomainVector;
       using Range = Base::RangeVector;
 

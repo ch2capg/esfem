@@ -236,20 +236,27 @@ namespace Esfem{
     /*!< \copydoc PrePattern_helper::finalize_rhs() */
     void solve_scalarPDE();
     /*!< \copydoc PrePattern_helper::solve_pde() */
+    //! Interpolate exact solutions scalar and vector valued PDE.
+    /*! Roughly I interpolate the ESFEM solution on the exact grid and then
+      assign nodal values to the current grid. 
+     */
+    void update_exactSolutions();
     void plot_errors_in_errFile();
     /*!< \copydoc PrePattern_helper::plot_errors_in_errFile() */
     void plot_paraview();
     /*!< \copydoc PrePattern_helper::plot_paraview() */
   private:
-    Brusselator_scheme& bs; /*!< \copydoc #PreLoop_helper::bs */
+    Brusselator_scheme& bs; /*!< \copydoc PreLoop_helper::bs */
     const Grid::Grid_and_time grid;
     /*!< \copydoc #RhsAndSolve_helper::grid brief */    
-    Grid::Scal_FEfun_set u; /*!< \brief #fef.u on #grid */
-    Grid::Scal_FEfun_set w; /*!< \brief #fef.w on #grid */
-    Err_cal err_cal; /*!< \copydoc #PrePattern_helper::err_cal */
+    Grid::Scal_FEfun_set u; /*!< \brief `fef.u` on `grid` */
+    Grid::Scal_FEfun_set w; /*!< \brief `fef.w` on `grid` */
+    Err_cal err_cal; /*!< \copydoc PrePattern_helper::err_cal */
     Io::Paraview paraview;
-    /*!< \brief Has reference to member #u.fun and #w.fun. */
-    Scalar_solver solver; /*!< \brief Solver for #u and #w */
+    /*!< \brief Has reference to member `u.fun` and `w.fun`. */
+    Scalar_solver solver; /*!< \brief Solver for `u` and `w` */
+    //! 
+    Rhs load_vector;
   };
   /*!< \brief Implementation details for 
     Brusselator_scheme::pattern_loop().
