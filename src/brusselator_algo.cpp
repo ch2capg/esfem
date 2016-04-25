@@ -65,7 +65,8 @@ try :data {argc, argv, parameter_fname},
   io {data},
   fix_grid {data},
   fef {fix_grid},
-  exact {data}
+  //  exact {data} // constructor for random initial data
+  exact {fix_grid}
 {
   pre_loop_action(); // initialize member fef
 }

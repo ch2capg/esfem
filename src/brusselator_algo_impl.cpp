@@ -81,7 +81,6 @@ Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
 
 PreLoop_helper::PreLoop_helper(Brusselator_scheme& bs_input)
   :bs {bs_input},
-// init_data {bs.data},
   init_data {bs.exact},
   err_cal {bs.fix_grid, bs.fef.u, bs.fef.w},
   paraview {bs.data, bs.fix_grid, bs.fef.u.fun, bs.fef.w.fun},
@@ -216,8 +215,10 @@ void Pattern_helper::solve_scalarPDE(){
   bs.fef.w = w;
 }
 void Pattern_helper::update_exactSolutions(){
-  bs.exact.u.interpolate(bs.fef.u.exact);
-  bs.exact.w.interpolate(bs.fef.w.exact);
+  // bs.exact.u.interpolate(bs.fef.u.exact);
+  // bs.exact.w.interpolate(bs.fef.w.exact);
+  bs.exact.u.interpolate(u.exact);
+  bs.exact.w.interpolate(w.exact);
 }
 void Pattern_helper::plot_errors_in_errFile(){
   const auto& tp = grid.time_provider();
