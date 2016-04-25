@@ -191,6 +191,7 @@ void RhsAndSolve_helper::solve_surface_and_save(){
 // ----------------------------------------------------------------------
 // Implementation Pattern_helper
 
+/*! \todo scalar valued rhs is missing */
 Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
   :bs {bs_input},
    grid

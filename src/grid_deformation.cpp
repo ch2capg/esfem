@@ -42,6 +42,7 @@ inline void identity(const Domain& x, Range& y) noexcept{
   y[2] = x[2]; 
 }
 
+
 //! \f$r(t) = \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1 - e^{-kt})}\f$
 /*! \param t Current time
   \param x Point from the initial surface
