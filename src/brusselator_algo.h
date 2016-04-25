@@ -213,6 +213,17 @@ namespace Esfem{
       the nodal values of the finite element functions
       in `fef`.
     */
+    //! Initial data respectively exact solution for numerical experiments 
+    struct Init_data{
+      //! Initial data respectively exact solution functor for \f$u\f$ 
+      SecOrd_op::Init_data u;
+      //! Initial data respectively exact solution functor for \f$w\f$
+      SecOrd_op::Init_data w; 
+      //! Provides analytically given initial data.
+      explicit Init_data(const Grid::Grid_and_time&);
+      //! Provides uniform distributed random inital values. 
+      explicit Init_data(const Io::Parameter&);
+    };
     struct Fef{
       Grid::Scal_FEfun_set u;
       /*!< \brief Container for growth promoting numerical solution */
@@ -245,7 +256,9 @@ namespace Esfem{
     /*!< \brief Non evolving grid but consistent time provider */
     Fef fef;
     /*!< \brief Finite element functions */
-
+    //! Exact solution for \f$u\f$ and \f$w\f$
+    Init_data exact;
+    
     // ------------------------------------------------------------
     // Helper member functions
     

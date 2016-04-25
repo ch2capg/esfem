@@ -25,23 +25,27 @@
 #include <iostream>
 #endif
 
+//! \f$\R^3\f$
 using Domain = Esfem::Grid::Deformation::Domain;
+//! \f$\R^3\f$
 using Range = Esfem::Grid::Deformation::Range;
+
 static_assert(Esfem::Grid::Deformation::Domain::dimension == 3,
 	      "Bad domain dimension.");
 static_assert(Esfem::Grid::Deformation::Range::dimension == 3,
 	      "Bad range dimension.");
 
+//! \f$id\colon \R^3 \to \R^3\f$
 inline void identity(const Domain& x, Range& y) noexcept{  
   y[0] = x[0]; 
   y[1] = x[1]; 
   y[2] = x[2]; 
 }
 
-//! \f$\frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1 - e^{-kt})}\f$
+//! \f$r(t) = \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1 - e^{-kt})}\f$
 /*! \param t Current time
   \param x Point from the initial surface
-  \retval y Point at time `t`
+  \retval y \f$ y = r(t) x\f$
   \pre Initial surface is a sphere.
  */
 inline void logistic_growth(const double t, const Domain& x, Range& y) noexcept{

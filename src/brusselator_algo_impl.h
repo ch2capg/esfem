@@ -43,15 +43,14 @@ namespace Esfem{
     // Rhs(const Io::Parameter&, const Grid::Grid_and_time&);
   };
   
-  //! Initial data for the numerical experiment. 
+  //! Initial data respectively exact solution for numerical experiments 
   struct Init_data{
-    // Esfem::SecOrd_op::Init_data_u u;
-    // Esfem::SecOrd_op::Init_data_w w;
-    SecOrd_op::Init_data u; /*!< Initial data for u */
-    SecOrd_op::Init_data w; /*!< Initial data for w */
-    //! Currently not available
-    /*! \todo Revise this constructor. */
-    explicit Init_data(const Grid::Grid_and_time&) = delete;
+    //! Initial data respectively exact solution functor for \f$u\f$ 
+    SecOrd_op::Init_data u;
+    //! Initial data respectively exact solution functor for \f$w\f$
+    SecOrd_op::Init_data w; 
+    //! Provides analytically given initial data.
+    explicit Init_data(const Grid::Grid_and_time&);
     //! Provides uniform distributed random inital values. 
     explicit Init_data(const Io::Parameter&);
   };

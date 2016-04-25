@@ -30,10 +30,10 @@ namespace Esfem{
     class Init_data{
     public:
       //! Constructor for an analytic given initial function
-      /*! \warning Input Grid_and_time must outlive this object. */
-      explicit Init_data(const Grid::Grid_and_time&, const Growth);
+      /*! \post Grid_and_time must outlive this object. */
+      Init_data(const Grid::Grid_and_time&, const Growth);
       //! Constructor for an random initial function
-      explicit Init_data(const Io::Parameter&, const Growth);
+      Init_data(const Io::Parameter&, const Growth);
       //! Required for the pointer to implementation technique.
       ~Init_data();
 

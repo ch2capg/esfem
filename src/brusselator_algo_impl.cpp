@@ -24,16 +24,14 @@
 #include "brusselator_algo_impl.h"
 #include "esfem_error.h"
 
-/*! \name Convenience typedefs */
-//@{
+//! Reporting errors in this file with class.
 using Bruss_error = Esfem::BrusselatorScheme_error;
-using Esfem::SecOrd_op::Identity;
+//! Four finite element functions of type \f$\surface_h \to \R\f$
 using Scal_FEfun_set = Esfem::Grid::Scal_FEfun_set;
+//! Four finite element functions of type \f$\surface_h \to \R^3\f$
 using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
-//@}
 
-/*! \name Implemented in this file */
-//@{
+using Esfem::SecOrd_op::Identity;
 using Esfem::Rhs;
 using Esfem::Init_data;
 using Esfem::Scalar_solver;
@@ -42,20 +40,15 @@ using Esfem::PrePattern_helper;
 using Esfem::PreLoop_helper;
 using Esfem::RhsAndSolve_helper;
 using Esfem::Pattern_helper;
-//@}
 
 // ----------------------------------------------------------------------
 // Implementation of structs 
 
 Rhs::Rhs(const Grid::Grid_and_time& gt)
-  : u {gt, Growth::promoting}, w {gt, Growth::inhibiting}
+  :u {gt, Growth::promoting}, w {gt, Growth::inhibiting}
 {}
-
-// Init_data::Init_data(const Grid::Grid_and_time& gt)
-//   : u {gt}, w {gt}
-// {}
 Init_data::Init_data(const Esfem::Io::Parameter& p)
-  : u {p, Growth::promoting}, w {p, Growth::inhibiting}
+  :u {p, Growth::promoting}, w {p, Growth::inhibiting}
 {}
 
 Scalar_solver::Scalar_solver
@@ -72,14 +65,14 @@ Scalar_solver::Scalar_solver
  const Esfem::Grid::Grid_and_time& g,
  const Esfem::Grid::Scal_tiny_FEfun_set& u_set,
  const Esfem::Grid::Scal_tiny_FEfun_set& w_set)
-  : u {p, g, Growth::promoting, u_set.fun, w_set.fun},
+  :u {p, g, Growth::promoting, u_set.fun, w_set.fun},
   w {p, g, Growth::inhibiting, u_set.fun, u_set.fun}
 {}
 
 Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
 		 const Scal_FEfun_set& u_set,
 		 const Scal_FEfun_set& w_set)
-  : u {g, u_set.exact, u_set.fun},
+  :u {g, u_set.exact, u_set.fun},
   w {g, w_set.exact, w_set.fun}
 {}
 
@@ -91,7 +84,7 @@ Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
 // Implementation PreLoop_helper
 
 PreLoop_helper::PreLoop_helper(Brusselator_scheme& bs_input)
-  : bs {bs_input},
+  :bs {bs_input},
   init_data {bs.data},
   err_cal {bs.fix_grid, bs.fef.u, bs.fef.w},
   paraview {bs.data, bs.fix_grid, bs.fef.u.fun, bs.fef.w.fun},
@@ -209,7 +202,6 @@ Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
    err_cal {grid, u, w},
    paraview {bs.data, grid, u.fun, w.fun},
    solver {bs.data, grid, u, w}
-   // 
 {}
 /*! \todo add_load_vector() calls are missing. */
 void Pattern_helper::finalize_scalarPDE_rhs(){
@@ -225,6 +217,9 @@ void Pattern_helper::solve_scalarPDE(){
   w.app = w.fun;
   bs.fef.u = u;
   bs.fef.w = w;
+}
+void Pattern_helper::update_exactSolutions(){
+  
 }
 void Pattern_helper::plot_errors_in_errFile(){
   const auto& tp = grid.time_provider();
