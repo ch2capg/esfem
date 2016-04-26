@@ -20,10 +20,12 @@
 #include "io_dof.h"
 #include "esfem_error.h"
 
-//! For convenience 
 using namespace std;
-//! Implementing this
 using Esfem::SecOrd_op::Init_data;
+using Esfem::SecOrd_op::Exact_velocity;
+
+// ----------------------------------------------------------------------
+// Init_data 
 
 Esfem::SecOrd_op::Init_data::
 Init_data(const Grid::Grid_and_time& gt, const Growth type) 
@@ -37,6 +39,7 @@ Esfem::SecOrd_op::Init_data::Init_data(const Io::Parameter& p,
 
  Esfem::SecOrd_op::Init_data::~Init_data() = default;
 
+/*! \retval fef Interpolation of the exact solution or random given nodal values */
 void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const{
   using std::begin;
   using std::end;
@@ -44,7 +47,7 @@ void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const{
   
   const auto& eid_ptr = d_ptr -> eid_ptr;
   const auto& rid_ptr = d_ptr -> rid_ptr;
-  const auto& ofname = d_ptr -> dof_io_filename;
+  // const auto& ofname = d_ptr -> dof_io_filename;
   
   if(eid_ptr)
     Dune::LagrangeInterpolation<FE_function>::
@@ -52,8 +55,24 @@ void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const{
   else if(rid_ptr){
     Dune::LagrangeInterpolation<FE_function>::
       interpolateFunction(*rid_ptr, fef);
-    Io::dof_to_file(begin(fef), end(fef), ofname);
+    // Io::dof_to_file(begin(fef), end(fef), ofname);
   }
   else
     throw InitData_error {Assert::compose(__FILE__, __LINE__, "Null pointer")};
+}
+
+// ----------------------------------------------------------------------
+// Exact_velocity
+
+Exact_velocity::Exact_velocity(const Grid::Grid_and_time& gt)
+  :d_ptr {std::make_unique<Data>(gt)}
+{}
+
+Exact_velocity::~Exact_velocity() = default;
+
+/*! \retval vfef Interpolation of the exact velocity */
+void Exact_velocity::interpolate(Grid::Vec_FEfun& vfef) const{
+  using FE_function = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<FE_function>::
+    interpolateFunction(d_ptr -> v_fun, vfef);
 }

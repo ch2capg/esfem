@@ -30,10 +30,10 @@ tumor_growth.surface.alpha: 0.01
 tumor_growth.surface.delta: .4
 
 fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_2.dgf
-fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere2_v00.log
+fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere2_v01.log
 
 fem.prefix: /scratch/na31/power/numerische_experimente/solution_driven
-fem.io.path: eoc_experiment/eoc00
+fem.io.path: eoc_experiment/eoc01
 fem.io.outputName: brusselator-
 
 tumor_growth.io.u_init_dof: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/u_dof.log

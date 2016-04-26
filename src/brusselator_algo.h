@@ -198,13 +198,20 @@ namespace Esfem{
   private:    
     struct Io{
       //! Functor for saving the current grid. 
-      SecOrd_op::Identity identity {}; 
+      SecOrd_op::Identity identity {};
+      
       const Esfem::Io::Dgf::Handler dgf_handler;
       /*!< \brief Converts finite element function into dgf file. */
+      
       Esfem::Io::Error_stream u;
       /*!< \brief File to record errors of u. */
       Esfem::Io::Error_stream w;
       /*!< \brief File to record errors of w. */
+      //! File to plot errors in X
+      Esfem::Io::Error_stream X;
+      //! File to plot errors in v
+      Esfem::Io::Error_stream v;
+      
       //! Get file name for error streams.
       Io(const Esfem::Io::Parameter&);
     };
@@ -219,7 +226,8 @@ namespace Esfem{
       //! Initial data respectively exact solution functor for \f$u\f$ 
       SecOrd_op::Init_data u;
       //! Initial data respectively exact solution functor for \f$w\f$
-      SecOrd_op::Init_data w; 
+      SecOrd_op::Init_data w;
+      
       //! Provides analytically given initial data.
       explicit Init_data(const Grid::Grid_and_time&);
       //! Provides uniform distributed random inital values. 
@@ -235,6 +243,8 @@ namespace Esfem{
 	\warning Only this container is allowed to write into and read from
 	  a dgf file.
        */
+      //! Analytically given exact velocity.
+      Grid::Vec_FEfun velocity;
       const std::string tmpFile_path {FEF_PATH};
       /*!< \brief Directory which I have read and write access.
 	\warning `FEF_PATH` is a macro variable which has be set by
@@ -275,16 +285,20 @@ namespace Esfem{
     /*!< \brief Used in rhs_and_solve_SPDE(). */
     //@}
 
+    //! Assign a new value to `fef.surface.exact`
+    void update_exact_surface();
+    //! Assign a new value to `fef.velocity`
+    /*! \todo Implement this. */
+    void update_exact_velocity();
+
+    //! Constructor helper
+    /*! \pre Should only be invoked by Brusselator_scheme().*/
     void pre_loop_action();
-    /*!< \warning Should only be invoked by Brusselator_scheme(). */
-    void rhs_and_solve_SPDE();
-    /*!< \brief Helper for pattern_loop().
-      
-      Generates first part of the right-hand side for the scalar
+    //! Helper for pattern_loop().
+    /*! Generates first part of the right-hand side for the scalar
       SPDE.  Then solves the vector SPDE and prints out a dgf file.
      */
-    // void solve_surfacePDE();
-    // void intermediate_surface_rhs();
+    void rhs_and_solve_SPDE();
     
     /*! \name Flow control */
     //@{ 

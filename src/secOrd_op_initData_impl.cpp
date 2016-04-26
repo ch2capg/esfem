@@ -26,11 +26,40 @@
 #include "io_parameter.h"
 #include "esfem_error.h"
 
-//! Implementing this
-using Esfem::Impl::Explicit_initial_data;
-//! Implementing this
-using Esfem::Impl::Random_initial_data;
 
+using Esfem::Impl::Explicit_initial_data;
+using Esfem::Impl::Random_initial_data;
+using Esfem::Impl::Analytic_velocity;
+
+using Vec_domain = Analytic_velocity::Domain;
+using Vec_range = Analytic_velocity::Range;
+
+// ----------------------------------------------------------------------
+// Some static inline analytic expression
+
+//! Helper for eoc_velocity()
+/*! \param t Current time \f$t\f$
+  \returns \f$r(t)/r_{end} = \frac{r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})}\f$
+*/
+static inline double r_div_rEnd(const double t){
+  const double r0 = 1., r_end = 2., kt = .5 * t;
+  return r0 / (r_end * exp(-kt) + r0 * (1 - exp(-kt)) );
+}
+//! Velocity for the solution driven 2016 paper
+/*! Eoc means that this velocity was used to generate the eoc tables.
+  \param t Current time \f$t\f$
+  \param d Position  \f$x\f$ at time \f$t\f$
+  \retval r \f$v(x,t) = k \Bigl(1 - \frac{r(t)}{r_{end}}\Bigr) x\f$
+  \sa r_div_rEnd
+ */
+static inline void eoc_velocity(const double t, const Vec_domain& d, Vec_range& r){
+  const double k = .5, // should be read from a parameter file
+    r_d_rEnd = r_div_rEnd(t),
+    factor =   k * (1 - r_d_rEnd);
+  r[0] = d[0] * factor;
+  r[1] = d[1] * factor;
+  r[2] = d[2] * factor;
+}
 
 // ----------------------------------------------------------------------
 // Implementation Explicit_initial_data
@@ -63,7 +92,9 @@ Explicit_initial_data(const Esfem::Grid::Grid_and_time& gt,
   };
   std::cout << "Using Explicit_initial_data():\n"
 	    << "u = std::exp(-6.*t)*x*y\n"
-	    << "w = std::exp(-6.*t)*y*z" << std::endl;
+	    << "w = std::exp(-6.*t)*y*z\n"
+	    << "v = r(t) ..."
+	    << std::endl;
 }
 
 // ----------------------------------------------------------------------
@@ -82,6 +113,18 @@ Random_initial_data(const double hom_value,
   :random_fun {std::bind(Random_dist {hom_value, hom_value + pertubation},
 			 Random_engine {})}
 {}
+
+// ----------------------------------------------------------------------
+// Analytic_velocity
+
+Analytic_velocity::Analytic_velocity(const Esfem::Grid::Grid_and_time& gt)
+  :tp {gt.time_provider()}
+{}
+
+void Analytic_velocity::evaluate(const Domain& d, Range& r) const{
+  const double t = tp.time();
+  eoc_velocity(t, d, r);
+}
 
 // ----------------------------------------------------------------------
 // helper functions
@@ -146,7 +189,6 @@ std::string Esfem::Impl::dof_filename(const Io::Parameter& p, const Growth type)
   return rv;
 }
 
-
 // ----------------------------------------------------------------------
 // Implementation Init_data::Data
 
@@ -158,4 +200,11 @@ Esfem::SecOrd_op::Init_data::Data::Data(const Grid::Grid_and_time& gt,
 Esfem::SecOrd_op::Init_data::Data::Data(const Io::Parameter& p, const Growth type)
   :dof_io_filename {Impl::dof_filename(p, type)},
    rid_ptr {std::make_unique<Random_initial_data>(p, type)}
+{}
+
+// ----------------------------------------------------------------------
+// Exact_velocity::Data
+
+Esfem::SecOrd_op::Exact_velocity::Data::Data(const Grid::Grid_and_time& gt)
+  :v_fun {gt}
 {}

@@ -14,7 +14,7 @@
      Actual implementation of Initial data.
 
      \author Christian Power 
-     \date 22. April 2016
+     \date 26. April 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -59,7 +59,7 @@ namespace Esfem{
       //! No copy assignment 
       Explicit_initial_data& operator=(const Explicit_initial_data&) = delete;
 
-      //! Required for the interpolation class
+      //! Required for the dune Lagrange interpolation class
       void evaluate(const Domain&, Range&) const;
     private:
       //! Current time 
@@ -103,6 +103,36 @@ namespace Esfem{
       Random_initial_data(const double hom_value, const double pertubation);
     };
 
+    //! The actual implementation of the velocity
+    class Analytic_velocity
+      : public Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,
+				   Analytic_velocity>
+    {
+    public:
+      //! \f$f\colon \R^3\to\R^3\f$
+      using Fun_space = Esfem::Grid::Grid_and_time::Vec_Function_space;
+      //! \f$\R^3\f$
+      using Domain = typename Fun_space::DomainType;
+      //! \f$\R^3\f$
+      using Range = typename Fun_space::RangeType;
+
+      static_assert(Domain::dimension == 3, "Bad Domain dimension");
+      static_assert(Range::dimension == 3, "Bad Range dimension");
+
+      //! Get time provider
+      Analytic_velocity(const Esfem::Grid::Grid_and_time&);
+      //! No copy constructor
+      Analytic_velocity(const Analytic_velocity&) = delete;
+      //! No copy assignment 
+      Analytic_velocity& operator=(const Analytic_velocity&) = delete;
+
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const Domain&, Range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;
+    };
+
     // ----------------------------------------------------------------------
     // helper functions 
 
@@ -133,6 +163,15 @@ namespace Esfem{
     //! `rid_ptr` constructor
     Data(const Io::Parameter&, const Growth);
   };
+
+  //! %Data members of Exact_velocity
+  struct SecOrd_op::Exact_velocity::Data{
+    //! Functor of the analytic function
+    Impl::Analytic_velocity v_fun;
+    
+    //! Get time provider
+    Data(const Grid::Grid_and_time&);
+  };
 } // namespace Esfem
 
 // ----------------------------------------------------------------------
@@ -148,6 +187,3 @@ evaluate(const Domain&, Range& q) const{
 }  
 
 #endif // SECORD_OP_INITDATA_IMPL_H
-
-/*! Log:
- */

@@ -110,7 +110,7 @@ void Brusselator_scheme::pattern_loop(){
     helper.solve_scalarPDE();
     helper.update_exactSolutions();
     helper.plot_errors_in_errFile();
-    // helper.plot_paraview();
+    helper.plot_paraview();
   }
 }
 void Brusselator_scheme::final_action(){
@@ -122,6 +122,10 @@ void Brusselator_scheme::final_action(){
 // ------------------------------------------------------------
 // Brusselator_scheme private
 
+void Brusselator_scheme::update_exact_surface(){
+  io.identity.interpolate(fef.surface.exact);
+}
+// void Brusselator_scheme::update_exact_velocity(){}
 void Brusselator_scheme::pre_loop_action(){
   PreLoop_helper helper {*this};
   // helper.random_initialValues();
@@ -145,12 +149,13 @@ void Brusselator_scheme::rhs_and_solve_SPDE(){
 // Brusselator_scheme::Fef and Brusselator_scheme::Io
 
 Brusselator_scheme::Fef::Fef(const Esfem::Grid::Grid_and_time& gt)
-  :u {"u", gt}, w {"w", gt}, surface {"surface", gt}
+  :u {"u", gt}, w {"w", gt}, surface {"surface", gt}, velocity {"velocity", gt}
 {}
 
 Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
-  :dgf_handler {p.grid()}, u {"_u", p}, w {"_w", p}
+  :dgf_handler {p.grid()}, u {"_u", p}, w {"_w", p}, X {"_X", p}, v {"_v",p}
 {}
+
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt)
   : u {gt, Growth::promoting}, w {gt, Growth::inhibiting}
 {}

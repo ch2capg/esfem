@@ -26,7 +26,7 @@
 
 namespace Esfem{
   namespace SecOrd_op{
-    //! Initial data for ESFEM experiments
+    //! Initial data for scalar ESFEM experiments
     class Init_data{
     public:
       //! Constructor for an analytic given initial function
@@ -37,8 +37,27 @@ namespace Esfem{
       //! Required for the pointer to implementation technique.
       ~Init_data();
 
-      //! Overrides the nodal values of the input
+      //! Lagrange interpolation
       void interpolate(Grid::Scal_FEfun&) const;
+    private:
+      struct Data;
+      //! Pointer to data members
+      std::unique_ptr<Data> d_ptr;
+    };
+
+    //! Analytically given velocity
+    class Exact_velocity{
+    public:
+      //! Fetch time provider
+      /*! \post Gird_and_time must outlive this object.
+	\todo Change constructor so that it also reads parameter.
+       */
+      Exact_velocity(const Grid::Grid_and_time&);
+      //! Required for the pointer to implementation technique
+      ~Exact_velocity();
+
+      //! Lagrange interpolation
+      void interpolate(Grid::Vec_FEfun&) const;
     private:
       struct Data;
       //! Pointer to data members
