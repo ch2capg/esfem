@@ -1,24 +1,23 @@
 /*! \file secOrd_op_solutionDriven_impl.cpp
-    \author Christian Power
-    \date 18. March 2016
-
     \brief Implementation of `secOrd_op_solutionDriven_impl.h`
 
-     Revision history
-     --------------------------------------------------
+    Revision history
+    --------------------------------------------------
 
-          Revised by Christian Power March 2016
-          Originally written by Christian Power
-               (power22c@gmail.com) March 2016
+         Revised by Christian Power April 2016
+         Revised by Christian Power March 2016
+         Originally written by Christian Power
+              (power22c@gmail.com) March 2016
 
-     Idea
-     --------------------------------------------------
+    Idea
+    --------------------------------------------------
 
-     Implementation of helper classes of `secOrd_op_solutionDriven.h`.
+    Implementation of helper classes of `secOrd_op_solutionDriven.h`.
 
-         Created by Christian Power on 18.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
 
+    \author Christian Power
+    \date 26. April 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
 #include <dassert.h>

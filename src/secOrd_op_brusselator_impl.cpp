@@ -105,10 +105,10 @@ Brusselator_op::Data::Data(const Esfem::Io::Parameter& p,
 			   const Esfem::Growth type,
 			   const FE_function& quadMassMatrix_firstArg,
 			   const FE_function& quadMassMatrix_secondArg)
-  : first_arg {quadMassMatrix_firstArg},
-    second_arg {quadMassMatrix_secondArg},
-    vec_range(calculate_matrix_row_size(first_arg)),
-    vec_jacRange(calculate_matrix_row_size(first_arg))
+  :first_arg {quadMassMatrix_firstArg},
+   second_arg {quadMassMatrix_secondArg},
+   vec_range(calculate_matrix_row_size(first_arg)),
+   vec_jacRange(calculate_matrix_row_size(first_arg))
 {
   const auto dT = gt.time_provider().deltaT();
   switch(type){

@@ -65,7 +65,8 @@
        \varepsilon A(X)X + \delta M(u,\nodalValue{\surfaceNormal})
        + G, \\
        \dell_t \parentheses[\big]{M(X) \nodalValue{u} } + A(X) \nodalValue{u}
-       = \gamma \parentheses[\big]{b M(X) \nodalValue{1} 
+       = \gamma \parentheses[\big]{a M(X) \nodalValue{1} 
+       - M(X)\nodalValue{u}
        + M(X; \nodalValue{u},\nodalValue{w}) \nodalValue{u}}
        + F_{(1)} \\
        \dell_t \parentheses[\big]{M(X) \nodalValue{w}} 

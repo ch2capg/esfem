@@ -11,10 +11,10 @@
      Idea
      --------------------------------------------------
 
-     Implementation of class `MyClass`
+     Insert the sage-syntax solution of the right-hand side here.
 
      \author Christian Power 
-     \date 22. April 2016
+     \date 26. April 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
