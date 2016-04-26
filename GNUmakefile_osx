@@ -110,7 +110,7 @@ help:
 	@ echo ${TEST1_MSG}
 	@ echo 
 clean:
-	rm -rf ${BUILD_DIR}
+	rm -rI ${BUILD_DIR}
 
 # ----------------------------------------------------------------------
 # LIB1
