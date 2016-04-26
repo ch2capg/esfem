@@ -12,7 +12,7 @@ fem.io.savestep: 0.01
 
 heat.starttime: 0. # 10. 
 tumor_growth.surface.start_growth: .001
-heat.endtime: .05
+heat.endtime: 2.
 heat.pattern.endtime: 0. # 10.
 heat.timestep: .001
 heat.bdf: 1
@@ -29,9 +29,8 @@ tumor_growth.surface.epsilon: 0.01
 tumor_growth.surface.alpha: 0.01
 tumor_growth.surface.delta: .4
 
-fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_1.dgf
-# fem.io.errorFile: /home/power/cpp/DISS_surfaces/output/brusselator/sphere3_v00.log
-fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere1_v00.log
+fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_2.dgf
+fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere2_v00.log
 
 fem.prefix: /scratch/na31/power/numerische_experimente/solution_driven
 fem.io.path: eoc_experiment/eoc00

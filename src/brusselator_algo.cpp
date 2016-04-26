@@ -110,7 +110,7 @@ void Brusselator_scheme::pattern_loop(){
     helper.solve_scalarPDE();
     helper.update_exactSolutions();
     helper.plot_errors_in_errFile();
-    helper.plot_paraview();
+    // helper.plot_paraview();
   }
 }
 void Brusselator_scheme::final_action(){
@@ -130,7 +130,6 @@ void Brusselator_scheme::pre_loop_action(){
   helper.save_surface();
   // helper.plot_errors_in_errFile();
   helper.plot_paraview();
-  // helper.prepare_rhs();
   next_timeStep();
 }
 void Brusselator_scheme::rhs_and_solve_SPDE(){
