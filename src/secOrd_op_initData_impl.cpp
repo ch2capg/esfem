@@ -31,7 +31,9 @@ using Esfem::Impl::Explicit_initial_data;
 using Esfem::Impl::Random_initial_data;
 using Esfem::Impl::Analytic_velocity;
 
+//! \f$ \R^3 \f$
 using Vec_domain = Analytic_velocity::Domain;
+//! \f$ \R^3 \f$
 using Vec_range = Analytic_velocity::Range;
 
 // ----------------------------------------------------------------------
