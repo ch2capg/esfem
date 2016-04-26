@@ -98,7 +98,7 @@ void Brusselator_scheme::intermediate_action(){
   default:
     fef.u.write(io.dgf_handler, uw_path);
     fef.w.write(io.dgf_handler, uw_path);
-    fef.surface.write(io.dgf_handler, fef.tmpFile_path);
+    // fef.surface.write(io.dgf_handler, fef.tmpFile_path);
     break;
   };
 }
@@ -127,6 +127,7 @@ void Brusselator_scheme::pre_loop_action(){
   // helper.random_initialValues();
   helper.analytic_initialValues();
   helper.headLine_in_errFile();
+  helper.save_surface();
   // helper.plot_errors_in_errFile();
   helper.plot_paraview();
   // helper.prepare_rhs();

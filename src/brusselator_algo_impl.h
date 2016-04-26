@@ -82,6 +82,8 @@ namespace Esfem{
     //! Initial values via a random distribution
     /*! \sa Rhs */
     void random_initialValues();
+    //! Save the initial surface into a temporary file.
+    void save_surface();
     //! First line in the error file
     void headLine_in_errFile();
     //! Should plot zeros

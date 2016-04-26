@@ -97,6 +97,9 @@ void PreLoop_helper::random_initialValues(){
   interpolate(init_data.w, bs.fef.w);
   bs.io.identity.interpolate(bs.fef.surface.fun);
 }
+void PreLoop_helper::save_surface(){
+  bs.fef.surface.write(bs.io.dgf_handler, bs.fef.tmpFile_path);
+}
 void PreLoop_helper::headLine_in_errFile(){
   head_line(bs.io.u);
   head_line(bs.io.w);
