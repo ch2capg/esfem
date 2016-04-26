@@ -136,7 +136,7 @@ Brusselator_op::Brusselator_op(const Esfem::Io::Parameter& p,
 			       const Esfem::Growth type,
 			       const FE_function& quadMassMatrix_firstArg,
 			       const FE_function& quadMassMatrix_secondArg)
-try : d_ptr {make_unique<Data>
+try :d_ptr {make_unique<Data>
 	  (p, gt, type, 
 	   quadMassMatrix_firstArg, quadMassMatrix_secondArg)}
 {}
@@ -148,13 +148,7 @@ catch(...){
   throw std::logic_error {"Unkown error in constructor of Brusselator_op."};
 }
 Brusselator_op::~Brusselator_op() = default;
-// {
-//   delete d_ptr;
-//   d_ptr = nullptr;
-// #ifdef DEBGUG
-//   std::cerr << "~Brusselator_op(): delete d_ptr.\n";
-// #endif
-// }
+
 void Brusselator_op::operator()(const FE_function& rhs, FE_function& lhs) const{
   lhs.clear();
   const auto& df_space = lhs.space();
@@ -333,10 +327,7 @@ void prepare_linearOperator_matrix(const FE_space& df_space,
   matrix.reserve(stencil);
   matrix.clear();
 }
-void jacobian_matrix_heat(const Local_function&, Local_matrix&, const Entity&,
-			  std::vector<Range>&, std::vector<Jacobian_range>&){
-  
-}
+// void jacobian_matrix_heat(const Local_function&, Local_matrix&, const Entity&,
+// 			  std::vector<Range>&, std::vector<Jacobian_range>&){
+// }
 
-/*! Log:
- */
