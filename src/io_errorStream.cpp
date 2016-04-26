@@ -1,17 +1,22 @@
 /*! \file io_errorStream.cpp
+    \brief Implementation of io_errorStream.h 
 
-    \brief <Program Name>
+    Revision history
+    --------------------------------------------------
 
-     Revision history:
+         Revised by Christian Power April 2016
+         Revised by Christian Power February 2016
+         Originally written by Christian Power
+              (power22c@gmail.com) Januar 2016
 
-          Revised by Christian Power February 2016
-          Originally written by Christian Power
-               (power22c@gmail.com) Januar 2016
+    Idea
+    --------------------------------------------------
 
-     Implementation details for io_errorStream.h
-     
-     Created by Christian Power on 19.02.2016
-     Copyright (c) 2016 Christian Power. All rights reserved.
+    No special idea
+
+    \author Christian Power
+    \date 25. April 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #include <sstream>
@@ -25,7 +30,7 @@
 void cannot_open_file(const std::string& fname);
 
 Esfem::Io::Error_stream::Error_stream(const std::string& fname)
-  : ofs {fname, std::ios_base::app}
+  :ofs {fname, std::ios_base::app}
 {
 #ifdef DEBUG
   std::clog << "Opening " << fname << " for Error_stream" << std::endl;
@@ -33,10 +38,10 @@ Esfem::Io::Error_stream::Error_stream(const std::string& fname)
   if(!ofs) cannot_open_file(fname);
 }
 Esfem::Io::Error_stream::Error_stream(const Parameter& d)
-  : Error_stream {d.error_log()}
+  :Error_stream {d.error_log()}
 {}
 Esfem::Io::Error_stream::Error_stream(const std::string& suffix, const Parameter& d)
-  : Error_stream {d.error_log() + suffix}
+  :Error_stream {d.error_log() + suffix}
 {}
 Esfem::Io::Error_stream& Esfem::Io::Error_stream::operator<<(StdManip manip){
 #if DEBUG > 8

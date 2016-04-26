@@ -149,7 +149,7 @@ Brusselator_scheme::Fef::Fef(const Esfem::Grid::Grid_and_time& gt)
 {}
 
 Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
-  :dgf_handler {p.grid()}, u {p}, w {p}
+  :dgf_handler {p.grid()}, u {"_u", p}, w {"_w", p}
 {}
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt)
   : u {gt, Growth::promoting}, w {gt, Growth::inhibiting}

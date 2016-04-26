@@ -17,7 +17,7 @@
      \f$ u\f$ and \f$ w\f$ separately.  
 
     \author Christian Power
-    \date 23. April 2016
+    \date 25. April 2016
     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
