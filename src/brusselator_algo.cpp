@@ -127,7 +127,7 @@ void Brusselator_scheme::pre_loop_action(){
   // helper.random_initialValues();
   helper.analytic_initialValues();
   helper.headLine_in_errFile();
-  helper.plot_errors_in_errFile();
+  // helper.plot_errors_in_errFile();
   helper.plot_paraview();
   // helper.prepare_rhs();
   next_timeStep();
