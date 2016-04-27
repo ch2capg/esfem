@@ -64,8 +64,8 @@ Brusselator_scheme(int argc, char** argv,
 try :data {argc, argv, parameter_fname},
   io {data},
   fix_grid {data},
-  fef {fix_grid},
-  //  exact {data} // constructor for random initial data
+  fef {fix_grid}, // constructor for analytic initial data
+  //  exact {fix_grid, data} // constructor for random initial data
   exact {fix_grid}
 {
   pre_loop_action(); // initialize member fef
@@ -125,7 +125,9 @@ void Brusselator_scheme::final_action(){
 void Brusselator_scheme::update_exact_surface(){
   io.identity.interpolate(fef.surface.exact);
 }
-// void Brusselator_scheme::update_exact_velocity(){}
+void Brusselator_scheme::update_exact_velocity(){
+  exact.v.interpolate(fef.velocity);
+}
 void Brusselator_scheme::pre_loop_action(){
   PreLoop_helper helper {*this};
   // helper.random_initialValues();
@@ -157,8 +159,8 @@ Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
 {}
 
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt)
-  : u {gt, Growth::promoting}, w {gt, Growth::inhibiting}
+  : u {gt, Growth::promoting}, w {gt, Growth::inhibiting}, v {gt}
 {}
-Brusselator_scheme::Init_data::Init_data(const Esfem::Io::Parameter& p)
-  :u {p, Growth::promoting}, w {p, Growth::inhibiting} 
+Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt, const Esfem::Io::Parameter& p)
+  :u {p, Growth::promoting}, w {p, Growth::inhibiting}, v {gt}
 {}

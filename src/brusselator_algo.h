@@ -227,11 +227,13 @@ namespace Esfem{
       SecOrd_op::Init_data u;
       //! Initial data respectively exact solution functor for \f$w\f$
       SecOrd_op::Init_data w;
-      
+      //! Interpolation functor for the exact velocity
+      SecOrd_op::Exact_velocity v;
+
       //! Provides analytically given initial data.
       explicit Init_data(const Grid::Grid_and_time&);
       //! Provides uniform distributed random inital values. 
-      explicit Init_data(const Esfem::Io::Parameter&);
+      explicit Init_data(const Grid::Grid_and_time&, const Esfem::Io::Parameter&);
     };
     struct Fef{
       Grid::Scal_FEfun_set u;
@@ -267,7 +269,7 @@ namespace Esfem{
     /*!< \brief Non evolving grid but consistent time provider */
     Fef fef;
     /*!< \brief Finite element functions */
-    //! Exact solution for \f$u\f$ and \f$w\f$
+    //! Exact solution for \f$u\f$, \f$w\f$ and \f$v\f$
     Init_data exact;
     
     // ------------------------------------------------------------
@@ -288,7 +290,6 @@ namespace Esfem{
     //! Assign a new value to `fef.surface.exact`
     void update_exact_surface();
     //! Assign a new value to `fef.velocity`
-    /*! \todo Implement this. */
     void update_exact_velocity();
 
     //! Constructor helper
