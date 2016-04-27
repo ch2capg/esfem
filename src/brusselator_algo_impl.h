@@ -59,18 +59,20 @@ namespace Esfem{
       Never use this constructor if you need to solve a system.
     */
   };
-  struct Err_cal{    
-    Esfem::Io::L2H1_calculator u;
-    /*!< \brief Calculates the error norm for u. */
-    Esfem::Io::L2H1_calculator w;
-    /*!< \brief Calculates the error norm for w. */
-    Err_cal(const Grid::Grid_and_time&,
-	    const Grid::Scal_FEfun_set& u_set,
-	    const Grid::Scal_FEfun_set& w_set);
-  };
-  /*!< \brief Class that calculates errors in the \f$L^2\f$-
-    and \f$H^1\f$-norm.
-  */
+
+  // struct Err_cal{    
+  //   Esfem::Io::L2H1_calculator u;
+  //   /*!< \brief Calculates the error norm for u. */
+  //   Esfem::Io::L2H1_calculator w;
+  //   /*!< \brief Calculates the error norm for w. */
+  //   Err_cal(const Grid::Grid_and_time&,
+  // 	    const Grid::Scal_FEfun_set& u_set,
+  // 	    const Grid::Scal_FEfun_set& w_set);
+  // };
+  // /*!< \brief Class that calculates errors in the \f$L^2\f$-
+  //   and \f$H^1\f$-norm.
+  // */
+
   class PreLoop_helper{
   public:
     //! Get access to 
@@ -100,7 +102,7 @@ namespace Esfem{
     Brusselator_scheme& bs; 
     //! Reference to `bs.exact`
     const Brusselator_scheme::Init_data& init_data;
-    Err_cal err_cal; /*!< \brief Contains two output files. */
+    // Err_cal err_cal; /*!< \brief Contains two output files. */
     Io::Paraview paraview;
     /*!< \brief Has reference to `bs.fef.u.fun` and
                 `bs.fef.w.fun`
@@ -174,7 +176,7 @@ namespace Esfem{
     /*!< \brief Reference to `Brusselator_scheme::fef.w` */
     const Dune::Fem::TimeProviderBase& tp;
     /*!< From `Brusselator_scheme::fix_grid` */
-    Err_cal err_cal; /*!< \brief Contains two output files. */
+    // Err_cal err_cal; /*!< \brief Contains two output files. */
     Io::Paraview paraview;
     /*!< \brief Has reference to member `fun` from `u` and `w` */
     Scalar_solver solver; /*!< \brief Brusselator solver */
@@ -251,7 +253,8 @@ namespace Esfem{
     /*!< \copydoc RhsAndSolve_helper::grid brief */    
     Grid::Scal_FEfun_set u; /*!< \brief `fef.u` on `grid` */
     Grid::Scal_FEfun_set w; /*!< \brief `fef.w` on `grid` */
-    Err_cal err_cal; /*!< \copydoc PrePattern_helper::err_cal */
+    //! Norms on the calculated Grid
+    Io::L2H1_calculator norm; 
     Io::Paraview paraview;
     /*!< \brief Has reference to member `u.fun` and `w.fun`. */
     Scalar_solver solver; /*!< \brief Solver for `u` and `w` */

@@ -109,6 +109,8 @@ void Brusselator_scheme::pattern_loop(){
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
     helper.update_exactSolutions();
+    update_exact_surface();
+    update_exact_velocity();
     helper.plot_errors_in_errFile();
     helper.plot_paraview();
   }
@@ -133,6 +135,8 @@ void Brusselator_scheme::pre_loop_action(){
   // helper.random_initialValues();
   helper.analytic_initialValues();
   helper.headLine_in_errFile();
+  update_exact_surface();
+  update_exact_velocity();
   helper.save_surface();
   // helper.plot_errors_in_errFile();
   helper.plot_paraview();

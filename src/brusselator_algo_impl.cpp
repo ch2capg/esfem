@@ -65,15 +65,11 @@ Scalar_solver::Scalar_solver
   w {p, g, Growth::inhibiting, u_set.fun, u_set.fun}
 {}
 
-Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
-		 const Scal_FEfun_set& u_set,
-		 const Scal_FEfun_set& w_set)
-  :u {g, u_set.exact, u_set.fun},
-  w {g, w_set.exact, w_set.fun}
-{}
-
-// Err_stream::Err_stream(const Esfem::Io::Parameter& p)
-//   : u {"_u", p}, w {"_w", p}
+// Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
+// 		 const Scal_FEfun_set& u_set,
+// 		 const Scal_FEfun_set& w_set)
+//   :u {g, u_set.exact, u_set.fun},
+//   w {g, w_set.exact, w_set.fun}
 // {}
 
 // ----------------------------------------------------------------------

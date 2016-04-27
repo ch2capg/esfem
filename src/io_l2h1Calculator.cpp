@@ -1,16 +1,21 @@
 /*! \file io_l2h1Calculator.cpp
+    \brief Implementation of io_l2h1Calculator.h
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power April 2016
           Originally written by Christian Power
                (power22c@gmail.com) Januar 2016
 
-     Implementation details for io_l2h1Calculator.h
-     Created by Christian Power on 27.01.2016
-     Copyright (c) 2016 Christian Power. All rights reserved.
+     Idea
+     --------------------------------------------------
+
+     No special idea.
+
+     \author Christian Power
+     \date 27. April 2016
+     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #include <config.h>
@@ -21,50 +26,41 @@
 #include "grid.h"
 
 using namespace std;
+using Esfem::Io::L2H1_calculator;
+
+//! \f$f\colon \R^3 \to \R\f$
 using FEfun = Esfem::Grid::Scal_FEfun::Dune_FEfun;
+//! \f$f\colon \R^3 \to \R^3\f$
+using Vec_FEfun = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+//! \f$L^2\f$-norm
 using L2_norm = Dune::Fem::L2Norm<Esfem::Grid::Grid_and_time::Grid_part>;
+//! \f$H^1\f$-norm
 using H1_norm = Dune::Fem::H1Norm<Esfem::Grid::Grid_and_time::Grid_part>;
 
-struct Esfem::Io::L2H1_calculator::Data{
-  const FEfun& u;
-  const FEfun& uN;
+//! %Data members of L2H1_calculator
+struct L2H1_calculator::Data{
+  //! Dune \f$L^2\f$-norm functor
   L2_norm l2;
+  //! Dune \f$H^1\f$-norm functor
   H1_norm h1;
+  //! Get grid
+  /*! \post Grid_and_time must outlive this object. */
+  Data(const Grid::Grid_and_time& gt) :l2 {gt}, h1{gt} {}
 };
 
-Esfem::Io::L2H1_calculator::
-L2H1_calculator(const Grid::Grid_and_time& gt,
-		const Grid::Scal_FEfun& exact_solution,
-		const Grid::Scal_FEfun& numerical_solution)
-try  : d_ptr {make_unique<Data>(Data 
-  {exact_solution, numerical_solution,
-      L2_norm {gt.grid_part()}, 
-      H1_norm {gt.grid_part()}}
-      )}
-{}
-catch(const std::exception&){
-  std::throw_with_nested(std::logic_error
-			 {"Error in constructor of L2H1_calculator."});
- }
- catch(...){
-   throw std::logic_error{"Unknown error in constructor of L2H1_calculator."};
- }
+L2H1_calculator::L2H1_calculator(const Grid::Grid_and_time& gt)
+  :d_ptr {make_unique<Data>(gt)} {}
+Esfem::Io::L2H1_calculator::~L2H1_calculator() = default;
 
-Esfem::Io::L2H1_calculator::
-~L2H1_calculator() = default;
-// {
-//   delete d_ptr;
-//   d_ptr = nullptr;
-// #ifdef DEBUG
-//   std::cerr << "~L2H1_calculator(): delete d_ptr\n";
-// #endif
-// }
-double Esfem::Io::L2H1_calculator::l2_err() const{
-  return d_ptr -> l2.distance(d_ptr -> u, d_ptr -> uN);
+double L2H1_calculator::l2_err(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
+  return d_ptr -> l2.distance(u, uN);
 }
-double Esfem::Io::L2H1_calculator::h1_err() const{
-  return d_ptr -> h1.distance(d_ptr -> u, d_ptr -> uN);
+double L2H1_calculator::l2_err(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
+  return d_ptr -> l2.distance(u, uN);
 }
-
-/*! Log:
- */
+double L2H1_calculator::h1_err(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
+  return d_ptr -> h1.distance(u, uN);
+}
+double L2H1_calculator::h1_err(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
+  return d_ptr -> h1.distance(u, uN);
+}

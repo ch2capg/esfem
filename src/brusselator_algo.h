@@ -118,7 +118,7 @@
 	\f}
 
     \author Christian Power
-    \date 22. April 2016
+    \date 27. April 2016
     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -219,7 +219,7 @@ namespace Esfem{
 
       Members are used for input and output of
       the nodal values of the finite element functions
-      in `fef`.
+      in `fef` or to calculate \f$L^2\f$- or \f$H^1\f$-norms of the errors.
     */
     //! Initial data respectively exact solution for numerical experiments 
     struct Init_data{
@@ -263,8 +263,10 @@ namespace Esfem{
 
     Esfem::Io::Parameter data;
     /*!< \brief Contains parameter from `tumor_parameter.txt`. */
+    //! Norms on the analytically given grid
+    Io::L2H1_calculator norm;
+    //! Error streams and error calculators
     Io io;
-    /*!< \Brief Input output */
     Esfem::Grid::Grid_and_time fix_grid;
     /*!< \brief Non evolving grid but consistent time provider */
     Fef fef;
