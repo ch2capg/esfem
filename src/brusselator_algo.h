@@ -176,7 +176,7 @@ namespace Esfem{
     //@{
     void prePattern_loop();
     /*!< \brief In some sense calculates the inital data for
-                the solution driven problem.
+                the solution driven problem.  Starts from \f$t_0\f$.
      */
     void intermediate_action();
     /*!< \brief To be used between prePattern_loop()
@@ -188,6 +188,7 @@ namespace Esfem{
      */
     void pattern_loop();
     /*!< \brief To be used in the second for-loop.
+      If prePattern_loop() is off, then \f$t_0\f$ is here.
 
       At this stage the tumor is growing.
       \warning Do not use next_timeStep() afterwards.

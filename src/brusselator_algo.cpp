@@ -104,17 +104,18 @@ void Brusselator_scheme::intermediate_action(){
   };
 }
 void Brusselator_scheme::pattern_loop(){
-  for(long it = 0; it < pattern_timeSteps(); ++it, next_timeStep()){
+  for(long it = 0; it < pattern_timeSteps(); ++it){
     update_surface();
     update_scalar_solution();
     rhs_and_solve_SPDE();
     update_velocity();    
     error_on_intSurface(); // Error on surface(t_n)
+    next_timeStep();
     Pattern_helper helper {*this};
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
     // helper.errors_on_numSurface();
-    helper.plot_paraview();
+    // helper.plot_paraview();
   }
 }
 void Brusselator_scheme::final_action(){
@@ -152,16 +153,24 @@ void Brusselator_scheme::update_scalar_solution(){
 void Brusselator_scheme::error_on_intSurface(){
   const auto dT = fix_grid.time_provider().deltaT();
   // scalar_error
-  io.u << dT << norm.l2_err(fef.u.exact, fef.u.fun)
+  io.u << dT << '\t'
+       << norm.l2_err(fef.u.exact, fef.u.fun) << '\t'
        << norm.h1_err(fef.u.exact, fef.u.fun) << std::endl;
-  io.w << dT << norm.l2_err(fef.w.exact, fef.w.fun)
+  io.w << dT << '\t'
+       << norm.l2_err(fef.w.exact, fef.w.fun) << '\t'
        << norm.h1_err(fef.w.exact, fef.w.fun) << std::endl;
   // surface_error
-  io.surface << dT << norm.
-    h1_err(fef.surface.exact, fef.surface.app) << std::endl;
+  io.surface << dT << '\t'
+	     << norm.l2_err(fef.surface.exact, fef.surface.app)
+	     << '\t'
+	     << norm.h1_err(fef.surface.exact, fef.surface.app)
+	     << std::endl;
   // velocity error
-  io.velocity << dT << norm.
-    h1_err(fef.velocity.fun, fef.velocity.exact) << std::endl;
+  io.velocity << dT << '\t'
+	      << norm.l2_err(fef.velocity.fun, fef.velocity.exact)
+	      << '\t'
+	      << norm.h1_err(fef.velocity.fun, fef.velocity.exact)
+	      << std::endl;
 }
 
 void Brusselator_scheme::pre_loop_action(){
@@ -171,8 +180,8 @@ void Brusselator_scheme::pre_loop_action(){
   helper.headLine_in_errFile();
   helper.save_surface();
   // helper.plot_errors_in_errFile();
-  helper.plot_paraview();
-  next_timeStep();
+  // helper.plot_paraview();
+  // next_timeStep();
 }
 void Brusselator_scheme::rhs_and_solve_SPDE(){
   RhsAndSolve_helper helper {*this};
@@ -186,7 +195,8 @@ void Brusselator_scheme::rhs_and_solve_SPDE(){
 // Brusselator_scheme::Fef and Brusselator_scheme::Io
 
 Brusselator_scheme::Fef::Fef(const Esfem::Grid::Grid_and_time& gt)
-  :u {"u", gt}, w {"w", gt}, surface {"surface", gt}, velocity {"velocity", gt}
+  :u {"u", gt}, w {"w", gt},
+   surface {"surface", gt}, velocity {"velocity", gt}
 {}
 
 Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
