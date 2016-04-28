@@ -37,6 +37,20 @@ using L2_norm = Dune::Fem::L2Norm<Esfem::Grid::Grid_and_time::Grid_part>;
 //! \f$H^1\f$-norm
 using H1_norm = Dune::Fem::H1Norm<Esfem::Grid::Grid_and_time::Grid_part>;
 
+// ----------------------------------------------------------------------
+// Helper template function
+
+template<typename FEF, typename Norm>
+double norm_err_helper(const Norm& n, const FEF& u1, const FEF& u2){
+  using Dfef = typename FEF::Dune_FEfun;
+  const Dfef& du1 = u1;
+  const Dfef& du2 = u2;
+  return n.distance(du1, du2);
+}
+
+// ----------------------------------------------------------------------
+// Actual implementations 
+
 //! %Data members of L2H1_calculator
 struct L2H1_calculator::Data{
   //! Dune \f$L^2\f$-norm functor
@@ -45,7 +59,7 @@ struct L2H1_calculator::Data{
   H1_norm h1;
   //! Get grid
   /*! \post Grid_and_time must outlive this object. */
-  Data(const Grid::Grid_and_time& gt) :l2 {gt}, h1{gt} {}
+  Data(const Grid::Grid_and_time& gt) :l2 {gt.grid_part()}, h1{gt.grid_part()} {}
 };
 
 L2H1_calculator::L2H1_calculator(const Grid::Grid_and_time& gt)
@@ -53,14 +67,14 @@ L2H1_calculator::L2H1_calculator(const Grid::Grid_and_time& gt)
 Esfem::Io::L2H1_calculator::~L2H1_calculator() = default;
 
 double L2H1_calculator::l2_err(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
-  return d_ptr -> l2.distance(u, uN);
+  return norm_err_helper(d_ptr->l2, u, uN);
 }
 double L2H1_calculator::l2_err(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
-  return d_ptr -> l2.distance(u, uN);
+  return norm_err_helper(d_ptr->l2, u, uN);
 }
 double L2H1_calculator::h1_err(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
-  return d_ptr -> h1.distance(u, uN);
+  return norm_err_helper(d_ptr->h1, u, uN);
 }
 double L2H1_calculator::h1_err(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
-  return d_ptr -> h1.distance(u, uN);
+  return norm_err_helper(d_ptr->h1, u, uN);
 }

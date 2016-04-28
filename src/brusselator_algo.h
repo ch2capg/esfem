@@ -207,10 +207,10 @@ namespace Esfem{
       /*!< \brief File to record errors of u. */
       Esfem::Io::Error_stream w;
       /*!< \brief File to record errors of w. */
-      //! File to plot errors in X
-      Esfem::Io::Error_stream X;
-      //! File to plot errors in v
-      Esfem::Io::Error_stream v;
+      //! File to plot errors in the surface
+      Esfem::Io::Error_stream surface;
+      //! File to plot errors in the velocity
+      Esfem::Io::Error_stream velocity;
       
       //! Get file name for error streams.
       Io(const Esfem::Io::Parameter&);
@@ -246,7 +246,7 @@ namespace Esfem{
 	  a dgf file.
        */
       //! Analytically given exact velocity.
-      Grid::Vec_FEfun velocity;
+      Grid::Vec_FEfun_set velocity;
       const std::string tmpFile_path {FEF_PATH};
       /*!< \brief Directory which I have read and write access.
 	\warning `FEF_PATH` is a macro variable which has be set by
@@ -263,14 +263,14 @@ namespace Esfem{
 
     Esfem::Io::Parameter data;
     /*!< \brief Contains parameter from `tumor_parameter.txt`. */
-    //! Norms on the analytically given grid
-    Io::L2H1_calculator norm;
-    //! Error streams and error calculators
+    //! Error streams and identity functor for the surface 
     Io io;
+    //! Analytically given grid with absolute time provider.
     Esfem::Grid::Grid_and_time fix_grid;
-    /*!< \brief Non evolving grid but consistent time provider */
+    //! Norms on the analytically given grid
+    Esfem::Io::L2H1_calculator norm;
+    //! Finite element functions 
     Fef fef;
-    /*!< \brief Finite element functions */
     //! Exact solution for \f$u\f$, \f$w\f$ and \f$v\f$
     Init_data exact;
     
@@ -289,13 +289,23 @@ namespace Esfem{
     /*!< \brief Used in rhs_and_solve_SPDE(). */
     //@}
 
-    //! Assign a new value to `fef.surface.exact`
-    void update_exact_surface();
-    //! Assign a new value to `fef.velocity`
-    void update_exact_velocity();
+    //! Assign a new value to `fef.surface.exact` and `fef.surface.app`
+    void update_surface();
+    //! Assign a new value to `fef.velocity.exact` and `fef.velocity.fun`
+    /*! \pre The `fef.surface.fun` represents the new surface and
+      `fef.surface.app` represents the old surface.
+    */
+    void update_velocity();
     //! Assign a new value to `fef.u.exact` and `fef.w.exact`
     void update_scalar_solution();
 
+    //! Plot error of `fef` on the interpolated surface
+    /*! \pre The exact solution has been updated.
+      \sa update_exact_surface(), update_exact_velocity(),
+       update_scalar_solution() 
+    */
+    void error_on_intSurface();
+    
     //! Constructor helper
     /*! \pre Should only be invoked by Brusselator_scheme().*/
     void pre_loop_action();

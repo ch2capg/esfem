@@ -34,7 +34,6 @@ using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
 using Esfem::SecOrd_op::Identity;
 using Esfem::Rhs;
 using Esfem::Scalar_solver;
-using Esfem::Err_cal;
 using Esfem::PrePattern_helper;
 using Esfem::PreLoop_helper;
 using Esfem::RhsAndSolve_helper;
@@ -98,6 +97,8 @@ void PreLoop_helper::save_surface(){
 void PreLoop_helper::headLine_in_errFile(){
   head_line(bs.io.u);
   head_line(bs.io.w);
+  head_line(bs.io.surface);
+  head_line(bs.io.velocity);
 }
 void PreLoop_helper::prepare_rhs(){
   auto& u = bs.fef.u;
@@ -186,10 +187,10 @@ Pattern_helper::Pattern_helper(Brusselator_scheme& bs_input)
   {bs.data,
       Grid::compose_dgfName(bs.fef.surface.fun.name(), bs.fef.tmpFile_path ), 
       bs.fix_grid.time_provider().time()},
-   u {bs.fef.u, grid},
-   w {bs.fef.w, grid},
-   err_cal {grid, u, w},
-   paraview {bs.data, grid, u.fun, w.fun},
+  u {bs.fef.u, grid},
+  w {bs.fef.w, grid},
+  norm {grid},
+  paraview {bs.data, grid, u.fun, w.fun},
   solver {bs.data, grid, u, w},
   load_vector {grid}
 {}
@@ -214,11 +215,11 @@ void Pattern_helper::update_exactSolutions(){
   bs.exact.u.interpolate(u.exact);
   bs.exact.w.interpolate(w.exact);
 }
-void Pattern_helper::errors_on_numSurface(){
-  const auto& tp = grid.time_provider();
-  write_error_line(bs.io.u, tp, err_cal.u);
-  write_error_line(bs.io.w, tp, err_cal.w);  
-}
+// void Pattern_helper::errors_on_numSurface(){
+//   const auto& tp = grid.time_provider();
+//   write_error_line(bs.io.u, tp, err_cal.u);
+//   write_error_line(bs.io.w, tp, err_cal.w);  
+// }
 
 // ----------------------------------------------------------------------
 // helper functions
@@ -234,10 +235,10 @@ void Esfem::head_line(Io::Error_stream& file){
        << "H1err" << std::endl;
   file << std::scientific;
 }
-void Esfem::write_error_line(Io::Error_stream& file,
-			     const Dune::Fem::TimeProviderBase& tp,
-			     const Io::L2H1_calculator& cal){
-  file << tp.deltaT() << '\t'
-       << cal.l2_err() << '\t'
-       << cal.h1_err() << std::endl; 
-}
+// void Esfem::write_error_line(Io::Error_stream& file,
+// 			     const Dune::Fem::TimeProviderBase& tp,
+// 			     const Io::L2H1_calculator& cal){
+//   file << tp.deltaT() << '\t'
+//        << cal.l2_err() << '\t'
+//        << cal.h1_err() << std::endl; 
+// }

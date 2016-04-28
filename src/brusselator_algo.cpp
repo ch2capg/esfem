@@ -64,9 +64,10 @@ Brusselator_scheme(int argc, char** argv,
 try :data {argc, argv, parameter_fname},
   io {data},
   fix_grid {data},
-  fef {fix_grid}, // constructor for analytic initial data
-  //  exact {fix_grid, data} // constructor for random initial data
-  exact {fix_grid}
+  norm {fix_grid},  
+  fef {fix_grid}, 
+  // exact {fix_grid, data} // constructor for random initial data
+  exact {fix_grid} // constructor for analytic initial data
 {
   pre_loop_action(); // initialize member fef
 }
@@ -104,14 +105,15 @@ void Brusselator_scheme::intermediate_action(){
 }
 void Brusselator_scheme::pattern_loop(){
   for(long it = 0; it < pattern_timeSteps(); ++it, next_timeStep()){
+    update_surface();
+    update_scalar_solution();
     rhs_and_solve_SPDE();
+    update_velocity();    
+    error_on_intSurface(); // Error on surface(t_n)
     Pattern_helper helper {*this};
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
-    update_exact_surface();
-    update_exact_velocity();
-    update_scalar_solution();
-    helper.errors_on_numSurface();
+    // helper.errors_on_numSurface();
     helper.plot_paraview();
   }
 }
@@ -124,15 +126,42 @@ void Brusselator_scheme::final_action(){
 // ------------------------------------------------------------
 // Brusselator_scheme private
 
-void Brusselator_scheme::update_exact_surface(){
+void Brusselator_scheme::update_surface(){
   io.identity.interpolate(fef.surface.exact);
+
+  // Save old surface for the velocity
+  fef.surface.app = fef.surface.fun; 
 }
-void Brusselator_scheme::update_exact_velocity(){
-  exact.v.interpolate(fef.velocity);
+void Brusselator_scheme::update_velocity(){
+  exact.v.interpolate(fef.velocity.exact);
+
+  // update fef.velocity.fun
+  const auto dT = fix_grid.time_provider().deltaT();
+  auto xNew_ptr = fef.surface.fun.cbegin();
+  auto xOld_ptr = fef.surface.app.cbegin();
+  for(auto v_ptr = fef.velocity.fun.begin();
+      v_ptr != fef.velocity.fun.end();
+      ++v_ptr, ++xNew_ptr, ++xOld_ptr)
+    *v_ptr = (*xNew_ptr - *xOld_ptr)/ dT;
 }
 void Brusselator_scheme::update_scalar_solution(){
   exact.u.interpolate(fef.u.exact);
   exact.w.interpolate(fef.w.exact);
+}
+
+void Brusselator_scheme::error_on_intSurface(){
+  const auto dT = fix_grid.time_provider().deltaT();
+  // scalar_error
+  io.u << dT << norm.l2_err(fef.u.exact, fef.u.fun)
+       << norm.h1_err(fef.u.exact, fef.u.fun) << std::endl;
+  io.w << dT << norm.l2_err(fef.w.exact, fef.w.fun)
+       << norm.h1_err(fef.w.exact, fef.w.fun) << std::endl;
+  // surface_error
+  io.surface << dT << norm.
+    h1_err(fef.surface.exact, fef.surface.app) << std::endl;
+  // velocity error
+  io.velocity << dT << norm.
+    h1_err(fef.velocity.fun, fef.velocity.exact) << std::endl;
 }
 
 void Brusselator_scheme::pre_loop_action(){
@@ -140,8 +169,6 @@ void Brusselator_scheme::pre_loop_action(){
   // helper.random_initialValues();
   helper.analytic_initialValues();
   helper.headLine_in_errFile();
-  update_exact_surface();
-  update_exact_velocity();
   helper.save_surface();
   // helper.plot_errors_in_errFile();
   helper.plot_paraview();
@@ -154,7 +181,6 @@ void Brusselator_scheme::rhs_and_solve_SPDE(){
   helper.addScaled_surfaceLoadVector();
   helper.solve_surface_and_save();
 }
-
 // ----------------------------------------------------------------------
 // Implementation of structs
 // Brusselator_scheme::Fef and Brusselator_scheme::Io
@@ -164,7 +190,8 @@ Brusselator_scheme::Fef::Fef(const Esfem::Grid::Grid_and_time& gt)
 {}
 
 Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
-  :dgf_handler {p.grid()}, u {"_u", p}, w {"_w", p}, X {"_X", p}, v {"_v",p}
+  :dgf_handler {p.grid()}, u {"_u", p}, w {"_w", p},
+   surface {"_X", p}, velocity {"_v",p}
 {}
 
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt)
