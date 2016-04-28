@@ -16,7 +16,7 @@
      the class `Esfem::Brusselator_scheme`
 
      \author Christian Power 
-     \date 23. April 2016
+     \date 28. April 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
@@ -108,10 +108,10 @@ void Brusselator_scheme::pattern_loop(){
     Pattern_helper helper {*this};
     helper.finalize_scalarPDE_rhs();
     helper.solve_scalarPDE();
-    helper.update_exactSolutions();
     update_exact_surface();
     update_exact_velocity();
-    helper.plot_errors_in_errFile();
+    update_scalar_solution();
+    helper.errors_on_numSurface();
     helper.plot_paraview();
   }
 }
@@ -130,6 +130,11 @@ void Brusselator_scheme::update_exact_surface(){
 void Brusselator_scheme::update_exact_velocity(){
   exact.v.interpolate(fef.velocity);
 }
+void Brusselator_scheme::update_scalar_solution(){
+  exact.u.interpolate(fef.u.exact);
+  exact.w.interpolate(fef.w.exact);
+}
+
 void Brusselator_scheme::pre_loop_action(){
   PreLoop_helper helper {*this};
   // helper.random_initialValues();

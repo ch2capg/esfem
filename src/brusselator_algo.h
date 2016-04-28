@@ -118,7 +118,7 @@
 	\f}
 
     \author Christian Power
-    \date 27. April 2016
+    \date 28. April 2016
     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -293,6 +293,8 @@ namespace Esfem{
     void update_exact_surface();
     //! Assign a new value to `fef.velocity`
     void update_exact_velocity();
+    //! Assign a new value to `fef.u.exact` and `fef.w.exact`
+    void update_scalar_solution();
 
     //! Constructor helper
     /*! \pre Should only be invoked by Brusselator_scheme().*/

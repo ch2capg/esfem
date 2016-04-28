@@ -78,7 +78,6 @@ Scalar_solver::Scalar_solver
 PreLoop_helper::PreLoop_helper(Brusselator_scheme& bs_input)
   :bs {bs_input},
   init_data {bs.exact},
-  err_cal {bs.fix_grid, bs.fef.u, bs.fef.w},
   paraview {bs.data, bs.fix_grid, bs.fef.u.fun, bs.fef.w.fun},
   solver {bs.data, bs.fix_grid, bs.fef.u, bs.fef.w}
 {}
@@ -100,11 +99,6 @@ void PreLoop_helper::headLine_in_errFile(){
   head_line(bs.io.u);
   head_line(bs.io.w);
 }
-void PreLoop_helper::plot_errors_in_errFile(){
-  const auto& tp = bs.fix_grid.time_provider();
-  write_error_line(bs.io.u, tp, err_cal.u);
-  write_error_line(bs.io.w, tp, err_cal.w);
-}
 void PreLoop_helper::prepare_rhs(){
   auto& u = bs.fef.u;
   auto& w = bs.fef.w;
@@ -120,7 +114,6 @@ PrePattern_helper::PrePattern_helper(Brusselator_scheme& bs)
   u {bs.fef.u},
   w {bs.fef.w},
   tp {bs.fix_grid.time_provider()},
-  err_cal {bs.fix_grid, u, w},
   paraview {bs.data, bs.fix_grid, u.fun, w.fun},
   solver {bs.data, bs.fix_grid, u, w}
 {}
@@ -141,10 +134,6 @@ void PrePattern_helper::solve_pde(){
 void PrePattern_helper::prepare_rhs(){
   solver.u.mass_matrix(u.fun, u.rhs_les);
   solver.w.mass_matrix(w.fun, w.rhs_les);
-}
-void PrePattern_helper::plot_errors_in_errFile(){
-  write_error_line(io.u, tp, err_cal.u);
-  write_error_line(io.w, tp, err_cal.w);
 }
 
 // ----------------------------------------------------------------------
@@ -225,7 +214,7 @@ void Pattern_helper::update_exactSolutions(){
   bs.exact.u.interpolate(u.exact);
   bs.exact.w.interpolate(w.exact);
 }
-void Pattern_helper::plot_errors_in_errFile(){
+void Pattern_helper::errors_on_numSurface(){
   const auto& tp = grid.time_provider();
   write_error_line(bs.io.u, tp, err_cal.u);
   write_error_line(bs.io.w, tp, err_cal.w);  

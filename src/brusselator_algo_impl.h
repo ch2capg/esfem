@@ -88,8 +88,6 @@ namespace Esfem{
     void save_surface();
     //! First line in the error file
     void headLine_in_errFile();
-    //! Should plot zeros
-    void plot_errors_in_errFile();
     //! Paraview output 
     void plot_paraview();
     void prepare_rhs();
@@ -156,12 +154,6 @@ namespace Esfem{
       \f{equation*}{
        (M\nodalValue{u})^n \quad \lor\quad (M \nodalValue{w})^n.
       \f}
-     */
-    void plot_errors_in_errFile();
-    /*!< \brief Prints out time step, \f$L^2\f$-error,
-                and \f$H^1\f$-error of (`fun` - `exact`)
-		from `Brusselator_scheme::fef.u` and
-		`Brusselator_scheme::fef.w`.
      */
     void plot_paraview();
     /*!< \brief Prints out `fun` of `Brusselator_scheme::fef.u` and
@@ -243,8 +235,8 @@ namespace Esfem{
       assign nodal values to the current grid. 
      */
     void update_exactSolutions();
-    void plot_errors_in_errFile();
-    /*!< \copydoc PrePattern_helper::plot_errors_in_errFile() */
+    //! \f$L^2\f$- and \f$H^1\f$-errors on the numerical surface
+    void errors_on_numSurface();
     void plot_paraview();
     /*!< \copydoc PrePattern_helper::plot_paraview() */
   private:
@@ -272,8 +264,8 @@ namespace Esfem{
   /*!< \brief Gives initial values for the members `fun`, `app` and `exact` */
   void head_line(Esfem::Io::Error_stream&);
   /*!< \brief The head line is `timestep L2err H1err` with tab alignment. */
-  void write_error_line(Io::Error_stream& file, const Dune::Fem::TimeProviderBase& ,
-		      const Io::L2H1_calculator&);
+  void write_error_line(Io::Error_stream& file, const Dune::Fem::TimeProviderBase&,
+			const Io::L2H1_calculator&);
   /*!< \brief Prints time step, L2 and H1 error to `file` with proper
               tab alignment.
    */
