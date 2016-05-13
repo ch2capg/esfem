@@ -172,6 +172,12 @@ namespace Esfem{
       \warning Absolute path differs on different operating systems.
      */
 
+    /*! \name Prescribed ESFEM */
+    //@{
+    //! Standard Dziuk Elliott evolving surface finite element method 
+    void standard_esfem();
+    //@}
+
     /*! \name Loop action */
     //@{
     void prePattern_loop();
@@ -324,6 +330,8 @@ namespace Esfem{
     /*!< \brief Maximum number of time steps for prePattern_loop(). */
     long pattern_timeSteps() const; 
     /*!< \brief Maximum number of time steps for pattern_loop(). */
+    //! Absolute number of time steps 
+    long time_steps() const;
     //@}
   };
 
@@ -338,6 +346,9 @@ namespace Esfem{
   }
   inline long Brusselator_scheme::pattern_timeSteps() const{
     return data.pattern_timeSteps();
+  }
+  inline long Brusselator_scheme::time_steps() const{
+    return data.max_timeSteps();
   }
 }
 

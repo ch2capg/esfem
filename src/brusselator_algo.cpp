@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power May 2016
           Revised by Christian Power April 2016
           Revised by Christian Power March 2016
           Originally written by Christian Power
@@ -16,7 +17,7 @@
      the class `Esfem::Brusselator_scheme`
 
      \author Christian Power 
-     \date 28. April 2016
+     \date 12. May 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
@@ -47,8 +48,9 @@ void Esfem::brusselator_algo(int argc, char** argv){
   Brusselator_scheme fem {argc, argv, parameter_file};
   // fem.prePattern_loop();
   // fem.intermediate_action(); 
-  fem.pattern_loop();
-  fem.final_action();
+  // fem.pattern_loop();
+  // fem.final_action();
+  fem.standard_esfem();
 }
 
 // ----------------------------------------------------------------------
@@ -77,6 +79,33 @@ catch(const std::exception&){
  catch(...){
    throw Bruss_error {"Unknown error in constructor."};
  }
+
+void Brusselator_scheme::standard_esfem(){
+  Rhs load_vector {fix_grid};
+  Scalar_solver solver {data, fix_grid, fef.u, fef.w};
+
+  error_on_intSurface(); // error on t_0
+  for(long it = 0; it < time_steps(); ++it){
+    // rhs = M^n u^n
+    solver.u.mass_matrix(fef.u.fun, fef.u.rhs_les);
+    solver.w.mass_matrix(fef.w.fun, fef.w.rhs_les);
+    next_timeStep(); // next surface
+
+    // rhs += M^{n+1} 1
+    solver.u.add_massMatrixConstOne_to(fef.u.rhs_les);
+    solver.w.add_massMatrixConstOne_to(fef.w.rhs_les);
+    // rhs += load_vector
+    load_vector.u.assemble_and_addScaled_to(fef.u.rhs_les);
+    load_vector.w.assemble_and_addScaled_to(fef.w.rhs_les);
+
+    solver.u.solve(fef.u.rhs_les, fef.u.fun);
+    fef.u.app = fef.u.fun;    
+    solver.w.solve(fef.w.rhs_les, fef.w.fun);
+    fef.w.app = fef.w.fun;
+
+    error_on_intSurface(); // error on t_n+1
+  }
+}
 
 // --------------------------------------------------
 // Brusselator_scheme loop action

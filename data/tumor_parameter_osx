@@ -12,9 +12,9 @@ fem.io.savestep: 0.01
 
 heat.starttime: 0.
 tumor_growth.surface.start_growth: .001
-heat.endtime: .05
+heat.endtime: 0.02
 heat.pattern.endtime: 0.
-heat.timestep: .001
+heat.timestep: .004
 heat.bdf: 1
 heat.solvereps: 1e-9
 
@@ -29,8 +29,8 @@ tumor_growth.surface.epsilon: .01
 tumor_growth.surface.alpha: .01 ##1e-3
 tumor_growth.surface.delta: .4
 
-fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surface/data/sphere/Sphere_1.dgf
-fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/sphere1_v00.log
+fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surface/data/sphere/Sphere_4.dgf
+fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/sphere4_v00.log
 
 fem.prefix: /Users/christianpower/cpp/DISS_surfaces
 fem.io.path: output/eoc_experiment/eoc00
