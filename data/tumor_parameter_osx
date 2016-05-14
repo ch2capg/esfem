@@ -29,6 +29,10 @@ tumor_growth.surface.epsilon: .01
 tumor_growth.surface.alpha: .01 ##1e-3
 tumor_growth.surface.delta: .4
 
+logistic_growth.r_start: 1.
+logistic_growth.r_end: 2.
+logistic_growth.steepness: .5
+
 fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surface/data/sphere/Sphere_4.dgf
 fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/sphere4_v00.log
 

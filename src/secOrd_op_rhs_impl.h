@@ -65,6 +65,22 @@ namespace Esfem{
       const Dune::Fem::TimeProviderBase& tp;
       //! Right-hand side for \f$ u\f$ or \f$ w\f$
       std::function<void(const Domain&,Range&)> fun_impl;
+      //! \f$r_{end}\f$
+      const double rE;
+      //! \f$r_{start}\f$
+      const double r0;
+      //! Steepness of the kurve
+      const double k;
+      //! Diffusion parameter \f$D^c\f$ 
+      const double Dc;
+      //! Mean curvature regularizing parameter \f$\varepsilon\f$
+      const double ep;
+      //! Our regularizing velocity parameter \f$\alpha\f$
+      const double alpha;
+      //! Mean curvature growth parameter \f$\delta\f$
+      const double delta;
+      //! Dynamic assert
+      void dassert(const bool assertion, const std::string& msg);
     };
 
     //! Vector valued right-hand side for the mean curvature equation

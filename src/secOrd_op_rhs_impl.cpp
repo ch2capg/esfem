@@ -19,6 +19,10 @@
  */
 
 #include <cmath>
+#include "config.h"
+#include <dune/fem/io/parameter.hh>
+#include <dassert.h>
+#include "esfem_error.h"
 #include "secOrd_op_rhs_impl.h"
 #include "esfem_error.h"
 
@@ -33,40 +37,57 @@
 // using Grid_part = Scal_fef::GridPartType;
 // // Quadrature on a straight element
 // using Quadrature = Dune::Fem::CachingQuadrature<Grid_part, 0>;
-//! Implementing this
 using Esfem::Impl::Rhs_fun;
-//! Implementing this
 using Esfem::Impl::Vec_rhs_fun;
-
+using Dune::Fem::Parameter;
 // ----------------------------------------------------------------------
 // Implementation of Rhs_fun
 
 Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
-  : tp {tpb}
+  : tp {tpb},
+    rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
+    r0 {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
+    k {Parameter::getValue<double>("logistic_growth.steepness", .5)},
+    Dc {Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)},
+    ep {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
+    alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)},
+    delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}
 {
+  dassert(rE > r0, Assert::compose(__FILE__, __LINE__, "r_end <= r_start"));
+  dassert(r0 > 0, Assert::compose(__FILE__, __LINE__, "r_start < 0"));
+  dassert(k > 0, Assert::compose(__FILE__, __LINE__, "Steepness non-positive"));
+  // Other parameter are tested in Io::Parameter
+  
   switch(type){
   case Growth::promoting:
-    fun_impl = [tp_ptr = &tp](const Domain& d, Range& r){
+    fun_impl = [tp_ptr = &tp, rA = r0, k = k, rE = rE,
+		ep = ep, al = alpha, delt = delta](const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
       const double z = d[2];
       const double t = tp_ptr -> time();
-      r = -((pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000) + (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000) + (pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000))*x*y*exp(-6*t) + 4*pow(x,3)*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 4*x*pow(y,3)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 2*x*y*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000)*exp(-6*t) - 6*x*y*exp(-6*t) + 2*(pow(x,3)*y*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(x,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x/(pow(x,2) + pow(y,2) + pow(z,2)))*y*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(x,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(y,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(x*pow(y,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + x*(pow(y,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y/(pow(x,2) + pow(y,2) + pow(z,2)))*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + 2*(2*pow(x,2)*y*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*x*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*pow(y,2)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1);
+      r = 2*k*x*y*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1)*exp(-6*t) - (k*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1))*x*y*exp(-6*t) + 4*pow(x,3)*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 4*x*pow(y,3)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) - 6*x*y*exp(-6*t) + 2*(pow(x,3)*y*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(x,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x/(pow(x,2) + pow(y,2) + pow(z,2)))*y*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(x,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(y,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(x*pow(y,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + x*(pow(y,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y/(pow(x,2) + pow(y,2) + pow(z,2)))*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + 2*(2*pow(x,2)*y*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*x*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*pow(y,2)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1);
     };
     break;
   case Growth::inhibiting:
-    fun_impl = [tp_ptr = &tp](const Domain& d, Range& r){
+    fun_impl = [tp_ptr = &tp, rA = r0, k = k, rE = rE, ep = ep,
+		al = alpha, delt = delta, Dc = Dc](const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
       const double z = d[2];
       const double t = tp_ptr -> time();
-      r = -((pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000) + (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000) + (pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000))*y*z*exp(-6*t) + 40.0000000000000*pow(x,2)*pow(y,3)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 40.0000000000000*pow(x,3)*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 40.0000000000000*pow(x,2)*y*pow(z,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 2*y*z*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000)*exp(-6*t) - 6*y*z*exp(-6*t) + 20.0000000000000*(pow(x,3)*y*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(x,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x/(pow(x,2) + pow(y,2) + pow(z,2)))*y*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + 10.0000000000000*(4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(x,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + 20.0000000000000*(pow(y,3)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(y,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y/(pow(x,2) + pow(y,2) + pow(z,2)))*z*exp(-6*t) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + 10.0000000000000*(4*pow(y,2)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(y,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 10.0000000000000*(4*pow(y,2)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(z,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 20.0000000000000*(y*pow(z,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + y*(pow(z,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - z/(pow(x,2) + pow(y,2) + pow(z,2)))*exp(-6*t) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1);
+      r = 2*k*y*z*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1)*exp(-6*t) - (k*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1))*y*z*exp(-6*t) - 6*y*z*exp(-6*t) + (4*pow(x,2)*pow(y,3)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 4*pow(x,3)*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 4*pow(x,2)*y*pow(z,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 2*(pow(x,3)*y*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(x,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x/(pow(x,2) + pow(y,2) + pow(z,2)))*y*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(x,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(pow(y,3)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(y,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y/(pow(x,2) + pow(y,2) + pow(z,2)))*z*exp(-6*t) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + (4*pow(y,2)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(y,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + (4*pow(y,2)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(z,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(y*pow(z,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + y*(pow(z,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - z/(pow(x,2) + pow(y,2) + pow(z,2)))*exp(-6*t) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1))*Dc;
     };
     break;
   default:
     throw Rhs_error {Assert::compose(__FILE__, __LINE__, "Rhs_fun()")};
     break;
   };
+}
+
+void Rhs_fun::dassert(const bool assertion, const std::string& msg){
+  Assert::dynamic<Assert::level(Assert::default_level), Esfem::Parameter_error>
+    (assertion, msg);
 }
 
 // ----------------------------------------------------------------------
