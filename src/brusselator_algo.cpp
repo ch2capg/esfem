@@ -91,8 +91,8 @@ void Brusselator_scheme::standard_esfem(){
     next_timeStep(); // next surface
 
     // rhs += M^{n+1} 1
-    solver.u.add_massMatrixConstOne_to(fef.u.rhs_les);
-    solver.w.add_massMatrixConstOne_to(fef.w.rhs_les);
+    // solver.u.add_massMatrixConstOne_to(fef.u.rhs_les);
+    // solver.w.add_massMatrixConstOne_to(fef.w.rhs_les);
     // rhs += load_vector
     load_vector.u.assemble_and_addScaled_to(fef.u.rhs_les);
     load_vector.w.assemble_and_addScaled_to(fef.w.rhs_les);
