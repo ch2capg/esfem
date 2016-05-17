@@ -102,6 +102,8 @@ void Brusselator_scheme::standard_esfem(){
     solver.w.solve(fef.w.rhs_les, fef.w.fun);
     fef.w.app = fef.w.fun;
 
+    exact.u.interpolate(fef.u.exact);
+    exact.w.interpolate(fef.w.exact);
     error_on_intSurface(); // error on t_n+1
   }
 }

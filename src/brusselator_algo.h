@@ -240,7 +240,7 @@ namespace Esfem{
       //! Provides analytically given initial data.
       explicit Init_data(const Grid::Grid_and_time&);
       //! Provides uniform distributed random inital values. 
-      explicit Init_data(const Grid::Grid_and_time&, const Esfem::Io::Parameter&);
+      Init_data(const Grid::Grid_and_time&, const Esfem::Io::Parameter&);
     };
     struct Fef{
       Grid::Scal_FEfun_set u;

@@ -30,7 +30,6 @@
 using Esfem::Impl::Explicit_initial_data;
 using Esfem::Impl::Random_initial_data;
 using Esfem::Impl::Analytic_velocity;
-
 //! \f$ \R^3 \f$
 using Vec_domain = Analytic_velocity::Domain;
 //! \f$ \R^3 \f$
@@ -81,10 +80,10 @@ Explicit_initial_data(const Esfem::Grid::Grid_and_time& gt,
     };
     break;
   case Growth::inhibiting:
-    fun_impl = [tp_ptr = &tp](const Domain& d, Range& r){
+    fun_impl = [&tp = tp](const Domain& d, Range& r){
       const double y = d[1];
       const double z = d[2];
-      const double t = tp_ptr -> time();
+      const double t = tp.time();
       r = y * z * std::exp(-6. * t);
     };
     break;
@@ -92,11 +91,6 @@ Explicit_initial_data(const Esfem::Grid::Grid_and_time& gt,
     throw InitData_error {Assert::compose(__FILE__, __LINE__, "Bad Growth type")};
     break;
   };
-  std::cout << "Using Explicit_initial_data():\n"
-	    << "u = std::exp(-6.*t)*x*y\n"
-	    << "w = std::exp(-6.*t)*y*z\n"
-	    << "v = r(t) ..."
-	    << std::endl;
 }
 
 // ----------------------------------------------------------------------
