@@ -51,7 +51,7 @@ Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
     Dc {Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)},
     ep {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
     alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)},
-    delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}
+    delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}    
 {
   dassert(rE > r0, Assert::compose(__FILE__, __LINE__, "r_end <= r_start"));
   dassert(r0 > 0, Assert::compose(__FILE__, __LINE__, "r_start < 0"));
@@ -60,8 +60,8 @@ Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
   
   switch(type){
   case Growth::promoting:
-    fun_impl = [tp_ptr = &tp, rA = r0, k = k, rE = rE,
-		ep = ep, al = alpha, delt = delta](const Domain& d, Range& r){
+    fun_impl = [tp_ptr = &tp, rA = r0, k = k, rE = rE]
+      (const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
       const double z = d[2];
@@ -70,8 +70,8 @@ Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
     };
     break;
   case Growth::inhibiting:
-    fun_impl = [tp_ptr = &tp, rA = r0, k = k, rE = rE, ep = ep,
-		al = alpha, delt = delta, Dc = Dc](const Domain& d, Range& r){
+    fun_impl = [tp_ptr = &tp, rA = r0, k = k, rE = rE, al = alpha, Dc = Dc]
+      (const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
       const double z = d[2];

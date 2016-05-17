@@ -11,7 +11,7 @@ fem.timeprovider.factor: 1
 fem.io.savestep: 0.01
 
 heat.starttime: 0.
-tumor_growth.surface.start_growth: .001
+tumor_growth.surface.start_growth: 0.001
 heat.endtime: 0.02
 heat.pattern.endtime: 0.
 heat.timestep: .004
@@ -34,7 +34,7 @@ logistic_growth.r_end: 2.
 logistic_growth.steepness: .5
 
 fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surface/data/sphere/Sphere_4.dgf
-fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/sphere4_v00.log
+fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/sphere4_v01.log
 
 fem.prefix: /Users/christianpower/cpp/DISS_surfaces
 fem.io.path: output/eoc_experiment/eoc00
