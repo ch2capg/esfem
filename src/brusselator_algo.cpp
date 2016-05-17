@@ -34,7 +34,6 @@
 using Bruss_error = Esfem::BrusselatorScheme_error;
 /*!< \brief Shorter name for convenience */
 using Esfem::Brusselator_scheme;
-/*!< \brief We essentially implement this class in this source file. */
 using Scal_FEfun_set = Esfem::Grid::Scal_FEfun_set;
 /*!< \brief Four functions of type \f$ f\colon \R^3 \to \R \f$ */
 using Vec_FEfun_set = Esfem::Grid::Vec_FEfun_set;
