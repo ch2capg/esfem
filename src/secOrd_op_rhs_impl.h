@@ -183,11 +183,6 @@ void Esfem::Impl::assemble_RHS(const Rhs& rhs, Fef& fef){
 
 inline void Esfem::Impl::Rhs_fun::evaluate(const Domain& d, Range& r) const{
   fun_impl(d,r);
-  // const double x = d[0];
-  // const double y = d[1];
-  // // const double z = d[2];
-  // const double t = tp.time();
-  // r = std::exp(-6.*t)*x*y;
 }
 inline Esfem::Impl::Rhs_fun::Range
 Esfem::Impl::Rhs_fun::operator()(const Domain& d) const{

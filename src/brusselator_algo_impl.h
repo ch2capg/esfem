@@ -36,9 +36,6 @@ namespace Esfem{
     //! Right-hand side for \f$ w \f$
     SecOrd_op::Rhs w;
     //! Get time provider
-    /*! \todo Right-hand side is currently so coded, that the parameter 
-      are not used.  Change this!
-    */
     explicit Rhs(const Grid::Grid_and_time&);
     // Rhs(const Io::Parameter&, const Grid::Grid_and_time&);
   };
