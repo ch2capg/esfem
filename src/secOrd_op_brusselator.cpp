@@ -1,16 +1,16 @@
 /*! \file secOrd_op_brusselator.cpp
+    \brief Implementation of secOrd_op_brusselator.h
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power May 2016
           Originally written by Christian Power
-               (power22c@gmail.com) 01. Februar 2016
+               (power22c@gmail.com) Februar 2016
 
-     Implementation details for secOrd_op_brusselator.h
-     Created by Christian Power on 01.02.2016
-     Copyright (c) 2016 Christian Power. All rights reserved.
+     \author Christian Power 
+     \date 18. May 2016
+     \copyright Copyright (c) 2016 Christian Power. All rights reserved.
  */
 
 #include <stdexcept>

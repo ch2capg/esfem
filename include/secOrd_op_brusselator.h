@@ -1,21 +1,24 @@
 /*! \file secOrd_op_brusselator.h
-    \author Christian Power
-    \date 23. March 2016
-  
-    \brief Provides the class `Esfem::SecOrd_op::Brusselator`
+    \brief Provides the class Esfem::SecOrd_op::Brusselator
 
-     Revision history:
+     Revision history
+     --------------------------------------------------
 
+          Revised by Christian Power May 2016
           Revised by Christian Power March 2016
           Originally written by Christian Power
-               (power22c@gmail.com) Februar 2016
+               (power22c@gmail.com) February 2016
+
+     Idea
+     --------------------------------------------------
 
      Solves the scalar surface equation using the brusselator model.
      You have to use the enum class `Esfem::Growth` to specify which
      model you want.
 
-     Created by Christian Power on 23.03.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+     \author Christian Power
+     \date 18. May 2016
+     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef SECORD_OP_BRUSSELATOR_H

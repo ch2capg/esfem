@@ -1,18 +1,17 @@
 /*! \file secOrd_op_brusselator_impl.h
+    \brief Ancillary classes for Esfem::SecOrd::Brusselator
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power May 2016
           Originally written by Christian Power
                (power22c@gmail.com) Februar 2016
 
-     This programm implements a basic expression calculator.
-     Input from cin; output to cout.  The grammar for input is: etc.
 
-     Created by Christian Power on 02.02.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+     \author Christian Power 
+     \date 18. May 2016
+     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef SECORD_OP_BRUSSELATOR_IMPL_H
