@@ -72,10 +72,12 @@ Explicit_initial_data(const Esfem::Grid::Grid_and_time& gt,
 {
   switch(type){
   case Growth::promoting:
-    fun_impl = [tp_ptr = &tp](const Domain& d, Range& r){
+    fun_impl = // [tp_ptr = &tp]
+      [&tp = tp](const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
-      const double t = tp_ptr -> time();
+      // const double t = tp_ptr -> time();
+      const double t = tp.time();
       r = x * y * std::exp(-6. * t);
     };
     break;

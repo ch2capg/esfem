@@ -52,7 +52,7 @@ Scalar_solver::Scalar_solver
  const Esfem::Grid::Scal_FEfun_set& u_set,
  const Esfem::Grid::Scal_FEfun_set& w_set)
   :u {p, g, Growth::promoting, u_set.app, w_set.app},
-  w {p, g, Growth::inhibiting, u_set.app, u_set.app}
+   w {p, g, Growth::inhibiting, u_set.app, u_set.app}
 {}
 
 Scalar_solver::Scalar_solver
@@ -61,7 +61,7 @@ Scalar_solver::Scalar_solver
  const Esfem::Grid::Scal_tiny_FEfun_set& u_set,
  const Esfem::Grid::Scal_tiny_FEfun_set& w_set)
   :u {p, g, Growth::promoting, u_set.fun, w_set.fun},
-  w {p, g, Growth::inhibiting, u_set.fun, u_set.fun}
+   w {p, g, Growth::inhibiting, u_set.fun, u_set.fun}
 {}
 
 // Err_cal::Err_cal(const Esfem::Grid::Grid_and_time& g,
@@ -76,9 +76,9 @@ Scalar_solver::Scalar_solver
 
 PreLoop_helper::PreLoop_helper(Brusselator_scheme& bs_input)
   :bs {bs_input},
-  init_data {bs.exact},
-  paraview {bs.data, bs.fix_grid, bs.fef.u.fun, bs.fef.w.fun},
-  solver {bs.data, bs.fix_grid, bs.fef.u, bs.fef.w}
+   init_data {bs.exact},
+   paraview {bs.data, bs.fix_grid, bs.fef.u.fun, bs.fef.w.fun},
+   solver {bs.data, bs.fix_grid, bs.fef.u, bs.fef.w}
 {}
 
 void PreLoop_helper::analytic_initialValues(){

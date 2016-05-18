@@ -44,14 +44,14 @@ using Dune::Fem::Parameter;
 // Implementation of Rhs_fun
 
 Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
-  : tp {tpb},
-    rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
-    r0 {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
-    k {Parameter::getValue<double>("logistic_growth.steepness", .5)},
-    Dc {Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)},
-    ep {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
-    alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)},
-    delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}    
+  :tp {tpb},
+   rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
+   r0 {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
+   k {Parameter::getValue<double>("logistic_growth.steepness", .5)},
+   Dc {Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)},
+   ep {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
+   alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)},
+   delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}    
 {
   dassert(rE > r0, Assert::compose(__FILE__, __LINE__, "r_end <= r_start"));
   dassert(r0 > 0, Assert::compose(__FILE__, __LINE__, "r_start < 0"));

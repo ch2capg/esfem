@@ -136,9 +136,8 @@ Brusselator_op::Brusselator_op(const Esfem::Io::Parameter& p,
 			       const Esfem::Growth type,
 			       const FE_function& quadMassMatrix_firstArg,
 			       const FE_function& quadMassMatrix_secondArg)
-try :d_ptr {make_unique<Data>
-	  (p, gt, type, 
-	   quadMassMatrix_firstArg, quadMassMatrix_secondArg)}
+try :d_ptr {make_unique<Data>(p, gt, type, 
+			      quadMassMatrix_firstArg, quadMassMatrix_secondArg)}
 {}
 catch(const std::exception&){
    std::throw_with_nested(std::logic_error {"Error in constructor of "
