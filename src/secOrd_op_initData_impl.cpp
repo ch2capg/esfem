@@ -82,16 +82,10 @@ Explicit_initial_data(const Esfem::Grid::Grid_and_time& gt,
     break;
   case Growth::inhibiting:
     fun_impl = [&tp = tp](const Domain& d, Range& r){
-      const double x = d[0];
-      const double y = d[1];
-      const double t = tp.time();
-      r = x * y * std::exp(-6. * t);
-      /*
       const double y = d[1];
       const double z = d[2];
       const double t = tp.time();
       r = y * z * std::exp(-6. * t);
-      */
     };
     break;
   default:
