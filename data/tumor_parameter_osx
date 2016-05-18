@@ -14,7 +14,7 @@ heat.starttime: 0.
 tumor_growth.surface.start_growth: 0.001
 heat.endtime: 0.02
 heat.pattern.endtime: 0.
-heat.timestep: .004
+heat.timestep: .0001
 heat.bdf: 1
 heat.solvereps: 1e-9
 
