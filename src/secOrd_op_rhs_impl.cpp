@@ -60,12 +60,12 @@ Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
   
   switch(type){
   case Growth::promoting:
-    fun_impl = [tp_ptr = &tp, rA = r0, k = k, rE = rE]
+    fun_impl = [&tp = tp, rA = r0, k = k, rE = rE]
       (const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
       const double z = d[2];
-      const double t = tp_ptr -> time();
+      const double t = tp.time();
       r = 2*k*x*y*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1)*exp(-6*t) - (k*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1))*x*y*exp(-6*t) + 4*pow(x,3)*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 4*x*pow(y,3)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) - 6*x*y*exp(-6*t) + 2*(pow(x,3)*y*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(x,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x/(pow(x,2) + pow(y,2) + pow(z,2)))*y*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(x,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(y,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(x*pow(y,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + x*(pow(y,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y/(pow(x,2) + pow(y,2) + pow(z,2)))*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + 2*(2*pow(x,2)*y*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*x*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*pow(y,2)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1);
     };
     break;

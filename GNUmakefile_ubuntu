@@ -69,7 +69,7 @@ ifdef NDEBUG
 CPPFLAGS += -DNDEBUG
 endif
 
-CXXFLAGS ?= -std=c++1y $(addprefix -W, all extra) -stdlib=libc++ -g
+CXXFLAGS ?= -std=c++1y $(addprefix -W, all extra) -stdlib=libc++ -O3 -g
 LDFLAGS ?= $(addprefix -L, ${DUNE_BASEDIR}/build/lib \
 	     ${ALU_BASEDIR} ${ALU_BASEDIR}/.libs \
              ${ALBERTA_BASEDIR}/lib) \
