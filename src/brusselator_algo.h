@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power May 2016
           Revised by Christian Power April 2016
           Revised by Christian Power March 2016
           Originally written by Christian Power
@@ -16,7 +17,30 @@
      a tumor growth model proposed by Elliott and Styles via the ESFEM.
      Enter path to writable directory in the macro variable FEF_PATH.
 
+    \author Christian Power
+    \date 19. May 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
+ */
 
+#ifndef BRUSSELATOR_ALGO_H
+#define BRUSSELATOR_ALGO_H 
+
+#include <string>
+#include "esfem.h"
+
+#ifndef FEF_PATH
+#error Give full path to folder in FEF_PATH
+#endif 
+
+namespace Esfem{
+  //! ESFEM algorithm.  Only this should be invoked by main.
+  /*! \param argc `argc` from `main`
+    \param[in] argv `argv` from `main`
+   */
+  void brusselator_algo(int argc, char** argv);
+
+  //! Implementation of the Elliott and Styles full discretization of the tumor problem
+  /*!
      Partial differential equation
      ==================================================
 
@@ -117,30 +141,7 @@
 	  = (M \nodalValue{w})^n + \tau \gamma b M^{n+1} \nodalValue{1}
 	  + \tau F^{n+1}_{(2)}.
 	\f}
-
-    \author Christian Power
-    \date 28. April 2016
-    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
- */
-
-#ifndef BRUSSELATOR_ALGO_H
-#define BRUSSELATOR_ALGO_H 
-
-#include <string>
-#include "esfem.h"
-
-#ifndef FEF_PATH
-#error Give full path to folder in FEF_PATH
-#endif 
-
-namespace Esfem{
-  //! ESFEM algorithm.  Only this should be invoked by main.
-  /*! \param argc `argc` from `main`
-    \param[in] argv `argv` from `main`
    */
-  void brusselator_algo(int argc, char** argv);
-
-  //! Implementation of the Elliott and Styles full discretization of the tumor problem
   class Brusselator_scheme{
   public:
     Brusselator_scheme(int argc, char** argv,
