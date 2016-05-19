@@ -65,25 +65,19 @@ namespace Esfem{
       const Dune::Fem::TimeProviderBase& tp;
       //! Right-hand side for \f$ u\f$ or \f$ w\f$
       std::function<void(const Domain&,Range&)> fun_impl;
-      //! \f$r_{end}\f$
-      const double rE;
-      //! \f$r_{start}\f$
-      const double r0;
-      //! Steepness of the kurve
-      const double k;
-      //! Diffusion parameter \f$D^c\f$ 
-      const double Dc;
-      //! Mean curvature regularizing parameter \f$\varepsilon\f$
-      const double ep;
-      //! Our regularizing velocity parameter \f$\alpha\f$
-      const double alpha;
-      //! Mean curvature growth parameter \f$\delta\f$
-      const double delta;
       //! Dynamic assert
       void dassert(const bool assertion, const std::string& msg);
     };
 
     //! Vector valued right-hand side for the mean curvature equation
+    /*! This is my right-hand function:
+      \f[
+      \biggl[ k \Bigl( 1 - \frac{r(t)}{r_{end}}\Bigr) \lvert X \rvert
+      + 2 \Bigl(\alpha k \Bigl( 1 - \frac{r(t)}{r_{end}}\Bigr) 
+      + \varepsilon \Bigr) \frac{1}{\lvert X \rvert} 
+      - \delta xy e^{-6t}\biggr]
+      \f]
+     */
     class Vec_rhs_fun
       :public Dune::Fem::Function
     <Esfem::Grid::Grid_and_time::Vec_Function_space, Vec_rhs_fun>
@@ -114,6 +108,31 @@ namespace Esfem{
     private:
       //! Time and time step
       const Dune::Fem::TimeProviderBase& tp;
+      //! \f$\alpha \Delta v\f$
+      double alpha;
+      //! \f$ \varepsilon \Delta X\f$
+      double epsilon;
+      //! Initial size of sphere
+      double r_start;
+      //! Final size of sphere
+      double r_end;
+      //! Steepness of logistic growh
+      double k;
+      //! \f$\delta u\f$
+      double delta;
+      //! Helper variable, which save computations
+      mutable double cache[4];
+      //! Conditional update member `cache`
+      /*! `cache[0]` holds the last time.  If the current time does not equals `cache[0]`,
+	then update the cache.  The content of cache is 
+	- `cache[0] = tp.time()`,
+	- \f$ k( 1 - \frac{r(t)}{r_{end}})\f$, 
+	- \f$2 ( \alpha k( 1 - \frac{r(t)}{r_{end}}) + \varepsilon)\f$, 
+	- \f$\delta e^{-6t}\f$,
+
+	where \f$r(t) = \frac{r_{end}r_0}{r_{end} e^{-kt} + r_0 (1 - e^{-kt})}\f$
+      */      
+      void update_cache() const;
     };    
 
     //! Assemble load vector

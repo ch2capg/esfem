@@ -47,7 +47,8 @@
      and for the surface 
      \f{align*}{
        v - \alpha \laplaceBeltrami v = {} &  
-       \parentheses[\big]{\varepsilon (-\meanCurvature) + \delta u} \surfaceNormal
+       \parentheses[\big]{\varepsilon (-\meanCurvature) + \delta u} \surfaceNormal 
+       + g
        = \varepsilon \laplaceBeltrami X + \delta u \surfaceNormal + g, \\
        \dell_{t} X = {} & v(X),
      \f}
@@ -62,7 +63,7 @@
      \f$\nodalValue{X}\colon I \to \R^{3N}\f$ (surface nodal values) such that
      \f{gather*}{
        \parentheses[\big]{M(X) + \alpha A(X)} \dell_t X = 
-       \varepsilon A(X)X + \delta M(u,\nodalValue{\surfaceNormal})
+       -\varepsilon A(X)X + \delta M(u,\nodalValue{\surfaceNormal})
        + G, \\
        \dell_t \parentheses[\big]{M(X) \nodalValue{u} } + A(X) \nodalValue{u}
        = \gamma \parentheses[\big]{a M(X) \nodalValue{1} 

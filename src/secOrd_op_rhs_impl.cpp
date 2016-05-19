@@ -44,23 +44,24 @@ using Dune::Fem::Parameter;
 // Implementation of Rhs_fun
 
 Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
-  :tp {tpb},
-   rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
-   r0 {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
-   k {Parameter::getValue<double>("logistic_growth.steepness", .5)},
-   Dc {Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)},
-   ep {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
-   alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)},
-   delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}    
+  :tp {tpb}
 {
-  dassert(rE > r0, Assert::compose(__FILE__, __LINE__, "r_end <= r_start"));
-  dassert(r0 > 0, Assert::compose(__FILE__, __LINE__, "r_start < 0"));
+  const double rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)};
+  const double rA {Parameter::getValue<double>("logistic_growth.r_start", 1.)};
+  const double k {Parameter::getValue<double>("logistic_growth.steepness", .5)};
+  const double Dc {Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)};
+  const double ep {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)};
+  const double al {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)};
+  const double delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)};
+
+  dassert(rE > rA, Assert::compose(__FILE__, __LINE__, "r_end <= r_start"));
+  dassert(rA > 0, Assert::compose(__FILE__, __LINE__, "r_start < 0"));
   dassert(k > 0, Assert::compose(__FILE__, __LINE__, "Steepness non-positive"));
   // Other parameter are tested in Io::Parameter
   
   switch(type){
   case Growth::promoting:
-    fun_impl = [&tp = tp, rA = r0, k = k, rE = rE]
+    fun_impl = [&tp = tp, rA, k, rE]
       (const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
@@ -70,7 +71,7 @@ Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
     };
     break;
   case Growth::inhibiting:
-    fun_impl = [&tp = tp, rA = r0, k = k, rE = rE, al = alpha, Dc = Dc]
+    fun_impl = [&tp = tp, rA, k, rE, al, Dc]
       (const Domain& d, Range& r){
       const double x = d[0];
       const double y = d[1];
@@ -94,17 +95,40 @@ void Rhs_fun::dassert(const bool assertion, const std::string& msg){
 // Implementation of Vec_rhs_fun
 
 Vec_rhs_fun::Vec_rhs_fun(const Dune::Fem::TimeProviderBase& tpb)
-  : tp {tpb}
-{}
+  : tp {tpb},
+  alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)},
+  epsilon {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
+  r_start {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
+  r_end {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
+  k {Parameter::getValue<double>("logistic_growth.steepness", .5)},
+  delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}
+{ 
+  // no checking has to be done, since other classes already do this
+  cache[0] = tp.time() - 1; // cache[0] != tp.time()
+  update_cache();
+}
+
+void Vec_rhs_fun::update_cache() const{
+  if(cache[0] == tp.time()) return;
+  const double t = tp.time();
+  const double e_kt = exp(-k * t);
+  const double r_t = r_end * r_start / (r_end * e_kt + r_start * (1 - e_kt) );
+  cache[0] = t;
+  cache[1] = k * ( 1 - r_t / r_end);
+  cache[2] = 2 * ( alpha * cache[1] + epsilon);
+  cache[3] = delta * exp(-6 * t);
+}
 
 void Vec_rhs_fun::evaluate(const Domain& d, Range& r) const{
   const double x = d[0];
   const double y = d[1];
   const double z = d[2];
-  const double t = tp.time();
-  r[0] = 2*(-0.400000000000000*x*y*exp(-6*t) + (2.00000000000000/(exp(-0.500000000000000*t) + 1) + 0.0100000000000000*exp(-0.500000000000000*t) + 0.0100000000000000)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000) + 0.0100000000000000*exp(-0.500000000000000*t) + 0.0100000000000000)*x/sqrt(4*pow(x,2) + 4*pow(y,2) + 4*pow(z,2));
-  r[1] = 2*(-0.400000000000000*x*y*exp(-6*t) + (2.00000000000000/(exp(-0.500000000000000*t) + 1) + 0.0100000000000000*exp(-0.500000000000000*t) + 0.0100000000000000)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000) + 0.0100000000000000*exp(-0.500000000000000*t) + 0.0100000000000000)*y/sqrt(4*pow(x,2) + 4*pow(y,2) + 4*pow(z,2));
-  r[2] = 2*(-0.400000000000000*x*y*exp(-6*t) + (2.00000000000000/(exp(-0.500000000000000*t) + 1) + 0.0100000000000000*exp(-0.500000000000000*t) + 0.0100000000000000)*(-0.500000000000000/(exp(-0.500000000000000*t) + 1) + 0.500000000000000) + 0.0100000000000000*exp(-0.500000000000000*t) + 0.0100000000000000)*z/sqrt(4*pow(x,2) + 4*pow(y,2) + 4*pow(z,2));
+  const double abs_d = sqrt(x*x + y*y + z*z);
+  update_cache();
+  const double factor = cache[2] * abs_d + cache[3] / abs_d - cache[4] * x * y;
+  r[0] = factor * x / abs_d;
+  r[1] = factor * y / abs_d;
+  r[2] = factor * z / abs_d;
 }
 Vec_rhs_fun::Range Vec_rhs_fun::operator()(const Domain& d) const{
   Range r {0};
