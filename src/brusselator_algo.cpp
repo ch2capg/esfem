@@ -49,7 +49,8 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.intermediate_action(); 
   // fem.pattern_loop();
   // fem.final_action();
-  fem.standard_esfem();
+  // fem.standard_esfem(); // c++ code works flawless
+  fem.eoc_logisticSphere();
 }
 
 // ----------------------------------------------------------------------
@@ -108,6 +109,22 @@ void Brusselator_scheme::standard_esfem(){
   }
 }
 
+void Brusselator_scheme::eoc_logisticSphere(){
+  for(long it = 0; it < pattern_timeSteps(); ++it){
+    update_surface(); // calculate exact surface
+    update_scalar_solution(); // on the exact surface 
+    rhs_and_solve_SPDE(); // also scalar rhs
+    update_velocity();    // exact and approximation 
+    error_on_intSurface(); // Error on surface(t_n)
+    next_timeStep(); // next surface
+    Pattern_helper helper {*this};
+    helper.finalize_scalarPDE_rhs();
+    helper.solve_scalarPDE();
+    // helper.errors_on_numSurface();
+    // helper.plot_paraview();
+  }
+}
+
 // --------------------------------------------------
 // Brusselator_scheme loop action
 
@@ -115,7 +132,7 @@ void Brusselator_scheme::prePattern_loop(){
   PrePattern_helper helper {*this};
   for(long it = 0; it < prePattern_timeSteps(); ++it, next_timeStep()){
     helper.rhs();
-    helper.solve_pde();
+    // helper.solve_pde(); // Does this make any sense?
     helper.plot_paraview();
   }
 }

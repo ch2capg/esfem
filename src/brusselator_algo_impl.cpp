@@ -153,11 +153,8 @@ try :bs {bs_input},
   vs {bs.data, grid, u.fun},
   v_rhs {bs.fix_grid}
 {}
-catch(std::exception&){
+catch(...){
   std::throw_with_nested(Bruss_error {"RhsAndSolve_helper()"});
- }
- catch(...){
-   throw Bruss_error {"RhsAndSolve_helper(), unknown error"};
  }
 void RhsAndSolve_helper::scalar_massMatrix(){
   ss.u.mass_matrix(u.fun, u.rhs_les);

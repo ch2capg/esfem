@@ -136,26 +136,6 @@ namespace Esfem{
   //! ESFEM algorithm.  Only this should be invoked by main.
   /*! \param argc `argc` from `main`
     \param[in] argv `argv` from `main`
-
-    As exact solution for the scalar valued surface equation I chose
-    \f{equation*}{
-     u(x,y,z,t) = x y e^{-6t} \quad \text{and}\quad
-     w(x,y,z,t) = y z e^{-6t}.
-    \f}
-    For the surface evolution I chose
-    \f{equation*}{
-     \Phi(x,t) := r(t) x, \quad
-     r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})},
-    \f}
-    where \f$ r(t)\f$ is the logistic growth function, which satisfies the
-    following ODE
-    \f{equation*}{
-     \dot{r} = k \Bigl( 1 - \frac{r}{r_{end}}\Bigr) r,\quad r(0) = r_0.
-    \f}
-    From this it follows easily that the velocity is given by
-    \f{equation*}{
-     v(x,t) = k \Bigl(1 - \frac{r}{r_{end}}\Bigr) x.
-    \f}
    */
   void brusselator_algo(int argc, char** argv);
 
@@ -177,6 +157,29 @@ namespace Esfem{
     //! Standard Dziuk Elliott evolving surface finite element method 
     void standard_esfem();
     //@}
+
+    //! Experiment, where right-hand side is calculated for a known solution
+    /*! As exact solution for the scalar valued surface equation I chose
+    \f{equation*}{
+     u(x,y,z,t) = x y e^{-6t} \quad \text{and}\quad
+     w(x,y,z,t) = y z e^{-6t}.
+    \f}
+    For the surface evolution I chose
+    \f{equation*}{
+     \Phi(x,t) := r(t) x, \quad
+     r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})},
+    \f}
+    where \f$ r(t)\f$ is the logistic growth function, which satisfies the
+    following ODE
+    \f{equation*}{
+     \dot{r} = k \Bigl( 1 - \frac{r}{r_{end}}\Bigr) r,\quad r(0) = r_0.
+    \f}
+    From this it follows easily that the velocity is given by
+    \f{equation*}{
+     v(x,t) = k \Bigl(1 - \frac{r}{r_{end}}\Bigr) x.
+    \f}
+    */
+    void eoc_logisticSphere();
 
     /*! \name Loop action */
     //@{
