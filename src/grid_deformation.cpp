@@ -18,12 +18,9 @@
     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
+#include <cmath>
 #include "grid.h"
 #include "grid_GridAndTime_impl.h"
-
-#ifdef DEBUG
-#include <iostream>
-#endif
 
 //! \f$\R^3\f$
 using Domain = Esfem::Grid::Deformation::Domain;
@@ -36,7 +33,7 @@ static_assert(Esfem::Grid::Deformation::Range::dimension == 3,
 	      "Bad range dimension.");
 
 //! \f$id\colon \R^3 \to \R^3\f$
-inline void identity(const Domain& x, Range& y) noexcept{  
+static inline void identity(const Domain& x, Range& y) noexcept{  
   y[0] = x[0]; 
   y[1] = x[1]; 
   y[2] = x[2]; 
@@ -49,12 +46,20 @@ inline void identity(const Domain& x, Range& y) noexcept{
   \retval y \f$ y = r(t) x\f$
   \pre Initial surface is a sphere.
  */
-inline void logistic_growth(const double t, const Domain& x, Range& y) noexcept{
+static inline void logistic_growth(const double t, const Domain& x, Range& y) noexcept{
   const double r_end = 2., r0 = 1., k = .5; // logistic function parameter
   const double r = r_end * r0 / (r_end*exp(-k*t) + r0*(1-exp(-k*t)));
   y[0] = r * x[0]; 
   y[1] = r * x[1]; 
   y[2] = r * x[2]; 
+}
+
+//! Dalquist test equation with \f$\lambda=1\f$
+static inline void dalquist(const double t, const Domain& x, Range& y){
+  const double factor = exp(t);
+  y[0] = factor * x[0]; 
+  y[1] = factor * x[1];
+  y[2] = factor * x[2];
 }
 
 // ----------------------------------------------------------------------
@@ -83,7 +88,9 @@ set_timeProvider(const Dune::Fem::TimeProviderBase& tp){
 }
 void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
   const double t = d_ptr -> tp_ptr->time();
-  logistic_growth(t, x, y);
+  dalquist(t, x, y);
+
+  // logistic_growth(t, x, y);
 
   // identity(x, y);
 

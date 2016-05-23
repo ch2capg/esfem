@@ -104,8 +104,8 @@ Vec_rhs_fun::Vec_rhs_fun(const Dune::Fem::TimeProviderBase& tpb)
   delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}
 { 
   // no checking has to be done, since other classes already do this
-  cache[0] = tp.time() - 1; // cache[0] != tp.time()
-  update_cache();
+  // cache[0] = tp.time() - 1; // cache[0] != tp.time()
+  // update_cache();
 }
 
 void Vec_rhs_fun::update_cache() const{
@@ -123,12 +123,18 @@ void Vec_rhs_fun::evaluate(const Domain& d, Range& r) const{
   const double x = d[0];
   const double y = d[1];
   const double z = d[2];
-  const double abs_d = sqrt(x*x + y*y + z*z);
+  const double norm_square = x*x + y*y + z*z ;
+  const double factor = (1 + (alpha + epsilon) * 2 / norm_square);
+  r[0] = factor * d[0];
+  r[1] = factor * d[1];
+  r[2] = factor * d[2];
+  /*
   update_cache();
   const double factor = cache[2] * abs_d + cache[3] / abs_d - cache[4] * x * y;
   r[0] = factor * x / abs_d;
   r[1] = factor * y / abs_d;
   r[2] = factor * z / abs_d;
+  */
 }
 Vec_rhs_fun::Range Vec_rhs_fun::operator()(const Domain& d) const{
   Range r {0};
