@@ -73,11 +73,8 @@ try :data {argc, argv, parameter_fname},
 {
   pre_loop_action(); // initialize member fef
 }
-catch(const std::exception&){
-  throw_with_nested(Bruss_error {"Constructor."}); 
- }
- catch(...){
-   throw Bruss_error {"Unknown error in constructor."};
+catch(...){
+  throw_with_nested(Bruss_error {"Constructor."});    
  }
 
 void Brusselator_scheme::standard_esfem(){
@@ -109,8 +106,29 @@ void Brusselator_scheme::standard_esfem(){
   }
 }
 
-void Brusselator_scheme::eoc_logisticSphere(){
+void Brusselator_scheme::eoc_logisticSphere(){  
   for(long it = 0; it < pattern_timeSteps(); ++it){
+    Grid::Grid_and_time grid {data,
+	Grid::compose_dgfName(fef.surface.fun.name(), fef.tmpFile_path), 
+	fix_grid.time_provider().time()};
+    Grid::Scal_FEfun_set u {fef.u, grid};
+    Grid::Vec_FEfun_set X {fef.surface, grid};
+    SecOrd_op::Init_data u_init {grid, Growth::promoting}; // perhaps not efficient
+    SecOrd_op::Vec_rhs X_loadVector {grid};
+    SecOrd_op::Solution_driven X_solver {data, grid, u.app};
+
+    // calculate X.fun
+    u_init.interpolate(u.app);
+    io.identity.interpolate(X.app); // perhaps not correct
+    X_solver.brusselator_rhs(X.app, X.rhs_les);
+    X_loadVector.assemble_and_addScaled_to(X.rhs_les);
+    X_solver.solve(X.rhs_les, X.fun);
+
+    // calculate error 
+    io.identity.interpolate(fef.surface.exact);
+    fef.surface.fun = X.fun; // swap is more efficient
+    next_timeStep();
+    
     update_surface(); // calculate exact surface
     update_scalar_solution(); // on the exact surface 
     rhs_and_solve_SPDE(); // also scalar rhs
