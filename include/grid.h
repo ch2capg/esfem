@@ -132,10 +132,10 @@ namespace Esfem{
     };
     class Vec_FEfun{
     public:
-      // using Dune_FEfun
-      // = Dune::Fem::AdaptiveDiscreteFunction<Grid_and_time::Vec_FE_space>;
-      using Dune_FEfun 
-      = Dune::Fem::ISTLBlockVectorDiscreteFunction<Grid_and_time::Vec_FE_space>;
+      using Dune_FEfun
+      = Dune::Fem::AdaptiveDiscreteFunction<Grid_and_time::Vec_FE_space>;
+      // using Dune_FEfun 
+      // = Dune::Fem::ISTLBlockVectorDiscreteFunction<Grid_and_time::Vec_FE_space>;
       
       explicit Vec_FEfun(const std::string& name, const Grid_and_time&);
       explicit Vec_FEfun(const Vec_FEfun&, const Grid_and_time&);

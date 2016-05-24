@@ -41,13 +41,13 @@ using Grid_part = MCF_op::Grid_part;
 using Quadrature = MCF_op::Quadrature;
 template<typename T>
 using Jacobian_range = typename Local_function<T>::JacobianRangeType;
-//! Forward typedef
-using Linear_operator = MCF_op::Linear_operator;
+// Forward typedef
+// using Linear_operator = MCF_op::Linear_operator;
 
 
 
-static void prepare_linearOperator_matrix(const Vec_fe_space&, Linear_operator&);
-static std::size_t calculate_matrix_row_size(const Vector_fef&);
+// static void prepare_linearOperator_matrix(const Vec_fe_space&, Linear_operator&);
+// static std::size_t calculate_matrix_row_size(const Vector_fef&);
 
 // ----------------------------------------------------------------------
 // Implementation of Esfem::Impl::MCF_op
@@ -95,17 +95,17 @@ void MCF_op::brusselator_rhs(const Vector_fef& rhs, Vector_fef& lhs) const{
   lhs.communicate();
 }
 
-void MCF_op::jacobian_matrix(const Vector_fef& fef, Linear_operator& matrix) const{
-  const auto& df_space = fef.space();
-  prepare_linearOperator_matrix(df_space, matrix);
-  for(const auto& entity : df_space){
-    const auto fef_loc = fef.localFunction(entity);
-    auto matrix_loc = matrix.localMatrix(entity, entity);
-    // jacobian_matrix_heat(entity, fef_loc, matrix_loc);
-    // jacobian_matrix_quadMass(entity, fef_loc, matrix_loc);
-  }
-  matrix.communicate();
-}
+// void MCF_op::jacobian_matrix(const Vector_fef& fef, Linear_operator& matrix) const{
+//   const auto& df_space = fef.space();
+//   prepare_linearOperator_matrix(df_space, matrix);
+//   for(const auto& entity : df_space){
+//     const auto fef_loc = fef.localFunction(entity);
+//     auto matrix_loc = matrix.localMatrix(entity, entity);
+//     // jacobian_matrix_heat(entity, fef_loc, matrix_loc);
+//     // jacobian_matrix_quadMass(entity, fef_loc, matrix_loc);
+//   }
+//   matrix.communicate();
+// }
 
 // ------------------------------------------------------------
 // Private interface
@@ -204,16 +204,16 @@ MCF_op::Range<Vector_fef> Esfem::Impl::nonUnit_normal
 // ----------------------------------------------------------------------
 // Internal Implementation
 
-std::size_t calculate_matrix_row_size(const Vector_fef& fef){
-  const auto& df_space = fef.space();
-  return df_space.blockMapper().maxNumDofs() * df_space.localBlockSize;
-  // localBlockSize is equal to 1 for scalar functions
-}
+// std::size_t calculate_matrix_row_size(const Vector_fef& fef){
+//   const auto& df_space = fef.space();
+//   return df_space.blockMapper().maxNumDofs() * df_space.localBlockSize;
+//   // localBlockSize is equal to 1 for scalar functions
+// }
 
-void prepare_linearOperator_matrix(const Vec_fe_space& df_space,
-				   Linear_operator& matrix){
-  Dune::Fem::DiagonalStencil<Vec_fe_space, Vec_fe_space>
-    stencil {df_space, df_space};
-  matrix.reserve(stencil);
-  matrix.clear();
-}
+// void prepare_linearOperator_matrix(const Vec_fe_space& df_space,
+// 				   Linear_operator& matrix){
+//   Dune::Fem::DiagonalStencil<Vec_fe_space, Vec_fe_space>
+//     stencil {df_space, df_space};
+//   matrix.reserve(stencil);
+//   matrix.clear();
+// }

@@ -116,7 +116,7 @@ void Brusselator_scheme::eoc_logisticSphere(){
     SecOrd_op::Init_data u_init {grid, Growth::promoting}; // perhaps not efficient
     SecOrd_op::Vec_rhs X_loadVector {grid};
     SecOrd_op::Solution_driven X_solver {data, grid, u.app};
-
+    
     // calculate X.fun
     u_init.interpolate(u.app);
     io.identity.interpolate(X.app);
@@ -129,7 +129,8 @@ void Brusselator_scheme::eoc_logisticSphere(){
     fef.surface.write(io.dgf_handler, fef.tmpFile_path);
     
     // calculate error 
-    io.identity.interpolate(fef.surface.exact);
+    // io.identity.interpolate(fef.surface.exact);
+    fef.surface.exact = X.app;
     io.surface << fix_grid.time_provider().deltaT() << ' '
 	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' ' 
 	       << norm.h1_err(fef.surface.fun, fef.surface.exact) << std::endl;

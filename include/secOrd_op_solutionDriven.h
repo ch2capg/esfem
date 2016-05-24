@@ -67,6 +67,11 @@ namespace Esfem{
 	\sa Identity
       */
       void brusselator_rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
+      //! For debugging reasons
+      /*! \param rhs \f$\nodalValue{X}\f$
+	\retval lhs \f$ (M^n + \alpha A) \nodalValue{X} \f$
+       */
+      void operator()(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
     private:
       struct Data;
       //! Pointer to data members

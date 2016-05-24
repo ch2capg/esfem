@@ -45,11 +45,11 @@ namespace Esfem{
       /*!< \brief \f$ f\colon \R^3 \to \R \f$ */
       using Vector_fef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
       /*!< \brief \f$ f\colon \R^3 \to \R^3 \f$ */
-      //! Big Matrix
-      using Linear_operator
-      = Dune::Fem::ISTLLinearOperator<Vector_fef, Vector_fef>;
-      //! Sub matrix for an element 
-      using Local_matrix = Linear_operator::LocalMatrixType;
+      // Big Matrix
+      // using Linear_operator
+      // = Dune::Fem::ISTLLinearOperator<Vector_fef, Vector_fef>;
+      // Sub matrix for an element 
+      // using Local_matrix = Linear_operator::LocalMatrixType;
       template<typename T>
       using Local_function = typename T::LocalFunctionType;
       /*!< \brief Finite element function restricted to a triangle. */
@@ -89,8 +89,8 @@ namespace Esfem{
 	\f}
        */
 
-      //! Assemble matrix for linear system
-      void jacobian_matrix(const Vector_fef&, Linear_operator&) const;
+      // Assemble matrix for linear system
+      // void jacobian_matrix(const Vector_fef&, Linear_operator&) const;
       
       /*! \name Variable containing dimensions
        */
