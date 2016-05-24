@@ -119,7 +119,7 @@ void Brusselator_scheme::eoc_logisticSphere(){
 
     // calculate X.fun
     u_init.interpolate(u.app);
-    io.identity.interpolate(X.app); // perhaps not correct
+    io.identity.interpolate(X.app);
     X_solver.brusselator_rhs(X.app, X.rhs_les);
     X_loadVector.assemble_and_addScaled_to(X.rhs_les);
     X_solver.solve(X.rhs_les, X.fun);
@@ -127,17 +127,20 @@ void Brusselator_scheme::eoc_logisticSphere(){
     // calculate error 
     io.identity.interpolate(fef.surface.exact);
     fef.surface.fun = X.fun; // swap is more efficient
+    io.surface << fix_grid.time_provider().deltaT() << ' '
+	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' ' 
+	       << norm.h1_err(fef.surface.fun, fef.surface.exact) << std::endl;
     next_timeStep();
     
-    update_surface(); // calculate exact surface
-    update_scalar_solution(); // on the exact surface 
-    rhs_and_solve_SPDE(); // also scalar rhs
-    update_velocity();    // exact and approximation 
-    error_on_intSurface(); // Error on surface(t_n)
-    next_timeStep(); // next surface
-    Pattern_helper helper {*this};
-    helper.finalize_scalarPDE_rhs();
-    helper.solve_scalarPDE();
+    // update_surface(); // calculate exact surface
+    // update_scalar_solution(); // on the exact surface 
+    // rhs_and_solve_SPDE(); // also scalar rhs
+    // update_velocity();    // exact and approximation 
+    // error_on_intSurface(); // Error on surface(t_n)
+    // next_timeStep(); // next surface
+    // Pattern_helper helper {*this};
+    // helper.finalize_scalarPDE_rhs();
+    // helper.solve_scalarPDE();
     // helper.errors_on_numSurface();
     // helper.plot_paraview();
   }

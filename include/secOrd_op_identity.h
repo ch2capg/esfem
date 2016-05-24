@@ -1,13 +1,10 @@
 /*! \file secOrd_op_identity.h
-    \author Christian Power
-    \date 9. March 2016
-
     \brief Providing an identity function for vector valued finite element functions
 
      Revision history
      --------------------------------------------------
 
-          Revised by Christian Power March 2016
+          Revised by Christian Power Mai 2016
           Originally written by Christian Power
                (power22c@gmail.com) March 2016
 
@@ -18,9 +15,9 @@
      element function.  With a different function you can save the nodal values into
      a file with the dune grid format.
 
-         Created by Christian Power on 16.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
-     
+     \author Christian Power
+     \date 23. Mai 2016
+     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
 #ifndef SECORD_OP_IDENTITY_H
@@ -31,9 +28,12 @@
 
 namespace Esfem{
   namespace SecOrd_op{
+    //! Interface for the identity function.
     class Identity{
     public:
+      //! Set up 
       Identity();
+      //! Required by pointer to implementation technique.
       ~Identity();
 
       void interpolate(Grid::Vec_FEfun&) const;
@@ -42,11 +42,9 @@ namespace Esfem{
        */
     private:
       struct Data;
+      //! Pointer to implementation
       std::unique_ptr<Data> d_ptr;
     };
-    /*!<
-      \brief Interface for the identity function.
-     */
   }
 }
 
