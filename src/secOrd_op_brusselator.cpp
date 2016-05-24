@@ -68,34 +68,17 @@ catch(const std::exception&){
 Esfem::SecOrd_op::Brusselator::
 Brusselator(const Io::Parameter& p, const Grid::Grid_and_time& gt, const Growth type,
 	    const Grid::Scal_FEfun& fef1, const Grid::Scal_FEfun& fef2)
-try{
-  const FE_function& fef1_ref = fef1;
-  const FE_function& fef2_ref = fef2;
-  d_ptr = make_unique<Data>
-    (p, gt, type, fef1_ref, fef2_ref);
- }
- catch(const std::exception&){
-   std::throw_with_nested(std::logic_error
-			  {"Error in constructor of Brusselator."});
-  }
+try :d_ptr {make_unique<Data>(p, gt, type, fef1, fef2)}
+{}
  catch(...){
-   throw std::logic_error {"Unkown error in constructor of Brusselator."};
+   throw_with_nested(std::logic_error {"Error in constructor of Brusselator."});
  }
+Esfem::SecOrd_op::Brusselator::~Brusselator() = default;
 
-Esfem::SecOrd_op::Brusselator::~Brusselator() 
-= default;
-// {
-//   delete d_ptr;
-//   d_ptr = nullptr;
-// #ifdef DEBUG
-//   std::cerr << "~Brusselator(): delete d_ptr.\n";
-// #endif
-// }
 void Esfem::SecOrd_op::Brusselator::
 solve(const Grid::Scal_FEfun& rhs, Grid::Scal_FEfun& lhs) const{
   const FE_function& rhs_ref = rhs;
   FE_function& lhs_ref = lhs;
-
   d_ptr -> bruss_cg(rhs_ref, lhs_ref);
   // d_ptr -> bruss_op.jacobian(rhs_ref, d_ptr -> bruss_matrix);
   // d_ptr -> bruss_gmres(rhs_ref, lhs_ref);
@@ -154,27 +137,27 @@ operator()(const Grid::Scal_FEfun& rhs, Grid::Scal_FEfun& lhs) const{
 
 Esfem::SecOrd_op::Brusselator::Data::
 Data(const Io::Parameter& p, const Grid::Grid_and_time& gt, const Growth type)
-  : owns {true},
-    fef1_ptr {new FE_function {"fef1", gt.fe_space()}},
-    fef2_ptr {new FE_function {"fef2", gt.fe_space()}},
-    fef1_ref {*fef1_ptr},
-    fef2_ref {*fef2_ptr},
-    tmp_var {"tmp_var", gt.fe_space()},
-    bruss_op {p, gt, type, fef1_ref, fef2_ref},
-    bruss_matrix {"assempled elliptic operator", gt.fe_space(), gt.fe_space()},
-    bruss_cg {bruss_op, p.eps(), p.eps()},
-    bruss_gmres {bruss_matrix, p.eps(), p.eps()}
+  :owns {true},
+   fef1_ptr {new FE_function {"fef1", gt.fe_space()}},
+   fef2_ptr {new FE_function {"fef2", gt.fe_space()}},
+   fef1_ref {*fef1_ptr},
+   fef2_ref {*fef2_ptr},
+   tmp_var {"tmp_var", gt.fe_space()},
+   bruss_op {p, gt, type, fef1_ref, fef2_ref},
+   bruss_matrix {"assempled elliptic operator", gt.fe_space(), gt.fe_space()},
+   bruss_cg {bruss_op, p.eps(), p.eps()},
+   bruss_gmres {bruss_matrix, p.eps(), p.eps()}
   {}
 Esfem::SecOrd_op::Brusselator::Data::
 Data(const Io::Parameter& p, const Grid::Grid_and_time& gt,
      const Growth type, const FE_function& fef1,
      const FE_function& fef2)
-  : owns {false}, fef1_ref {fef1}, fef2_ref {fef2},
-    tmp_var {"tmp_var", gt.fe_space()},
-    bruss_op {p, gt, type, fef1_ref, fef2_ref},
-    bruss_matrix {"assempled elliptic operator", gt.fe_space(), gt.fe_space()},
-    bruss_cg {bruss_op, p.eps(), p.eps()},
-    bruss_gmres {bruss_matrix, p.eps(), p.eps()}
+  :owns {false}, fef1_ref {fef1}, fef2_ref {fef2},
+   tmp_var {"tmp_var", gt.fe_space()},
+   bruss_op {p, gt, type, fef1_ref, fef2_ref},
+   bruss_matrix {"assempled elliptic operator", gt.fe_space(), gt.fe_space()},
+   bruss_cg {bruss_op, p.eps(), p.eps()},
+   bruss_gmres {bruss_matrix, p.eps(), p.eps()}
   {}
 Esfem::SecOrd_op::Brusselator::Data::
 ~Data(){

@@ -81,8 +81,8 @@ inline Range jacobian_quadMass_loc(const std::size_t pt, const Quadrature& q,
   return u;
 }
 
-void prepare_linearOperator_matrix(const FE_space&, Linear_operator&);
-std::size_t calculate_matrix_row_size(const FE_function&);
+static void prepare_linearOperator_matrix(const FE_space&, Linear_operator&);
+static std::size_t calculate_matrix_row_size(const FE_function&);
 
 // ----------------------------------------------------------------------
 // Implementation of secOrd_op_brusselator_impl.h

@@ -1,25 +1,24 @@
 /*! \file grid.h
-    \author Christian Power
-    \date 22. March 2016
-
     \brief Fundamental header providing grid, time provider and finite element functions
 
     Revision history
     --------------------------------------------------
 
+          Revised by Christian Power Mai 2016
           Revised by Christian Power March 2016
 	  Revised by Christian Power February 2016
           Originally written by Christian Power
                (power22c@gmail.com) January 2016
 
-     Idea
-     --------------------------------------------------
+    Idea
+    --------------------------------------------------
 
-     Wrapper classes for the dune implementations.  This is very usefull
-     since the construction of those classes is quite non trivial.
+    Wrapper classes for the dune implementations.  This is very usefull
+    since the construction of those classes is quite non trivial.
 
-         Created by Christian Power on 17.03.2016
-         Copyright (c) 2016 Christian Power.  All rights reserved.
+    \author Christian Power
+    \date 24. Mai 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef GRID_H
@@ -133,10 +132,10 @@ namespace Esfem{
     };
     class Vec_FEfun{
     public:
-      using Dune_FEfun
-      = Dune::Fem::AdaptiveDiscreteFunction<Grid_and_time::Vec_FE_space>;
-      // using Dune_FEfun 
-      // = Dune::Fem::ISTLBlockVectorDiscreteFunction<Grid_and_time::Vec_E_space>;
+      // using Dune_FEfun
+      // = Dune::Fem::AdaptiveDiscreteFunction<Grid_and_time::Vec_FE_space>;
+      using Dune_FEfun 
+      = Dune::Fem::ISTLBlockVectorDiscreteFunction<Grid_and_time::Vec_FE_space>;
       
       explicit Vec_FEfun(const std::string& name, const Grid_and_time&);
       explicit Vec_FEfun(const Vec_FEfun&, const Grid_and_time&);

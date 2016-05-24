@@ -66,6 +66,3 @@ private:
 };
 
 #endif // SECORD_OP_BRUSSELATOR_IMPL_H
-
-/*! Log:
- */
