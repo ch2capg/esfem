@@ -123,18 +123,24 @@ void Brusselator_scheme::eoc_logisticSphere(){
     X_solver.brusselator_rhs(X.app, X.rhs_les);
     // X_loadVector.assemble_and_addScaled_to(X.rhs_les);
     // X_solver.solve(X.rhs_les, X.fun);
+    // X_solver(X.rhs_les, X.fun);
     X_solver(X.app, X.fun);
 
     // save surface
     fef.surface.fun = X.fun; // swap would be more efficient
-    fef.surface.write(io.dgf_handler, fef.tmpFile_path);
-    
+    // fef.surface.write(io.dgf_handler, fef.tmpFile_path);
+
     // calculate error 
-    // io.identity.interpolate(fef.surface.exact);
     fef.surface.exact = X.rhs_les;
     io.surface << fix_grid.time_provider().deltaT() << ' '
-	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' ' 
-	       << norm.h1_err(fef.surface.fun, fef.surface.exact) << std::endl;
+	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' ';
+    io.surface << norm.l2_err(fef.surface.fun, fef.surface.exact) + 0. << std::endl;
+      // << norm.h1_err(fef.surface.fun, fef.surface.exact) << std::endl;
+
+    // I've changed order for stationary surface
+    io.identity.interpolate(fef.surface.fun);
+    fef.surface.write(io.dgf_handler, fef.tmpFile_path);
+
     next_timeStep();
     
     // update_surface(); // calculate exact surface

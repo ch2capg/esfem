@@ -33,8 +33,8 @@ logistic_growth.r_start: 1.
 logistic_growth.r_end: 2.
 logistic_growth.steepness: .5
 
-fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_3.dgf
-fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere3_v09.log
+fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_1.dgf
+fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere1_v04.log
 
 fem.prefix: /scratch/na31/power/numerische_experimente/solution_driven
 fem.io.path: eoc_experiment/eoc01

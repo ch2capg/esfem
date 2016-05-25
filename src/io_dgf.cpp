@@ -102,7 +102,9 @@ void Handler::write(const std::string& out_filename, const Scal_FEfun& fef) cons
 	   << "SIMPLEX" << std::endl;
   Esfem::Io::Dgf::to_dgfFile(d_ptr -> simplices, dgf_file, d_ptr -> digit_precision);
   dgf_file << "#" << std::endl;
-  dgf_file << '#' << std::endl;
+  dgf_file << "GRIDPARAMETER\n" 
+	   << "tolerance " <<  pow(10,(-1) * d_ptr -> digit_precision)
+	   << "\n#\n#" << std::endl;
  }
  catch(const exception&){
    throw_with_nested
@@ -127,7 +129,9 @@ void Handler::write(const std::string& out_filename, const Vec_FEfun& vfef) cons
 	   << "SIMPLEX" << std::endl;
   to_dgfFile(d_ptr -> simplices, dgf_file, d_ptr -> digit_precision);
   dgf_file << "#" << std::endl;
-  dgf_file << '#' << std::endl;
+  dgf_file << "GRIDPARAMETER\n" 
+	   << "tolerance " <<  pow(10,(-1) * d_ptr -> digit_precision)
+	   << "\n#\n#" << std::endl;
  }
  catch(const exception&){
    throw_with_nested
