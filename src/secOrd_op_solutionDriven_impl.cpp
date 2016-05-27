@@ -133,14 +133,12 @@ void MCF_op::mcf_rhs_matrixFree_assembly(const Geometry& g,
 					 const Local_function<Vector_fef>& cf,
 					 const Local_function<Scalar_fef>& u_loc,
 					 Local_function<Vector_fef>& f) const{
-  // std::cerr << "MCF_op::mcf_rhs_matrixFree_assembly()" << std::endl;
   for(size_t pt = 0; pt < q.nop(); ++pt){
     // (M + alpha * A) X + tau * delta * M(u^n, surfaceNormal)
     const auto& x = q.point(pt);
     const auto integral_factor = q.weight(pt) * g.integrationElement(x);
 
     auto n_p = surface_normal(g);
-    // std::cerr << "surface_normal(g)" << std::endl;
       
     const auto u_p = evaluate(pt, q, u_loc);
     n_p *= u_p * tp.deltaT() * delta * integral_factor;

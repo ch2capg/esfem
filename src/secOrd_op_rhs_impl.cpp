@@ -51,7 +51,7 @@ Rhs_fun::Rhs_fun(const Dune::Fem::TimeProviderBase& tpb, const Growth type)
   const double k {Parameter::getValue<double>("logistic_growth.steepness", .5)};
   const double Dc {Parameter::getValue<double>("tumor_growth.heat.Dc", 10.)};
   const double ep {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)};
-  const double al {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)};
+  const double al {Parameter::getValue<double>("tumor_growth.surface.alpha", 1e-3)};
   const double delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)};
 
   dassert(rE > rA, Assert::compose(__FILE__, __LINE__, "r_end <= r_start"));
@@ -96,7 +96,7 @@ void Rhs_fun::dassert(const bool assertion, const std::string& msg){
 
 Vec_rhs_fun::Vec_rhs_fun(const Dune::Fem::TimeProviderBase& tpb)
   : tp {tpb},
-  alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", .01)},
+  alpha {Parameter::getValue<double>("tumor_growth.surface.alpha", 1e-3)},
   epsilon {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
   r_start {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
   r_end {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
