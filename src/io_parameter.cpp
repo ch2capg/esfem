@@ -80,7 +80,7 @@ Esfem::Io::Parameter::Data::Data()
   velocity_regularization
   {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.alpha", 1e-3)},
   surface_growthFactor
-  {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.delta", .4)},
+  {Dune::Fem::Parameter::getValue<double>("tumor_growth.surface.delta", .4)},
   mcf_regularization
   {Dune::Fem::Parameter::getValue<double>("tumor_growth.heat.epsilon", .01)},
   u_hom_value {Dune::Fem::Parameter::getValue<double>
