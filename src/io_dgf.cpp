@@ -37,7 +37,7 @@ static constexpr int dim = 3;
 // Handler implementation
 
 struct Handler::Data{
-  size_t digit_precision {8};
+  int digit_precision {8};
   const size_t scal_dim_dof;
   const size_t vec_dim_dof;
   const Simplices simplices;
@@ -53,7 +53,7 @@ struct Handler::Data{
 // Handler::Data Implementation
 
 Handler::Data::Data(const string& fname)
-  : digit_precision {get_precision(fname)},
+  : digit_precision {static_cast<int>(get_precision(fname))},
     scal_dim_dof {calculate_dof(fname)},
     vec_dim_dof {dim * scal_dim_dof},
     simplices {create_simplices(fname)}
@@ -106,12 +106,8 @@ void Handler::write(const std::string& out_filename, const Scal_FEfun& fef) cons
 	   << "tolerance " <<  pow(10,(-1) * d_ptr -> digit_precision)
 	   << "\n#\n#" << std::endl;
  }
- catch(const exception&){
-   throw_with_nested
-     (runtime_error {"Error in Handler::write()."});
- }
  catch(...){
-   throw runtime_error {"Unknown error in Handler::write()."};
+   throw_with_nested (runtime_error {"Error in Handler::write()."});   
  }
 
 void Handler::write(const std::string& out_filename, const Vec_FEfun& vfef) const try{
@@ -130,15 +126,11 @@ void Handler::write(const std::string& out_filename, const Vec_FEfun& vfef) cons
   to_dgfFile(d_ptr -> simplices, dgf_file, d_ptr -> digit_precision);
   dgf_file << "#" << std::endl;
   dgf_file << "GRIDPARAMETER\n" 
-	   << "tolerance " <<  pow(10,(-1) * d_ptr -> digit_precision)
+	   << "tolerance " <<  pow(10, (-1) * d_ptr -> digit_precision)
 	   << "\n#\n#" << std::endl;
  }
- catch(const exception&){
-   throw_with_nested
-     (runtime_error {"Error in Handler::write()."});
- }
  catch(...){
-   throw runtime_error {"Unknown error in Handler::write()."};
+   throw_with_nested (runtime_error {"Error in Handler::write()."});
  }
 
 void Handler::read(const string& in_filename, Vec_FEfun& vfef) const try{
