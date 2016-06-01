@@ -79,13 +79,13 @@ namespace Esfem{
       \f]
       Currently I am testing.  So, I use an easier right-hand side.
       - \f$ \surface_0 = S^2\f$ 
-      - Exact flow: \f$ \Phi(x,t) = e^t x\f$
-      - Velocity: \f$ v(x,t) = x\f$
+      - Exact flow: \f$ \Phi(x,t) = e^{-t} x\f$
+      - Velocity: \f$ v(x,t) = -x\f$ 
       - Normal: \f$ n = x/ |x|\f$
       - Mean curvature: \f$ H = 2/ |x|\f$
       - \f$\delta = \varepsilon = 0\f$, hence the operator is
       \f[
-      v - \alpha \Delta v = g(x,t) = (1 + \alpha 2/ |x|^2) x.
+      v - \alpha \Delta v = g(x,t) = -(1 + \alpha 2/ |x|^2) x.
       \f]
       \todo Delete later test.
      */

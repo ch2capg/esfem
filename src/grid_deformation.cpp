@@ -56,7 +56,7 @@ static inline void logistic_growth(const double t, const Domain& x, Range& y) no
 
 //! Dalquist test equation with \f$\lambda=1\f$
 static inline void dalquist(const double t, const Domain& x, Range& y){
-  const double factor = exp(t);
+  const double factor = exp(-t);
   y[0] = factor * x[0]; 
   y[1] = factor * x[1];
   y[2] = factor * x[2];

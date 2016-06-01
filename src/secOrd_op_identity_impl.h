@@ -39,7 +39,9 @@ namespace Esfem{
       using Range = FE_space::RangeType;
       static_assert(Domain::dimension == Range::dimension, "Bad dimension");
 
-      void evaluate(const Domain& d, Range& r) const { r = d; }
+      void evaluate(const Domain& d, Range& r) const { 
+	for(int i = 0; i < Domain::dimension; ++i) r[i] = d[i];
+      }
     };
   }
 }

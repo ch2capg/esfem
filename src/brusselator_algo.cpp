@@ -107,7 +107,8 @@ void Brusselator_scheme::standard_esfem(){
 }
 
 void Brusselator_scheme::eoc_logisticSphere(){  
-  io.identity.interpolate(fef.surface.rhs_les);
+  io.identity.interpolate(fef.surface.fun);
+
   for(long it = 0; it < pattern_timeSteps(); ++it){
     Grid::Grid_and_time grid {data,
 	Grid::compose_dgfName(fef.surface.fun.name(), fef.tmpFile_path), 
@@ -120,28 +121,25 @@ void Brusselator_scheme::eoc_logisticSphere(){
     
     // calculate X.fun
     u_init.interpolate(u.app);
-    io.identity.interpolate(X.app);
+    X.app = fef.surface.fun;
     X_solver.brusselator_rhs(X.app, X.rhs_les); 
     // currently same as X_solver(X.app, X.fun);
     X_loadVector.assemble_and_addScaled_to(X.rhs_les);
+
+
     X_solver.solve(X.rhs_les, X.fun);
+
+    next_timeStep();
     
     // save surface
     fef.surface.fun = X.fun; // swap would be more efficient
-    fef.surface.write(io.dgf_handler, fef.tmpFile_path);
-    
-    next_timeStep();
-
-    fef.surface.app = fef.surface.rhs_les;
-    fef.surface.app *= exp(fix_grid.time_provider().time());
+    fef.surface.write(io.dgf_handler, fef.tmpFile_path);    
 
     // calculate error 
-    io.identity.interpolate(fef.surface.exact);
+    io.identity.interpolate(fef.surface.exact);    
     io.surface << fix_grid.time_provider().deltaT() << ' '
-	       // << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
-	       // << norm.h1_err(fef.surface.fun, fef.surface.exact) 
-	       << norm.l2_err(fef.surface.app, fef.surface.exact) << ' '
-	       << norm.h1_err(fef.surface.app, fef.surface.exact) 
+	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
+	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
 	       << std::endl;
     // I've changed order to get a stationary surface
     // io.identity.interpolate(fef.surface.fun);
