@@ -25,16 +25,16 @@ tumor_growth.heat.b: .9
 tumor_growth.heat.Dc: 1. # 10.
 tumor_growth.heat.gamma: 0. # 30. 
 
-tumor_growth.surface.epsilon: 0. # 0.01
-tumor_growth.surface.alpha: 0.01
+tumor_growth.surface.epsilon: 1. # 0.01
+tumor_growth.surface.alpha: # 0.01
 tumor_growth.surface.delta: 0. # .4
 
 logistic_growth.r_start: 1.
 logistic_growth.r_end: 2.
 logistic_growth.steepness: .5
 
-fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_2.dgf
-fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere2_v30.log
+fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_3.dgf
+fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere3_v31.log
 
 fem.prefix: /scratch/na31/power/numerische_experimente/solution_driven
 fem.io.path: eoc_experiment/eoc01

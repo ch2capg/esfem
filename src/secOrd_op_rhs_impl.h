@@ -78,6 +78,11 @@ namespace Esfem{
       - \delta xy e^{-6t}\biggr]
       \f]
       Currently I am testing.  So, I use an easier right-hand side.
+      I am doing classic mean curvature flow on the sphere.  
+      Right-hand side must be zero for this example.  Also I expect
+      unit sphere as starting value, alpha = 0 and epsilon = 1.
+
+      Old test, which I want to check again later: 
       - \f$ \surface_0 = S^2\f$ 
       - Exact flow: \f$ \Phi(x,t) = e^{-t} x\f$
       - Velocity: \f$ v(x,t) = -x\f$ 
@@ -87,7 +92,7 @@ namespace Esfem{
       \f[
       v - \alpha \Delta v = g(x,t) = -(1 + \alpha 2/ |x|^2) x.
       \f]
-      \todo Delete later test.
+      \todo Finish test and clean up comments.
      */
     class Vec_rhs_fun
       :public Dune::Fem::Function

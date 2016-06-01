@@ -123,9 +123,7 @@ void Brusselator_scheme::eoc_logisticSphere(){
     u_init.interpolate(u.app);
     X.app = fef.surface.fun;
     X_solver.brusselator_rhs(X.app, X.rhs_les); 
-    // currently same as X_solver(X.app, X.fun);
-    X_loadVector.assemble_and_addScaled_to(X.rhs_les);
-
+    // X_loadVector.assemble_and_addScaled_to(X.rhs_les);
 
     X_solver.solve(X.rhs_les, X.fun);
 

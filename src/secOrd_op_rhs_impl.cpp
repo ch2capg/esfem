@@ -120,6 +120,8 @@ void Vec_rhs_fun::update_cache() const{
 }
 
 void Vec_rhs_fun::evaluate(const Domain& d, Range& r) const{
+  r = 0;
+  /*
   const double x = d[0];
   const double y = d[1];
   const double z = d[2];
@@ -128,6 +130,7 @@ void Vec_rhs_fun::evaluate(const Domain& d, Range& r) const{
   r[0] = factor * d[0];
   r[1] = factor * d[1];
   r[2] = factor * d[2];
+  */
   /*
   update_cache();
   const double factor = cache[2] * abs_d + cache[3] / abs_d - cache[4] * x * y;

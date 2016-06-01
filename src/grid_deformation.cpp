@@ -62,6 +62,13 @@ static inline void dalquist(const double t, const Domain& x, Range& y){
   y[2] = factor * x[2];
 }
 
+//! \f$ R(t) = \sqrt{ R_0^2 - 2nt}\f$
+static inline void mcf_sphere(const double t, const Domain& x, Range& y){
+  const double factor = sqrt( 1 - 2 * 2 * t);
+  y = x;
+  y *= factor;
+}
+
 // ----------------------------------------------------------------------
 // Implementaion of Deformation
 
@@ -88,7 +95,10 @@ set_timeProvider(const Dune::Fem::TimeProviderBase& tp){
 }
 void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
   const double t = d_ptr -> tp_ptr->time();
-  dalquist(t, x, y);
+
+  mcf_sphere(t, x, y);
+
+  // dalquist(t, x, y);
 
   // logistic_growth(t, x, y);
 
