@@ -137,7 +137,7 @@ void Brusselator_scheme::eoc_logisticSphere(){
     io.surface << norm.l2_err(fef.surface.fun, fef.surface.exact) + 0. << std::endl;
       // << norm.h1_err(fef.surface.fun, fef.surface.exact) << std::endl;
 
-    // I've changed order for stationary surface
+    // I've changed order to get a stationary surface
     io.identity.interpolate(fef.surface.fun);
     fef.surface.write(io.dgf_handler, fef.tmpFile_path);
 
