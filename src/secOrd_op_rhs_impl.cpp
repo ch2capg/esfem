@@ -123,8 +123,8 @@ void Vec_rhs_fun::evaluate(const Domain& d, Range& r) const{
   const double x = d[0];
   const double y = d[1];
   const double z = d[2];
-  const double norm_square = x*x + y*y + z*z ;
-  const double factor = (1 + (alpha + epsilon) * 2 / norm_square);
+  const double norm_square = x*x + y*y + z*z;
+  const double factor = (1 + alpha * 2 / norm_square);
   r[0] = factor * d[0];
   r[1] = factor * d[1];
   r[2] = factor * d[2];
