@@ -69,7 +69,7 @@ namespace Esfem{
       void brusselator_rhs(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
       //! For debugging reasons
       /*! \param rhs \f$\nodalValue{X}\f$
-	\retval lhs \f$ (M^n + \alpha A) \nodalValue{X} \f$
+	\retval lhs \f$ (M^n + (\alpha + \varepsilon \tau) A^n) \nodalValue{X} \f$
        */
       void operator()(const Grid::Vec_FEfun& rhs, Grid::Vec_FEfun& lhs) const;
     private:
