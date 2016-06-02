@@ -64,10 +64,10 @@ static inline void dalquist(const double t, const Domain& x, Range& y){
 //! \f$ R(t) = \sqrt{ R_0^2 - 2nt}\f$
 static inline void mcf_sphere(const double t, const Domain& x, Range& y){
   const double norm_square
-    = x[0] * x[0] + x[1] * x[1] + x[2] * x[2];
+    // = x[0] * x[0] + x[1] * x[1] + x[2] * x[2];
     // = 1.;
-    // = std::inner_product(&x[0], &x[0] + Domain::dimension, &x[0], 0.);
-  const double factor = sqrt( norm_square - 2 * 2 * t);
+    = std::inner_product(&x[0], &x[0] + Domain::dimension, &x[0], 0.);
+  const double factor = sqrt( norm_square - 2 * Esfem::Grid::grid_dim() * t);
   y = x;
   y *= factor;
 }

@@ -119,7 +119,7 @@ void Brusselator_scheme::eoc_logisticSphere(){
     SecOrd_op::Vec_rhs X_loadVector {grid};
     SecOrd_op::Solution_driven X_solver {data, grid, u.app};
     
-    // calculate X.fun
+    // calcul1ate X.fun
     u_init.interpolate(u.app);
     X.app = fef.surface.fun;
     X_solver.brusselator_rhs(X.app, X.rhs_les); 
