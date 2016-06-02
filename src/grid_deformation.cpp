@@ -19,6 +19,7 @@
  */
 
 #include <cmath>
+#include <numeric>
 #include "grid.h"
 #include "grid_GridAndTime_impl.h"
 
@@ -49,22 +50,24 @@ static inline void identity(const Domain& x, Range& y) noexcept{
 static inline void logistic_growth(const double t, const Domain& x, Range& y) noexcept{
   const double r_end = 2., r0 = 1., k = .5; // logistic function parameter
   const double r = r_end * r0 / (r_end*exp(-k*t) + r0*(1-exp(-k*t)));
-  y[0] = r * x[0]; 
-  y[1] = r * x[1]; 
-  y[2] = r * x[2]; 
+  y = x;
+  y *= r;
 }
 
 //! Dalquist test equation with \f$\lambda=1\f$
 static inline void dalquist(const double t, const Domain& x, Range& y){
   const double factor = exp(-t);
-  y[0] = factor * x[0]; 
-  y[1] = factor * x[1];
-  y[2] = factor * x[2];
+  y = x;
+  y *= factor;
 }
 
 //! \f$ R(t) = \sqrt{ R_0^2 - 2nt}\f$
 static inline void mcf_sphere(const double t, const Domain& x, Range& y){
-  const double factor = sqrt( 1 - 2 * 2 * t);
+  const double norm_square
+    = x[0] * x[0] + x[1] * x[1] + x[2] * x[2];
+    // = 1.;
+    // = std::inner_product(&x[0], &x[0] + Domain::dimension, &x[0], 0.);
+  const double factor = sqrt( norm_square - 2 * 2 * t);
   y = x;
   y *= factor;
 }
