@@ -35,17 +35,6 @@ using L2_norm = Dune::Fem::L2Norm<Esfem::Grid::Grid_and_time::Grid_part>;
 using H1_norm = Dune::Fem::H1Norm<Esfem::Grid::Grid_and_time::Grid_part>;
 
 // ----------------------------------------------------------------------
-// Helper template function
-
-template<typename FEF, typename Norm>
-double norm_err_helper(const Norm& n, const FEF& u1, const FEF& u2){
-  using Dfef = typename FEF::Dune_FEfun;
-  const Dfef& du1 = u1;
-  const Dfef& du2 = u2;
-  return n.distance(du1, du2);
-}
-
-// ----------------------------------------------------------------------
 // Actual implementations 
 
 //! %Data members of L2H1_calculator
@@ -109,38 +98,51 @@ void L2H1_calculator::Data::assign
   }
 }
 
-
 L2H1_calculator::L2H1_calculator(const Grid::Grid_and_time& gt)
   :d_ptr {make_unique<Data>(gt)} {}
 Esfem::Io::L2H1_calculator::~L2H1_calculator() = default;
 
-double L2H1_calculator::l2_err(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
+double L2H1_calculator::l2_err
+(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
   const FEfun& u1 = u;
   const FEfun& u2 = uN;
   return d_ptr->l2.distance(u1, u2);
 }
-double L2H1_calculator::l2_err(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
+double L2H1_calculator::l2_err
+(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
   d_ptr->assign_v1(u);
   d_ptr->assign_v2(uN);
   auto rv = 0.;
   for(size_t it = 0; it < d_ptr->vec_fefun1.size(); ++it){
-    rv += d_ptr->l2.distance(d_ptr->vec_fefun1[it], d_ptr->vec_fefun2[it]);
+    rv += d_ptr->
+      l2.distance(d_ptr->vec_fefun1[it], d_ptr->vec_fefun2[it]);
   }
   return rv;
-  // return norm_err_helper(d_ptr->l2, u, uN);
+  /*
+  const Vec_FEfun& u1 = u;
+  const Vec_FEfun& u2 = uN;
+  return d_ptr->l2.distance(u1,u2);
+  */
 }
-double L2H1_calculator::h1_err(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
+double L2H1_calculator::h1_err
+(const Grid::Scal_FEfun& u, const Grid::Scal_FEfun& uN) const{
   const FEfun& u1 = u;
   const FEfun& u2 = uN;
   return d_ptr->h1.distance(u1, u2);
 }
-double L2H1_calculator::h1_err(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
+double L2H1_calculator::h1_err
+(const Grid::Vec_FEfun& u, const Grid::Vec_FEfun& uN) const{
   d_ptr->assign_v1(u);
   d_ptr->assign_v2(uN);
   auto rv = 0.;
   for(size_t it = 0; it < d_ptr->vec_fefun1.size(); ++it){
-    rv += d_ptr->h1.distance(d_ptr->vec_fefun1[it], d_ptr->vec_fefun2[it]);
+    rv += d_ptr->
+      h1.distance(d_ptr->vec_fefun1[it], d_ptr->vec_fefun2[it]);
   }
   return rv;
-  // return norm_err_helper(d_ptr->h1, u, uN);
+  /*
+  const Vec_FEfun& u1 = u;
+  const Vec_FEfun& u2 = uN;
+  return d_ptr->h1.distance(u1,u2);
+  */
 }
