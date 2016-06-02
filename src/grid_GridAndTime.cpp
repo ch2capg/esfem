@@ -88,19 +88,16 @@ Data(const Io::Parameter& p, const std::string& dgf_file,
 
 
 Esfem::Grid::Grid_and_time::Grid_and_time(const Io::Parameter& p)
-try : d_ptr {std::make_unique<Data>(p)}
+try :d_ptr {std::make_unique<Data>(p)}
 {}
-catch(const std::exception&){
-  throw_with_nested(Grid_error {"Constructor"});
- }
- catch(const Dune::Exception& e){
-   ostringstream oss;
-   oss << "Constructor\n"
-       << "Dune error: " << e << std::endl;
-   throw Grid_error {oss.str()};
+catch(const Dune::Exception& e){
+  ostringstream oss;
+  oss << "Constructor\n"
+      << "Dune error: " << e << std::endl;
+  throw Grid_error {oss.str()};
  }
  catch(...){
-   throw Grid_error {"Constructor, unknown error"};
+   throw_with_nested(Grid_error {"Constructor"});
  }
 
 Esfem::Grid::Grid_and_time::
