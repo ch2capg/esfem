@@ -25,6 +25,7 @@
 #ifndef BRUSSELATOR_ALGO_H
 #define BRUSSELATOR_ALGO_H 
 
+#include <memory>
 #include <string>
 #include "esfem.h"
 
@@ -260,7 +261,8 @@ namespace Esfem{
       SecOrd_op::Init_data w;
       //! Interpolation functor for the exact velocity
       SecOrd_op::Exact_velocity v;
-
+      std::unique_ptr<SecOrd_op::vIdata> X_ptr;
+      
       //! Provides analytically given initial data.
       explicit Init_data(const Grid::Grid_and_time&);
       //! Provides uniform distributed random inital values. 

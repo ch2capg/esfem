@@ -97,15 +97,15 @@ set_timeProvider(const Dune::Fem::TimeProviderBase& tp){
   d_ptr -> tp_ptr = &tp;
 }
 void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
-  const double t = d_ptr -> tp_ptr->time();
+  // const double t = d_ptr -> tp_ptr->time();
 
-  mcf_sphere(t, x, y);
+  // mcf_sphere(t, x, y);
 
   // dalquist(t, x, y);
 
   // logistic_growth(t, x, y);
 
-  // identity(x, y);
+  identity(x, y);
 
   // const auto eg = *(d_ptr -> eg_ptr);
   // y = eg[x];

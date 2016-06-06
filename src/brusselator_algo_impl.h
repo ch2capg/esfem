@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power June 2016
           Revised by Christian Power April 2016
           Revised by Christian Power March 2016
           Originally written by Christian Power
@@ -17,7 +18,7 @@
      struct to avoid word repetition.  
 
     \author Christian Power
-    \date 23. April 2016
+    \date 6. June 2016
     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -267,6 +268,15 @@ namespace Esfem{
               tab alignment.
    */
 
+  //! Testing components of Brusselator_scheme
+  namespace test{
+    // For Brusselator_scheme::eoc_surface_ell_test()
+    /* Linear finite element Langrange interpolation of 
+      \f$(xy, yz, xz) e^{-6t}\f$.  I want to be, that there are no 
+      typos in my code. */
+    void eoc_int_ssef();
+  } // namespace test
+  
   // ----------------------------------------------------------------------
   // Inline implementation
 

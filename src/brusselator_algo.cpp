@@ -50,7 +50,8 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.pattern_loop();
   // fem.final_action();
   // fem.standard_esfem(); // c++ code works flawless
-  fem.eoc_logisticSphere();
+  // fem.eoc_logisticSphere(); // does not work
+  fem.eoc_surface_ell_test();
 }
 
 // ----------------------------------------------------------------------
@@ -158,15 +159,20 @@ void Brusselator_scheme::eoc_logisticSphere(){
     // helper.plot_paraview();
   }
 }
-
+/*! \pre delta == 0, epsilon == 1, alpha == 0. */
 void Brusselator_scheme::eoc_surface_ell_test(){
-  // initial data
+  SecOrd_op::Solution_driven X_solver {data, fix_grid, fef.u.app};
   for(long it = 0; it < pattern_timeSteps(); ++it){
+    X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
     // les_rhs = M_3 u^n
+    X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
     // (M_3 + tau A_3) u^n+1 = les_rhs
     next_timeStep();
-    // update exact solution
-    // error in the L2- and H1-norm
+    exact.X_ptr->interpolate(fef.surface.exact);
+    io.surface << fix_grid.time_provider().deltaT() << ' '
+	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
+	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
+	       << std::endl;
   }
 }
 
@@ -269,6 +275,7 @@ void Brusselator_scheme::pre_loop_action(){
   PreLoop_helper helper {*this};
   // helper.random_initialValues();
   helper.analytic_initialValues();
+  exact.X_ptr->interpolate(fef.surface.fun);
   helper.headLine_in_errFile();
   helper.save_surface();
   // helper.plot_errors_in_errFile();
@@ -297,8 +304,10 @@ Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
 {}
 
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt)
-  : u {gt, Growth::promoting}, w {gt, Growth::inhibiting}, v {gt}
+  :u {gt, Growth::promoting}, w {gt, Growth::inhibiting}, v {gt},
+   X_ptr {SecOrd_op::vIdata::new_ssef(gt)}
 {}
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt, const Esfem::Io::Parameter& p)
-  :u {p, Growth::promoting}, w {p, Growth::inhibiting}, v {gt}
+  :u {p, Growth::promoting}, w {p, Growth::inhibiting}, v {gt},
+   X_ptr {SecOrd_op::vIdata::new_ssef(gt)}
 {}
