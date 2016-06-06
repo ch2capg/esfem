@@ -103,6 +103,31 @@ namespace Esfem{
       Random_initial_data(const double hom_value, const double pertubation);
     };
 
+    //! Implementation of SecOrd_op::vIdata::ssef()
+    struct sphere_eigenFun
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,
+			    sphere_eigenFun>,
+        SecOrd_op::vIdata{
+      //! \f$f\colon \R^3\to\R^3\f$
+      using Fun_space = Esfem::Grid::Grid_and_time::Vec_Function_space;
+      //! \f$\R^3\f$
+      using Domain = typename Fun_space::DomainType;
+      //! \f$\R^3\f$
+      using Range = typename Fun_space::RangeType;
+
+      static_assert(Domain::dimension == 3, "Bad Domain dimension");
+      static_assert(Range::dimension == 3, "Bad Range dimension");
+
+      sphere_eigenFun(const Grid::Grid_and_time&);
+      sphere_eigenFun* clone() override;
+      void interpolate(Grid::Vec_FEfun&) const override; 
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const Domain&, Range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;
+    };
+    
     //! The actual implementation of the velocity
     class Analytic_velocity
       : public Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,

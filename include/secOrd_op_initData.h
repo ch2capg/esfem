@@ -45,6 +45,22 @@ namespace Esfem{
       std::unique_ptr<Data> d_ptr;
     };
 
+    //! Vector valued initial data
+    class vIdata{
+    public:
+      //!  Stationary sphere eigen functions
+      /*! A factory function.  \f$e^{-6t}(xy, yz,fxz)\f$ are eigen functions
+	for the Laplace operator on the sphere.
+	\post Grid and time outlive this object. */
+      static vIdata* new_ssef(const Grid::Grid_and_time&);
+      //! Virtual copy constructor
+      virtual vIdata* clone() =0;
+      //! Abstract base class
+      virtual ~vIdata(){}
+      //! Lagrange interpolation
+      virtual void interpolate(Grid::Vec_FEfun&) const =0;
+    };
+    
     //! Analytically given velocity
     class Exact_velocity{
     public:

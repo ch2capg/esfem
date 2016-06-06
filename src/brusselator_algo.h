@@ -183,6 +183,25 @@ namespace Esfem{
     */
     void eoc_logisticSphere();
 
+    //! Testing the stationary surface heat equation
+    /*! Experiment reads as follows: Stationary surface \f$\surface = S^2\f$
+     with exact solution \f$X=e^{-t}(xy, yz, xz)\f$,  with the formula
+    \f[
+    \Delta f = \Delta_{\R^{n+1}} f - H D_{\R^{n+1}} f \cdot n 
+    - D^2_{\R^{n+1}} f(n,n),
+    \f]
+    and 
+    \f[
+    H = div(n) = \frac{n}{|x|}
+    \f]
+    one easily sees
+    \f[
+    \Delta(xy) = -\frac{2n+2}{|x|^2} xy, 
+    \f]
+    which implies that the right-hand side of the surface PDE vanishes. 
+    */
+    void eoc_surface_ell_test();
+    
     /*! \name Loop action */
     //@{
     void prePattern_loop();

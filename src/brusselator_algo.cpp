@@ -159,6 +159,17 @@ void Brusselator_scheme::eoc_logisticSphere(){
   }
 }
 
+void Brusselator_scheme::eoc_surface_ell_test(){
+  // initial data
+  for(long it = 0; it < pattern_timeSteps(); ++it){
+    // les_rhs = M_3 u^n
+    // (M_3 + tau A_3) u^n+1 = les_rhs
+    next_timeStep();
+    // update exact solution
+    // error in the L2- and H1-norm
+  }
+}
+
 // --------------------------------------------------
 // Brusselator_scheme loop action
 

@@ -22,6 +22,8 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <config.h>
+#include <dune/fem/operator/lagrangeinterpolation.hh>
 #include "secOrd_op_initData_impl.h"
 #include "io_parameter.h"
 #include "esfem_error.h"
@@ -30,6 +32,7 @@
 using Esfem::Impl::Explicit_initial_data;
 using Esfem::Impl::Random_initial_data;
 using Esfem::Impl::Analytic_velocity;
+using Esfem::Impl::sphere_eigenFun;
 //! \f$ \R^3 \f$
 using Vec_domain = Analytic_velocity::Domain;
 //! \f$ \R^3 \f$
@@ -110,6 +113,25 @@ Random_initial_data(const double hom_value,
   :random_fun {std::bind(Random_dist {hom_value, hom_value + pertubation},
 			 Random_engine {})}
 {}
+
+// ----------------------------------------------------------------------
+// sphere_eigenFun
+
+sphere_eigenFun::sphere_eigenFun(const Grid::Grid_and_time& gt)
+  :tp {gt.time_provider()} {}
+sphere_eigenFun* sphere_eigenFun::clone(){
+  return new sphere_eigenFun {*this};
+}
+void sphere_eigenFun::interpolate(Grid::Vec_FEfun& vfef) const{
+  using Vfef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<Vfef>::interpolateFunction(*this, vfef); 
+}
+void sphere_eigenFun::evaluate(const Domain& x, Range& y) const{
+  y[0] = x[0]*x[1]; // xy
+  y[1] = x[1]*x[2]; // yz
+  y[2] = x[0]*x[2]; // xz
+  y *= exp(-tp.time());
+}
 
 // ----------------------------------------------------------------------
 // Analytic_velocity

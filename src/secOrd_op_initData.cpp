@@ -22,6 +22,7 @@
 
 using namespace std;
 using Esfem::SecOrd_op::Init_data;
+using Esfem::SecOrd_op::vIdata;
 using Esfem::SecOrd_op::Exact_velocity;
 
 // ----------------------------------------------------------------------
@@ -59,6 +60,13 @@ void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const{
   }
   else
     throw InitData_error {Assert::compose(__FILE__, __LINE__, "Null pointer")};
+}
+
+// ----------------------------------------------------------------------
+// vIdata
+
+vIdata* vIdata::new_ssef(const Grid::Grid_and_time& gt){
+  return new Impl::sphere_eigenFun {gt};
 }
 
 // ----------------------------------------------------------------------
