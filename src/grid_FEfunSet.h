@@ -31,6 +31,18 @@
 namespace Esfem{
   //! Analytically given evolving grids and finite element functions
   namespace Grid{
+    //! 3-dim. vector valued finite element functions
+    struct r3fef{
+      //! First component
+      Scal_FEfun x;
+      //! Second component
+      Scal_FEfun y;
+      //! Third component
+      Scal_FEfun z;
+      //! Forward construct
+      r3fef(const std::string& name, const Grid_and_time& gt)
+	:x {name, gt}, y {name, gt}, z {name, gt} {}
+    };
     template<typename FEfun>
     struct FEfun_set{
       FEfun fun; /*!< \brief Numerical solution */

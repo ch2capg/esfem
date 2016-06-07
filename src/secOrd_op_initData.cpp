@@ -63,6 +63,19 @@ void Esfem::SecOrd_op::Init_data::interpolate(Grid::Scal_FEfun& fef) const{
 }
 
 // ----------------------------------------------------------------------
+// sIdata
+
+// static sIdata* new_1ssef(const Grid::Grid_and_time& gt){
+//   return new Impl::sphere_1EF {gt};
+// }
+// static sIdata* new_2ssef(const Grid::Grid_and_time&){
+//   return new Impl::sphere_2EF {gt};
+// }
+// static sIdata* new_3ssef(const Grid::Grid_and_time&){
+//   return new Impl::sphere_3EF {gt};
+// }
+
+// ----------------------------------------------------------------------
 // vIdata
 
 vIdata* vIdata::new_ssef(const Grid::Grid_and_time& gt){

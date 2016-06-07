@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power June 2016
           Revised by Christian Power April 2016
           Originally written by Christian Power
                (power22c@gmail.com) Januar 2016
@@ -14,7 +15,7 @@
      Wrapper class for the dune function class.
 
      \author Christian Power 
-     \date 22. April 2016
+     \date 7. June 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -45,11 +46,29 @@ namespace Esfem{
       std::unique_ptr<Data> d_ptr;
     };
 
+    //! Scalar valued initial data
+    struct sIdata{
+      //!  Stationary sphere eigen functions
+      /*! A factory function.  \f$e^{-6t}(xy, yz, xz)\f$ are eigen functions
+	for the Laplace operator on the sphere.
+	\post Grid and time outlive this object. */
+      static sIdata* new_1ssef(const Grid::Grid_and_time&);
+      //! \copydoc new_1ssef()
+      static sIdata* new_2ssef(const Grid::Grid_and_time&);
+      //! \copydoc new_1ssef()
+      static sIdata* new_3ssef(const Grid::Grid_and_time&);
+      //! Virtual copy constructor
+      virtual sIdata* clone() =0;
+      //! Abstract base class
+      virtual ~sIdata(){}
+      //! Lagrange interpolation
+      virtual void interpolate(Grid::Scal_FEfun&) const =0;
+    };
     //! Vector valued initial data
     class vIdata{
     public:
       //!  Stationary sphere eigen functions
-      /*! A factory function.  \f$e^{-6t}(xy, yz,fxz)\f$ are eigen functions
+      /*! A factory function.  \f$e^{-6t}(xy, yz, xz)\f$ are eigen functions
 	for the Laplace operator on the sphere.
 	\post Grid and time outlive this object. */
       static vIdata* new_ssef(const Grid::Grid_and_time&);

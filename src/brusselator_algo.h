@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power June 2016
           Revised by Christian Power May 2016
           Revised by Christian Power April 2016
           Revised by Christian Power March 2016
@@ -18,7 +19,7 @@
      Enter path to writable directory in the macro variable FEF_PATH.
 
     \author Christian Power
-    \date 19. May 2016
+    \date 7. June 2016
     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 

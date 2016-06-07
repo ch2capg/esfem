@@ -32,6 +32,9 @@
 using Esfem::Impl::Explicit_initial_data;
 using Esfem::Impl::Random_initial_data;
 using Esfem::Impl::Analytic_velocity;
+using Esfem::Impl::sphere_1EF;
+using Esfem::Impl::sphere_2EF;
+using Esfem::Impl::sphere_3EF;
 using Esfem::Impl::sphere_eigenFun;
 //! \f$ \R^3 \f$
 using Vec_domain = Analytic_velocity::Domain;
@@ -117,6 +120,18 @@ Random_initial_data(const double hom_value,
 // ----------------------------------------------------------------------
 // sphere_eigenFun
 
+sphere_3EF::sphere_3EF(const Grid::Grid_and_time& gt)
+  :tp {gt.time_provider()} {}
+sphere_3EF* sphere_3EF::clone(){
+  return new sphere_3EF {*this};
+}
+void sphere_3EF::interpolate(Grid::Scal_FEfun& fef) const{
+  using Fef = Esfem::Grid::Scal_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<Fef>::interpolateFunction(*this, fef); 
+}
+void sphere_3EF::evaluate(const domain& x, range& y)const{
+  y = x[0]*x[1]*exp(-6*tp.time());
+}
 sphere_eigenFun::sphere_eigenFun(const Grid::Grid_and_time& gt)
   :tp {gt.time_provider()} {}
 sphere_eigenFun* sphere_eigenFun::clone(){
@@ -130,7 +145,7 @@ void sphere_eigenFun::evaluate(const Domain& x, Range& y) const{
   y[0] = x[0]*x[1]; // xy
   y[1] = x[1]*x[2]; // yz
   y[2] = x[0]*x[2]; // xz
-  y *= exp(-tp.time());
+  y *= exp(-6.*tp.time());
 }
 
 // ----------------------------------------------------------------------

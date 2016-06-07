@@ -103,6 +103,80 @@ namespace Esfem{
       Random_initial_data(const double hom_value, const double pertubation);
     };
 
+    //! First eigen function of the sphere
+    /*! \f$xye^{-6t}\f$*/
+    struct sphere_1EF
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Function_space,
+			    sphere_1EF>,
+	SecOrd_op::sIdata{
+      //! \f$f\colon \R^3\to\R^1\f$
+      using fspace = Esfem::Grid::Grid_and_time::Function_space;
+      //! \f$ \R^3\f$
+      using domain = typename fspace::DomainType;
+      //! \f$\R^1\f$
+      using range = typename fspace::RangeType;
+      static_assert(domain::dimension == 3, "Bad Domain dimension");
+      static_assert(range::dimension == 1, "Bad Range dimension");
+      //! Get time provider
+      sphere_1EF(const Grid::Grid_and_time&);
+      sphere_1EF* clone() override;
+      void interpolate(Grid::Scal_FEfun&) const override; 
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const domain&, range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;      
+    };
+    //! Second eigen function of the sphere
+    /*! \f$yze^{-6t}\f$*/
+    struct sphere_2EF
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Function_space,
+			    sphere_2EF>,
+	SecOrd_op::sIdata{
+      //! \f$f\colon \R^3\to\R^1\f$
+      using fspace = Esfem::Grid::Grid_and_time::Function_space;
+      //! \f$ \R^3\f$
+      using domain = typename fspace::DomainType;
+      //! \f$\R^1\f$
+      using range = typename fspace::RangeType;
+      static_assert(domain::dimension == 3, "Bad Domain dimension");
+      static_assert(range::dimension == 1, "Bad Range dimension");
+      //! Get time provider
+      sphere_2EF(const Grid::Grid_and_time&);
+      sphere_2EF* clone() override;
+      void interpolate(Grid::Scal_FEfun&) const override; 
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const domain&, range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;      
+    };
+    //! Thrid eigen function of the sphere
+    /*! \f$xze^{-6t}\f$*/
+    struct sphere_3EF
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Function_space,
+			    sphere_3EF>,
+	SecOrd_op::sIdata{
+      //! \f$f\colon \R^3\to\R^1\f$
+      using fspace = Esfem::Grid::Grid_and_time::Function_space;
+      //! \f$ \R^3\f$
+      using domain = typename fspace::DomainType;
+      //! \f$\R^1\f$
+      using range = typename fspace::RangeType;
+      static_assert(domain::dimension == 3, "Bad Domain dimension");
+      static_assert(range::dimension == 1, "Bad Range dimension");
+      //! Get time provider
+      sphere_3EF(const Grid::Grid_and_time&);
+      sphere_3EF* clone() override;
+      void interpolate(Grid::Scal_FEfun&) const override; 
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const domain&, range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;      
+    };
+
+
     //! Implementation of SecOrd_op::vIdata::ssef()
     struct sphere_eigenFun
       : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,
@@ -117,7 +191,7 @@ namespace Esfem{
 
       static_assert(Domain::dimension == 3, "Bad Domain dimension");
       static_assert(Range::dimension == 3, "Bad Range dimension");
-
+      //! Get time provider
       sphere_eigenFun(const Grid::Grid_and_time&);
       sphere_eigenFun* clone() override;
       void interpolate(Grid::Vec_FEfun&) const override; 
