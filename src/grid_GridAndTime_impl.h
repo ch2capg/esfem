@@ -1,18 +1,16 @@
 /*! \file grid_GridAndTime_impl.h
+    \brief Hash maps for evolving grids
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power June 2016
           Originally written by Christian Power
                (power22c@gmail.com) 25. Februar 2016
 
-     This programm implements a basic expression calculator.
-     Input from cin; output to cout.  The grammar for input is: etc.
-
-     Created by Christian Power on 25.02.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+    \author Christian Power
+    \date 7. June 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef GRID_GRIDANDTIME_IMPL_H
@@ -22,33 +20,110 @@
 #include <string>
 #include <unordered_map>
 #include <algorithm>
+#include <boost/functional/hash.hpp>
 #include "grid.h"
 
+//! Template specializations
+namespace std{
+  //! Hash map for Domain points
+  template<> struct std::hash<Esfem::Grid::Deformation::Domain>{
+    //! Produce hash value via boost helper
+    /*! \pre Dimension is 3. */
+    std::size_t operator()(const Esfem::Grid::Deformation::Domain& n) const{
+      // using std::hash;
+      // return hash<double>{}(n.x)
+      //        ^ (hash<double>{}(n.y)<<1)>>1
+      //        ^ (hash<double>{}(n.z)<<1)>>1;
+      using boost::hash_value;
+      using boost::hash_combine;
+      size_t seed {0};
+      hash_combine(seed, hash_value(n[0]));
+      hash_combine(seed, hash_value(n[1]));
+      hash_combine(seed, hash_value(n[2]));
+      return seed;
+    }
+  };
+  //! operator==() for Domain points
+  template<> struct std::equal_to<Esfem::Grid::Deformation::Domain>{
+    //! Component-wise comparison
+    /*! \pre Dimension is 3. */
+    bool operator()(const Esfem::Grid::Deformation::Domain& lhs,
+		    const Esfem::Grid::Deformation::Domain& rhs) const{
+      bool rv = true;
+      for(int i = 0; i < Esfem::Grid::Deformation::Domain::dimension; ++i)
+	rv = rv && lhs[i] == rhs[i];
+      return rv;
+    }
+  };
+}
+
 namespace Esfem{
-  namespace Impl{
+  namespace Impl{    
+    //! Evolution via a hash map
+    /*! I use std::string as key. */
     class Evolving_grid{
     public:
+      //! What is a node for us
       using Node = Grid::Deformation::Domain;
-
+      //! Construct grid from dgf
       Evolving_grid(const std::string& filename);
-    
+
+      //! Access node
       const Node& operator[](const Node&) const;
+      //! Get new nodes
       Evolving_grid& operator=(const Grid::Vec_FEfun& new_nodes);
 
+      //! List of keys for hash map
       using Nodes_key = std::vector<std::string>;
+      //! The actual map
       using Map = std::unordered_map<std::string, Node>;
-    private:    
-      const Nodes_key original_vertices {};
+    private:
+      //! The list
+      const Nodes_key original_vertices;
+      //! Precision of the strings
       std::size_t digit_precision {8};
-      Map vertices_map {};
+      //! Hash map
+      Map vertices_map;
 
+      //! Helper for operator=()
+      /*! \pre distance(first, last) == dim * vertices_map.size().*/
       template<typename It, typename Ot>
       void update_vertices(It first, It last, Ot out, const int dim);
-      // Assumption: distance(first, last) == dim * vertices_map.size();
     };
 
+    //! hash grid plus helper functions
+    namespace hash{
+      //! This is our basic entity
+      using key = Grid::Deformation::Domain;
+      
+      //! Evolution via a hash map
+      /*! I use boost functions to combine hash values of doubles. */
+      class grid{
+	//! Container type
+	using map = std::unordered_map<key, key>;
+	//! The data
+	map m;
+      public:
+	//! Reports errors
+	struct bad : std::runtime_error{
+	  //! Forward error message
+	  explicit bad(const std::string& msg) :std::runtime_error {msg} {}
+	};
+	//! Get first list
+	/*! \remark Use Lagrange interpolation of the identity. */
+	grid(const Grid::Vec_FEfun& init_keys);
+	//! Get new list
+	grid& operator=(const Grid::Vec_FEfun& value_list);
+	//! Checked access
+	/*! \throws bad as a nested object if the point does not exists*/
+	const key& operator[](const key&) const;
+      };
+      //! Make a string out of a key
+      std::string to_string(const key&);
+    }
+    
     // ----------------------------------------------------------------------
-    // Constructor helper functions
+    // Evolving grid constructor helper functions
 
     Evolving_grid::Nodes_key get_vertexList(const std::string& filename);
     // Extract from a dgf all vertices.  The resulting vector is then compatible

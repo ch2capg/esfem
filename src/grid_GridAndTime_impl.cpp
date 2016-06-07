@@ -1,26 +1,32 @@
 /*! \file grid_GridAndTime_impl.cpp
+    \brief Implementation of grid_GridAndTime_impl.h
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power June 2016
           Originally written by Christian Power
                (power22c@gmail.com) 25. Februar 2016
 
-     Implementation details for grid_GridAndTime_impl.h
-     Created by Christian Power on 25.02.2016
-     Copyright (c) 2016 Christian Power. All rights reserved.
+    \author Christian Power
+    \date 7. June 2016
+    \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #include <iterator>
+#include <dassert.h>
 #include "grid_GridAndTime_impl.h"
 
 using namespace std;
 using Esfem::Impl::Evolving_grid;
+using Esfem::Impl::hash::grid;
 using Node = Evolving_grid::Node;
 using Nodes_key = Evolving_grid::Nodes_key;
 using Map = Evolving_grid::Map;
+
+
+// ----------------------------------------------------------------------
+// Evolving_grid
 
 Esfem::Impl::Evolving_grid::Evolving_grid(const std::string& filename)
 try : original_vertices {get_vertexList(filename)},
@@ -228,5 +234,48 @@ dgfFile_to_vec(const std::string& filename) try{
    throw runtime_error {"Unknown error in dgfFile_to_vec()."};
  }
 
-/*! Log:
- */
+// ----------------------------------------------------------------------
+// hash_grid
+
+grid::grid(const Grid::Vec_FEfun& init_keys){
+  constexpr auto dim = key::dimension;
+  const auto size = init_keys.size()/dim;
+
+  Assert::dynamic<Assert::level(Assert::default_level), bad>
+    (size * dim == init_keys.size(),
+     Assert::compose(__FILE__, __LINE__, "init_keys.size()%dim != 0"));
+
+  m.reserve(size);
+  for(auto it = init_keys.begin(); it != init_keys.end(); ++it){
+    key k {};
+    for(int i = 0; i < dim; ++i, ++it) k[i] = *it;
+    m.emplace(k, k);
+  }
+}
+/*! \pre The key value pair is the same order as I emplaced them . */
+auto grid::operator=(const Grid::Vec_FEfun& value_list) -> grid&{
+  constexpr auto dim = key::dimension;
+
+  Assert::dynamic<Assert::level(Assert::default_level), bad>
+    (dim * m.size() == value_list.size(),
+     Assert::compose(__FILE__, __LINE__, "grid::operator=()"));
+
+  auto m_it = m.begin();
+  for(auto v_it = value_list.begin(); v_it != value_list.end(); ){
+    key k {};
+    for(int i = 0; i < dim; ++i, ++v_it) k[i] = *v_it;
+    m_it++->second = k;
+  }
+  return *this;
+}
+auto grid::operator[](const key& k) const -> const key& try{
+  return m.at(k);
+ }
+ catch(...){
+   throw_with_nested(bad {to_string(k)});
+ }
+std::string Esfem::Impl::hash::to_string(const key& k){
+  ostringstream oss;
+  oss << '(' << k[0] << ", " << k[1] << ", "  << k[2] << ')';
+  return oss.str();
+}
