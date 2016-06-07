@@ -65,6 +65,8 @@ namespace Esfem{
     public:
       //! What is a node for us
       using Node = Grid::Deformation::Domain;
+      //! Empty map
+      Evolving_grid() = default;
       //! Construct grid from dgf
       explicit Evolving_grid(const std::string& filename);
 
@@ -109,6 +111,8 @@ namespace Esfem{
 	  //! Forward error message
 	  explicit bad(const std::string& msg) :std::runtime_error {msg} {}
 	};
+	//! Empty map
+	grid() = default;
 	//! Read first list from file name
 	explicit grid(const std::string& fname);
 	//! Get first list

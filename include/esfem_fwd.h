@@ -46,7 +46,10 @@ namespace Esfem{
     class Brusselator;
   }
   namespace Impl{
-    class Evolving_grid;    
+    class Evolving_grid;
+    namespace hash{
+      class grid;
+    }
   }
   enum class Growth {promoting, inhibiting};
 }

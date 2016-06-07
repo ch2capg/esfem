@@ -4,6 +4,7 @@
     Revision history
     --------------------------------------------------
 
+          Revised by Christian Power June 2016
           Revised by Christian Power Mai 2016
           Revised by Christian Power March 2016
 	  Revised by Christian Power February 2016
@@ -17,7 +18,7 @@
     since the construction of those classes is quite non trivial.
 
     \author Christian Power
-    \date 24. Mai 2016
+    \date 7. June 2016
     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -59,49 +60,76 @@ namespace Esfem{
       using Domain = Base::DomainVector;
       using Range = Base::RangeVector;
 
+      //! Analytic formula
       Deformation();
-      explicit Deformation(const Impl::Evolving_grid&);
+      //! Hash map for grid evolution
+      explicit Deformation(const std::string& fname);
+      //! Pointer to implementation requires this.
       ~Deformation();
 
+      //! Explicit mapping
       void evaluate(const Domain&, Range&) const;
+      //! Finish cyclic dependency
       void set_timeProvider(const Dune::Fem::TimeProviderBase&);
     private:
       struct Data;
-      std::unique_ptr<Data> d_ptr {};
+      //! Pointer to implementation
+      std::unique_ptr<Data> d_ptr;
     };
     class Grid_and_time{
     public:
+      //! Important for dune 
       using Host_grid = Dune::GridSelector::GridType;
+      //! \copybrief Host_grid
       using Grid = Dune::GeometryGrid<Host_grid, Deformation>;
+      //! ALU-Grid
       using Grid_part
       = Dune::Fem::AdaptiveLeafGridPart<Grid, Dune::InteriorBorder_Partition>;
+      //! \f$f\colon \R^3\to \R\f$
       using Function_space = Dune::Fem::
 	FunctionSpace<double, double, Grid::dimensionworld, 1>;
+      //! Scalar valued finite element space
       using FE_space = Dune::Fem::
 	LagrangeDiscreteFunctionSpace<Function_space, Grid_part, POLORDER>;
+      //! \f$ f\colon \R^3\to \R^3\f$
       using Vec_Function_space = Dune::Fem::
 	FunctionSpace<double, double, Grid::dimensionworld, Grid::dimensionworld>;
+      //! Vector valued finite element space
       using Vec_FE_space = Dune::Fem::
 	LagrangeDiscreteFunctionSpace<Vec_Function_space, Grid_part, POLORDER>;
-      
+
+      //! Construct first grid
       explicit Grid_and_time(const Io::Parameter&);
+      //! Read from an dgf
       explicit Grid_and_time(const Io::Parameter&, const std::string& dgf_file,
 			     const double t0);
+      //! Pointer to implementation requires this.
       ~Grid_and_time();
 
+      //! ++time
       void next_timeStep(const double);
-      void new_nodes(const Vec_FEfun&) = delete;
-      
+      //! Update hash grid
+      void new_nodes(const Vec_FEfun&);
+
+      //! Get time provider
       Dune::Fem::TimeProviderBase& time_provider();
+      //! Get time provider
       const Dune::Fem::TimeProviderBase& time_provider() const;
-      
+
+      //! Grid for finite element functions
       Grid& grid() const;
+      //! I believe for the norm
       Grid_part& grid_part() const;
+      //! Finite element space
+      /*! Used for dune operator */
       FE_space& fe_space() const;
+      //! Vector valued finite element space
+      /*! Used for dune operator */
       Vec_FE_space& vec_fe_space() const;
     private:
       struct Data;
-      std::unique_ptr<Data> d_ptr {};
+      //! Pointer to implementation
+      std::unique_ptr<Data> d_ptr;
     };
     class Scal_FEfun{
     public:

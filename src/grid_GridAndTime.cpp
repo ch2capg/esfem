@@ -54,16 +54,11 @@ struct Esfem::Grid::Grid_and_time::Data{
 };
 
 Esfem::Grid::Grid_and_time::Data::Data(const Io::Parameter& p)
-  : // eg {p.grid()},
-    // d {eg},
-    d {},
-    hg_ptr {p.grid()},
-    g {loadBalance_and_deref(hg_ptr), d},
-    gp {g},
-    tp {p.start_time(), g},
-    fes {gp},
-    vfes {gp}
-{
+  :// d {new Impl::Evolving_grid {eg}},
+   d {p.grid()}, hg_ptr {p.grid()},
+   g {loadBalance_and_deref(hg_ptr), d},
+   gp {g}, tp {p.start_time(), g},
+   fes {gp}, vfes {gp} {
   d.set_timeProvider(tp);
   tp.init(p.global_timeStep());
 }
@@ -71,14 +66,8 @@ Esfem::Grid::Grid_and_time::Data::Data(const Io::Parameter& p)
 Esfem::Grid::Grid_and_time::Data::
 Data(const Io::Parameter& p, const std::string& dgf_file,
      const double t0)
-  : d {},
-    hg_ptr {dgf_file},
-    g {loadBalance_and_deref(hg_ptr), d},
-    gp {g},
-    tp {t0, g},
-    fes {gp},
-    vfes {gp}
-{
+  :d {}, hg_ptr {dgf_file}, g {loadBalance_and_deref(hg_ptr), d},
+   gp {g}, tp {t0, g}, fes {gp}, vfes {gp} {
   d.set_timeProvider(tp);
   tp.init(p.global_timeStep());
 }

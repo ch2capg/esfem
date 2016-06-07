@@ -23,6 +23,8 @@
 #include "grid.h"
 #include "grid_GridAndTime_impl.h"
 
+using namespace std;
+using Esfem::Grid::Deformation;
 //! \f$\R^3\f$
 using Domain = Esfem::Grid::Deformation::Domain;
 //! \f$\R^3\f$
@@ -76,20 +78,21 @@ static inline void mcf_sphere(const double t, const Domain& x, Range& y){
 // Implementaion of Deformation
 
 struct Esfem::Grid::Deformation::Data{
-  const Impl::Evolving_grid* eg_ptr {nullptr};
+  // Old hash map
+  // Impl::Evolving_grid eg_ptr;
+  //! New hash map
+  Impl::hash::grid hg;
+  //! I do not assume ownership
   const Dune::Fem::TimeProviderBase* tp_ptr {nullptr};
+  //! All pointer to zero
   Data() = default;
-  Data(const Impl::Evolving_grid& eg) :eg_ptr {&eg} {}
+  //! Use hash map
+  Data(const std::string& fname) :hg {fname} {}
 };
 
-Esfem::Grid::Deformation::Deformation()
-  :d_ptr {std::make_unique<Data>()}
-{}
-
-Esfem::Grid::Deformation::Deformation(const Impl::Evolving_grid& eg)
-  :d_ptr {std::make_unique<Data>(eg)}
-{}
-
+Esfem::Grid::Deformation::Deformation() :d_ptr {std::make_unique<Data>()} {}
+Esfem::Grid::Deformation::Deformation(const std::string& fname)
+  :d_ptr {std::make_unique<Data>(fname)} {}
 Esfem::Grid::Deformation::~Deformation() = default;
 
 void Esfem::Grid::Deformation::
@@ -105,7 +108,9 @@ void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
 
   // logistic_growth(t, x, y);
 
-  identity(x, y);
+  // identity(x, y);
+  
+  y = d_ptr->hg[x];
 
   // const auto eg = *(d_ptr -> eg_ptr);
   // y = eg[x];
