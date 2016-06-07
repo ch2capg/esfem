@@ -66,7 +66,7 @@ namespace Esfem{
       //! What is a node for us
       using Node = Grid::Deformation::Domain;
       //! Construct grid from dgf
-      Evolving_grid(const std::string& filename);
+      explicit Evolving_grid(const std::string& filename);
 
       //! Access node
       const Node& operator[](const Node&) const;
@@ -109,9 +109,11 @@ namespace Esfem{
 	  //! Forward error message
 	  explicit bad(const std::string& msg) :std::runtime_error {msg} {}
 	};
+	//! Read first list from file name
+	explicit grid(const std::string& fname);
 	//! Get first list
 	/*! \remark Use Lagrange interpolation of the identity. */
-	grid(const Grid::Vec_FEfun& init_keys);
+	explicit grid(const Grid::Vec_FEfun& init_keys);
 	//! Get new list
 	grid& operator=(const Grid::Vec_FEfun& value_list);
 	//! Checked access

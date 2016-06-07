@@ -237,6 +237,32 @@ dgfFile_to_vec(const std::string& filename) try{
 // ----------------------------------------------------------------------
 // hash_grid
 
+grid::grid(const std::string& fname){
+  constexpr auto dim = key::dimension;
+  const auto str_keys = get_vertexList(fname);
+
+  m.reserve(str_keys.size());
+  istringstream iss;
+  iss.exceptions(ios_base::badbit);
+  size_t line_no {1};
+  key k {};
+  try{
+    for(const auto& line : str_keys){
+      iss.str(line);
+      for(int i = 0; i < dim; ++i) if(!(iss >> k[i])) throw bad {"Non-number"}; 
+      if(!(iss >> ws).eof()) throw bad {"Too many entries."};
+      m.emplace(k, k);
+      iss.clear();
+      ++line_no;
+    }
+  }
+  catch(...){
+    ostringstream oss;
+    oss << "In " << fname << " vertex no. " << line_no << ": "
+	<< str_keys[line_no-1];
+    throw_with_nested(bad {Assert::compose(__FILE__, __LINE__, oss.str())});
+  }
+}
 grid::grid(const Grid::Vec_FEfun& init_keys){
   constexpr auto dim = key::dimension;
   const auto size = init_keys.size()/dim;
