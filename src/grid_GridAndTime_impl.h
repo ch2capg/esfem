@@ -17,6 +17,7 @@
 #define GRID_GRIDANDTIME_IMPL_H 
 
 #include <vector>
+#include <array>
 #include <string>
 #include <unordered_map>
 #include <algorithm>
@@ -26,6 +27,7 @@
 //! Template specializations
 namespace std{
   //! Hash map for Domain points
+  /*! \remark Unfortunately does dune change the last precision digits. */
   template<> struct std::hash<Esfem::Grid::Deformation::Domain>{
     //! Produce hash value via boost helper
     /*! \pre Dimension is 3. */
@@ -43,6 +45,25 @@ namespace std{
       return seed;
     }
   };
+  //! Hash map for an array of integers 
+  template<> struct std::hash<array<int, Esfem::Grid::world_dim()> >{
+    //! Convenience
+    using Base = array<int, Esfem::Grid::world_dim()>;
+    //! Produce hash value via boost helper
+    /*! \pre Dimension is 3. */
+    std::size_t operator()(const Base& ai) const{
+      // using std::hash;
+      // return hash<double>{}(n[0])
+      //        ^ (hash<double>{}(n[1])<<1)>>1
+      //        ^ (hash<double>{}(n[2])<<1)>>1;
+      using boost::hash_value;
+      using boost::hash_combine;
+      size_t seed {0};
+      for(int i = 0; i < Esfem::Grid::world_dim(); ++i)
+	hash_combine(seed, hash_value(ai[i]));
+      return seed;
+    }
+  };
   //! operator==() for Domain points
   template<> struct std::equal_to<Esfem::Grid::Deformation::Domain>{
     //! Component-wise comparison
@@ -55,6 +76,19 @@ namespace std{
       return rv;
     }
   };
+  //! operator==() for Domain points
+  template<> struct std::equal_to<array<int, Esfem::Grid::world_dim()> >{
+    //! Short alias
+    using Base = array<int, Esfem::Grid::world_dim()>;
+    //! Component-wise comparison
+    /*! \pre Dimension is 3. */
+    bool operator()(const Base& lhs, const Base& rhs) const{
+      bool rv = true;
+      for(int i = 0; i < Esfem::Grid::world_dim(); ++i)
+	rv = rv && lhs[i] == rhs[i];
+      return rv;
+    }
+  };  
 }
 
 namespace Esfem{
@@ -95,16 +129,18 @@ namespace Esfem{
 
     //! hash grid plus helper functions
     namespace hash{
-      //! Int because of rounding errors
-      using key = Grid::Deformation::Domain;
-      //! 
+      //! Basic dune entity
       using range = Grid::Deformation::Domain;
+      //! Int because of rounding errors
+      using key = std::array<int, range::dimension>;
       
       //! Evolution via a hash map
       /*! I use boost functions to combine hash values of doubles. */
       class grid{
+	//! Short alias for dimension
+	static constexpr auto dim = range::dimension;
 	//! Hash map type
-	using map = std::unordered_map<key, key>;
+	using map = std::unordered_map<key, range>;
 	//! Sequence
 	using seq = std::vector<key>;
 	//! Map 
@@ -128,10 +164,12 @@ namespace Esfem{
 	grid& operator=(const Grid::Vec_FEfun& value_list);
 	//! Checked access
 	/*! \throws bad as a nested object if the point does not exists*/
-	const key& operator[](const key&) const;
+	const range& operator[](const range&) const;
       };
-      //! Make a string out of a key
-      std::string to_string(const key&);
+      //! Make a string out of a range
+      std::string to_string(const range&);
+      //! Multiply each entry with 1e5 and then truncate
+      key to_key(const range&);
     }
     
     // ----------------------------------------------------------------------

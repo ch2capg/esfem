@@ -238,7 +238,6 @@ dgfFile_to_vec(const std::string& filename) try{
 // hash_grid
 
 grid::grid(const std::string& fname){
-  constexpr auto dim = key::dimension;
   const auto str_keys = get_vertexList(fname);
 
   m.reserve(str_keys.size());
@@ -246,13 +245,13 @@ grid::grid(const std::string& fname){
   istringstream iss;
   iss.exceptions(ios_base::badbit);
   size_t line_no {1};
-  key k {};
+  range k {};
   try{
     for(const auto& line : str_keys){
       iss.str(line);
       for(int i = 0; i < dim; ++i) if(!(iss >> k[i])) throw bad {"Non-number"}; 
       if(!(iss >> ws).eof()) throw bad {"Too many entries."};
-      key k2 {k};
+      const auto k2 = to_key(k);
       m.emplace(k2, k);
       ol.emplace_back(k2);
       iss.clear();
@@ -267,7 +266,6 @@ grid::grid(const std::string& fname){
   }
 }
 grid::grid(const Grid::Vec_FEfun& init_keys){
-  constexpr auto dim = key::dimension;
   const auto size = init_keys.size()/dim;
 
   Assert::dynamic<Assert::level(Assert::default_level), bad>
@@ -275,39 +273,47 @@ grid::grid(const Grid::Vec_FEfun& init_keys){
      Assert::compose(__FILE__, __LINE__, "init_keys.size()%dim != 0"));
 
   m.reserve(size);
+  ol.reserve(size);
   for(auto it = init_keys.begin(); it != init_keys.end(); ++it){
-    key k {};
+    range k {};
     for(int i = 0; i < dim; ++i, ++it) k[i] = *it;
-    m.emplace(k, k);
+    const auto k2 = to_key(k);
+    m.emplace(k2, k);
+    ol.emplace_back(k2);
   }
 }
 /*! \pre The key value pair is the same order as I emplaced them . */
 auto grid::operator=(const Grid::Vec_FEfun& value_list) -> grid&{
-  constexpr auto dim = key::dimension;
-
   Assert::dynamic<Assert::level(Assert::default_level), bad>
     (dim * m.size() == value_list.size(),
      Assert::compose(__FILE__, __LINE__, "grid::operator=()"));
 
-  auto m_it = m.begin();
+  auto m_it = ol.cbegin();
+  range k {};  
   for(auto v_it = value_list.begin(); v_it != value_list.end(); ){
-    key k {};
     for(int i = 0; i < dim; ++i, ++v_it) k[i] = *v_it;
-    m_it++->second = k;
+    m.at(*m_it++) = k;
   }
   return *this;
 }
-auto grid::operator[](const key& k) const -> const key& try{
-  return m.at(k);
+auto grid::operator[](const range& k) const -> const range& try{
+  return m.at(to_key(k));
  }
  catch(...){
    throw_with_nested(bad {to_string(k)});
  }
-std::string Esfem::Impl::hash::to_string(const key& k){
+std::string Esfem::Impl::hash::to_string(const range& k){
   ostringstream oss;
   oss << scientific << '('
       << setprecision(17) << k[0] << ", "
       << setprecision(17) << k[1] << ", "
       << setprecision(17) << k[2] << ')';
   return oss.str();
+}
+auto Esfem::Impl::hash::to_key(const range& r) -> key{
+  constexpr auto fac = 1e5;
+  key rv {};
+  for(int i = 0; i < range::dimension; ++i)
+    rv[i] = static_cast<int>(fac * r[i]);
+  return rv;
 }
