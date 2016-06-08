@@ -30,10 +30,10 @@ namespace std{
     //! Produce hash value via boost helper
     /*! \pre Dimension is 3. */
     std::size_t operator()(const Esfem::Grid::Deformation::Domain& n) const{
-      // using std::hash;
-      // return hash<double>{}(n.x)
-      //        ^ (hash<double>{}(n.y)<<1)>>1
-      //        ^ (hash<double>{}(n.z)<<1)>>1;
+      using std::hash;
+      // return hash<double>{}(n[0])
+      //        ^ (hash<double>{}(n[1])<<1)>>1
+      //        ^ (hash<double>{}(n[2])<<1)>>1;
       using boost::hash_value;
       using boost::hash_combine;
       size_t seed {0};
@@ -95,16 +95,22 @@ namespace Esfem{
 
     //! hash grid plus helper functions
     namespace hash{
-      //! This is our basic entity
+      //! Int because of rounding errors
       using key = Grid::Deformation::Domain;
+      //! 
+      using range = Grid::Deformation::Domain;
       
       //! Evolution via a hash map
       /*! I use boost functions to combine hash values of doubles. */
       class grid{
-	//! Container type
+	//! Hash map type
 	using map = std::unordered_map<key, key>;
-	//! The data
+	//! Sequence
+	using seq = std::vector<key>;
+	//! Map 
 	map m;
+	//! Original list
+	seq ol;
       public:
 	//! Reports errors
 	struct bad : std::runtime_error{

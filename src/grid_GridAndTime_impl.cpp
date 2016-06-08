@@ -242,6 +242,7 @@ grid::grid(const std::string& fname){
   const auto str_keys = get_vertexList(fname);
 
   m.reserve(str_keys.size());
+  ol.reserve(str_keys.size());
   istringstream iss;
   iss.exceptions(ios_base::badbit);
   size_t line_no {1};
@@ -251,7 +252,9 @@ grid::grid(const std::string& fname){
       iss.str(line);
       for(int i = 0; i < dim; ++i) if(!(iss >> k[i])) throw bad {"Non-number"}; 
       if(!(iss >> ws).eof()) throw bad {"Too many entries."};
-      m.emplace(k, k);
+      key k2 {k};
+      m.emplace(k2, k);
+      ol.emplace_back(k2);
       iss.clear();
       ++line_no;
     }
@@ -302,6 +305,9 @@ auto grid::operator[](const key& k) const -> const key& try{
  }
 std::string Esfem::Impl::hash::to_string(const key& k){
   ostringstream oss;
-  oss << '(' << k[0] << ", " << k[1] << ", "  << k[2] << ')';
+  oss << scientific << '('
+      << setprecision(17) << k[0] << ", "
+      << setprecision(17) << k[1] << ", "
+      << setprecision(17) << k[2] << ')';
   return oss.str();
 }

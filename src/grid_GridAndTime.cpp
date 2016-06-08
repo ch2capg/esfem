@@ -13,8 +13,9 @@
      Copyright (c) 2016 Christian Power. All rights reserved.
  */
 
-#include <config.h>
+#include <iostream>
 #include <stdexcept>
+#include <config.h>
 #include <dune/fem/solver/timeprovider.hh>
 #include <dune/common/exceptions.hh>
 #include "grid.h"
