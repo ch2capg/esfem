@@ -262,6 +262,7 @@ namespace Esfem{
       SecOrd_op::Init_data w;
       //! Interpolation functor for the exact velocity
       SecOrd_op::Exact_velocity v;
+      //! Exact solution of the surface
       std::unique_ptr<SecOrd_op::vIdata> X_ptr;
       
       //! Provides analytically given initial data.
