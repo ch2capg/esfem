@@ -112,10 +112,9 @@ Esfem::Grid::Grid_and_time::~Grid_and_time() = default;
 void Esfem::Grid::Grid_and_time::next_timeStep(const double dT){
   d_ptr -> tp.next(dT);
 }
-// void Esfem::Grid::Grid_and_time::new_nodes(const Vec_FEfun& vfef){
-//   auto eg = d_ptr -> eg;
-//   eg = vfef;
-// }
+void Esfem::Grid::Grid_and_time::new_nodes(const Vec_FEfun& rhs){
+  d_ptr->d = rhs;
+}
 Dune::Fem::TimeProviderBase& Esfem::Grid::Grid_and_time::time_provider(){
   return d_ptr -> tp;
 }

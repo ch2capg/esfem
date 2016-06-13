@@ -282,7 +282,7 @@ grid::grid(const Grid::Vec_FEfun& init_keys){
     ol.emplace_back(k2);
   }
 }
-/*! \pre The key value pair is the same order as I emplaced them . */
+
 auto grid::operator=(const Grid::Vec_FEfun& value_list) -> grid&{
   Assert::dynamic<Assert::level(Assert::default_level), bad>
     (dim * m.size() == value_list.size(),

@@ -71,11 +71,14 @@ namespace Esfem{
       void evaluate(const Domain&, Range&) const;
       //! Finish cyclic dependency
       void set_timeProvider(const Dune::Fem::TimeProviderBase&);
+      //! Update hash map
+      Deformation& operator=(const Vec_FEfun&);
     private:
       struct Data;
       //! Pointer to implementation
       std::unique_ptr<Data> d_ptr;
     };
+    //! FE grid, FE space, function space
     class Grid_and_time{
     public:
       //! Important for dune 

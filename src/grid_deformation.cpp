@@ -115,3 +115,7 @@ void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
   // const auto eg = *(d_ptr -> eg_ptr);
   // y = eg[x];
 }
+Deformation& Deformation::operator=(const Vec_FEfun& rhs){
+  d_ptr->hg = rhs;
+  return *this;
+}
