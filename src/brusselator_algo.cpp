@@ -168,6 +168,7 @@ void Brusselator_scheme::eoc_surface_ell_test(){
     X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
     // (M_3 + tau A_3) u^n+1 = les_rhs
     next_timeStep();
+    fix_grid.new_nodes(fef.surface.fun);
     exact.X_ptr->interpolate(fef.surface.exact);
     io.surface << fix_grid.time_provider().deltaT() << ' '
 	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
@@ -305,7 +306,8 @@ Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
 
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt)
   :u {gt, Growth::promoting}, w {gt, Growth::inhibiting}, v {gt},
-   X_ptr {SecOrd_op::vIdata::new_ssef(gt)}
+   X_ptr {// SecOrd_op::vIdata::new_ssef(gt)
+     SecOrd_op::vIdata::new_sms(gt)}
 {}
 Brusselator_scheme::Init_data::Init_data(const Esfem::Grid::Grid_and_time& gt, const Esfem::Io::Parameter& p)
   :u {p, Growth::promoting}, w {p, Growth::inhibiting}, v {gt},

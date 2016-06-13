@@ -36,6 +36,7 @@ using Esfem::Impl::sphere_1EF;
 using Esfem::Impl::sphere_2EF;
 using Esfem::Impl::sphere_3EF;
 using Esfem::Impl::sphere_eigenFun;
+using Esfem::Impl::sphere_mcf_sol;
 //! \f$ \R^3 \f$
 using Vec_domain = Analytic_velocity::Domain;
 //! \f$ \R^3 \f$
@@ -146,6 +147,27 @@ void sphere_eigenFun::evaluate(const Domain& x, Range& y) const{
   y[1] = x[1]*x[2]; // yz
   y[2] = x[0]*x[2]; // xz
   y *= exp(-6.*tp.time());
+}
+
+// ----------------------------------------------------------------------
+// sphere_mcf_sol
+
+sphere_mcf_sol::sphere_mcf_sol(const Grid::Grid_and_time& gt) 
+  :tp {gt.time_provider()} {}
+sphere_mcf_sol* sphere_mcf_sol::clone(){
+  return new sphere_mcf_sol {*this};
+}
+void sphere_mcf_sol::interpolate(Grid::Vec_FEfun& rhs) const{
+  using vfef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<vfef>::interpolateFunction(*this, rhs);
+}
+void sphere_mcf_sol::evaluate(const Domain& x, Range& y) const{
+  auto norm = 0.;
+  for(int i = 0; i < Domain::dimension; ++i) norm += x[i]*x[i];
+  norm = sqrt(norm);
+  const auto rt = sqrt(1. - 2 * 2 * tp.time());
+  y = x;
+  y *= rt / norm;
 }
 
 // ----------------------------------------------------------------------

@@ -74,10 +74,11 @@ namespace Esfem{
       static vIdata* new_ssef(const Grid::Grid_and_time&);
       //! Exact sphere solution of mean curvature flow
       /*! A factory function.  For \f$S^n_{R_0} \subset \R^{n+1}\f$  
-	has initial Radius of \f$R_0>0\f$, then it holds
+	with initial radius of \f$R_0>0\f$, the radius of the exact solution
+	is given via 
       \f[
       R(t)= \sqrt{R^2_0 - 2nt},\quad t\in 
-      \left(-\infty, \frac{2R^2_0}{2n}\right)
+      \left(-\infty, \frac{R^2_0}{2n}\right)
       \f]*/
       static vIdata* new_sms(const Grid::Grid_and_time&);
       //! Virtual copy constructor

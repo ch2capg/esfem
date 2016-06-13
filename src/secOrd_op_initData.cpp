@@ -82,6 +82,10 @@ vIdata* vIdata::new_ssef(const Grid::Grid_and_time& gt){
   return new Impl::sphere_eigenFun {gt};
 }
 
+vIdata* vIdata::new_sms(const Grid::Grid_and_time& gt){
+  return new Impl::sphere_mcf_sol {gt};
+}
+
 // ----------------------------------------------------------------------
 // Exact_velocity
 

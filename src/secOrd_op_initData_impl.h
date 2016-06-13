@@ -203,6 +203,7 @@ namespace Esfem{
     };
 
     //! Implementation of SecOrd_op::vIdata::ssef()
+    /*! \pre The initial sphere is the unit sphere \f$S^2\f$.  */
     struct sphere_mcf_sol
       : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,
 			    sphere_mcf_sol>,
