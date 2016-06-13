@@ -51,7 +51,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.final_action();
   // fem.standard_esfem(); // c++ code works flawless
   // fem.eoc_logisticSphere(); // does not work
-  fem.eoc_surface_ell_test();
+  fem.eoc_mcf();
 }
 
 // ----------------------------------------------------------------------
@@ -160,7 +160,7 @@ void Brusselator_scheme::eoc_logisticSphere(){
   }
 }
 /*! \pre delta == 0, epsilon == 1, alpha == 0. */
-void Brusselator_scheme::eoc_surface_ell_test(){
+void Brusselator_scheme::eoc_mcf(){
   SecOrd_op::Solution_driven X_solver {data, fix_grid, fef.u.app};
   exact.X_ptr->interpolate(fef.surface.exact);
   for(long it = 0; it < pattern_timeSteps(); ++it){

@@ -185,25 +185,34 @@ namespace Esfem{
     */
     void eoc_logisticSphere();
 
-    //! Testing the stationary surface heat equation
-    /*! Experiment reads as follows: Stationary surface \f$\surface = S^2\f$
-     with exact solution \f$X=e^{-t}(xy, yz, xz)\f$,  with the formula
-    \f[
-    \Delta f = \Delta_{\R^{n+1}} f - H D_{\R^{n+1}} f \cdot n 
-    - D^2_{\R^{n+1}} f(n,n),
-    \f]
-    and 
-    \f[
-    H = div(n) = \frac{n}{|x|}
-    \f]
-    one easily sees
-    \f[
-    \Delta(xy) = -\frac{2n+2}{|x|^2} xy, 
-    \f]
-    which implies that the right-hand side of the surface PDE vanishes. 
+    //! Dziuk mean curvature flow ESFEM
+    /*! (This is not any more true) Experiment reads as follows: 
+      Stationary surface \f$\surface = S^2\f$
+      with exact solution \f$X=e^{-t}(xy, yz, xz)\f$,  with the formula
+      \f[
+      \Delta f = \Delta_{\R^{n+1}} f - H D_{\R^{n+1}} f \cdot n 
+      - D^2_{\R^{n+1}} f(n,n),
+      \f]
+      and 
+      \f[
+      H = div(n) = \frac{n}{|x|}
+      \f]
+      one easily sees
+      \f[
+      \Delta(xy) = -\frac{2n+2}{|x|^2} xy, 
+      \f]
+      which implies that the right-hand side of the surface PDE vanishes. 
     */
-    void eoc_surface_ell_test();
-    
+    void eoc_mcf();
+
+    //! Surface logistic sphere
+    /*! For the surface evolution I chose
+    \f{equation*}{
+     \Phi(x,t) := r(t) x, \quad
+     r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})},
+    \f}
+    */
+    void eoc_sls();
     /*! \name Loop action */
     //@{
     void prePattern_loop();
