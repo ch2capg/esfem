@@ -162,18 +162,20 @@ void Brusselator_scheme::eoc_logisticSphere(){
 /*! \pre delta == 0, epsilon == 1, alpha == 0. */
 void Brusselator_scheme::eoc_surface_ell_test(){
   SecOrd_op::Solution_driven X_solver {data, fix_grid, fef.u.app};
+  exact.X_ptr->interpolate(fef.surface.exact);
   for(long it = 0; it < pattern_timeSteps(); ++it){
     X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
     // les_rhs = M_3 u^n
     X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
     // (M_3 + tau A_3) u^n+1 = les_rhs
     next_timeStep();
-    fix_grid.new_nodes(fef.surface.fun);
+    fix_grid.new_nodes(fef.surface.exact);
     exact.X_ptr->interpolate(fef.surface.exact);
     io.surface << fix_grid.time_provider().deltaT() << ' '
 	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
 	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
 	       << std::endl;
+    fix_grid.new_nodes(fef.surface.fun);
   }
 }
 
