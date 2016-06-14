@@ -86,6 +86,10 @@ vIdata* vIdata::new_sms(const Grid::Grid_and_time& gt){
   return new Impl::sphere_mcf_sol {gt};
 }
 
+vIdata* vIdata::new_sls(const Grid::Grid_and_time& gt){
+  return new Impl::sls_iData {gt};
+}
+
 // ----------------------------------------------------------------------
 // Exact_velocity
 
