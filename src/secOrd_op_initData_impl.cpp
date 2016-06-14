@@ -22,7 +22,9 @@
 #include <sstream>
 #include <fstream>
 #include <cmath>
+#include <numeric>
 #include <config.h>
+#include <dune/fem/io/parameter.hh>
 #include <dune/fem/operator/lagrangeinterpolation.hh>
 #include "secOrd_op_initData_impl.h"
 #include "io_parameter.h"
@@ -37,6 +39,9 @@ using Esfem::Impl::sphere_2EF;
 using Esfem::Impl::sphere_3EF;
 using Esfem::Impl::sphere_eigenFun;
 using Esfem::Impl::sphere_mcf_sol;
+using Esfem::Impl::sls_iData;
+using Dune::Fem::Parameter;
+using namespace std;
 //! \f$ \R^3 \f$
 using Vec_domain = Analytic_velocity::Domain;
 //! \f$ \R^3 \f$
@@ -168,6 +173,28 @@ void sphere_mcf_sol::evaluate(const Domain& x, Range& y) const{
   const auto rt = sqrt(1. - 2 * 2 * tp.time());
   y = x;
   y *= rt / norm;
+}
+
+// ----------------------------------------------------------------------
+// sls_iData
+
+sls_iData::sls_iData(const Grid::Grid_and_time& gt)
+  :tp {gt.time_provider()},
+   rA {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
+   rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
+   k {Parameter::getValue<double>("logistic_growth.steepness", .5)}
+{}  
+void sls_iData::interpolate(Grid::Vec_FEfun& rhs) const{
+  using vfef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<vfef>::interpolateFunction(*this, rhs);
+}
+void sls_iData::evaluate(const Domain& x, Range& y) const{
+  const auto 
+    norm = sqrt(inner_product(&x[0], &x[0]+Domain::dimension, &x[0], 0.)),
+    ekt = exp(-k*tp.time()),
+    lgf = rE*rA/(rE * ekt + rA * (1 - ekt));
+  y = x;
+  y = lgf / norm;
 }
 
 // ----------------------------------------------------------------------

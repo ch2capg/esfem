@@ -227,6 +227,39 @@ namespace Esfem{
       //! Current time
       const Dune::Fem::TimeProviderBase& tp;
     };    
+
+    //! Sphere growing via na logistic growth function
+    /*! \pre I assume that I am on the exact surface, which is a sphere.
+      \sa Esfem::Brusselator_scheme::eoc_sls() */
+    struct sls_iData
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,
+			    sls_iData>,
+        SecOrd_op::vIdata{
+      //! \f$f\colon \R^3\to\R^3\f$
+      using Fun_space = Esfem::Grid::Grid_and_time::Vec_Function_space;
+      //! \f$\R^3\f$
+      using Domain = typename Fun_space::DomainType;
+      //! \f$\R^3\f$
+      using Range = typename Fun_space::RangeType;
+
+      static_assert(Domain::dimension == 3, "Bad Domain dimension");
+      static_assert(Range::dimension == 3, "Bad Range dimension");
+      //! Get time provider and logistic growth parameter
+      sls_iData(const Grid::Grid_and_time&);
+      sls_iData* clone() override{ return new sls_iData {*this}; }
+      void interpolate(Grid::Vec_FEfun&) const override; 
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const Domain&, Range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;
+      //! Initial radius
+      double rA;
+      //! End radius or carrying capcity
+      double rE;
+      //! Growth rate
+      double k;
+    };
     
     //! The actual implementation of the velocity
     class Analytic_velocity

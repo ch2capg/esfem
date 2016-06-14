@@ -81,6 +81,8 @@ namespace Esfem{
       \left(-\infty, \frac{R^2_0}{2n}\right)
       \f]*/
       static vIdata* new_sms(const Grid::Grid_and_time&);
+      //! For Brusselator_scheme::eoc_sls()
+      static vIdata* new_sls(const Grid::Grid_and_time&);
       //! Virtual copy constructor
       virtual vIdata* clone() =0;
       //! Abstract base class

@@ -268,15 +268,6 @@ namespace Esfem{
               tab alignment.
    */
 
-  //! Testing components of Brusselator_scheme
-  namespace test{
-    // For Brusselator_scheme::eoc_surface_ell_test()
-    /* Linear finite element Langrange interpolation of 
-      \f$(xy, yz, xz) e^{-6t}\f$.  I want to be, that there are no 
-      typos in my code. */
-    void eoc_int_ssef();
-  } // namespace test
-  
   // ----------------------------------------------------------------------
   // Inline implementation
 
