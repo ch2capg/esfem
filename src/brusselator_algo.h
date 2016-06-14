@@ -206,11 +206,34 @@ namespace Esfem{
     void eoc_mcf();
 
     //! Surface logistic sphere
-    /*! For the surface evolution I chose
+    /*! As exact solution of the surface evolution I choose
     \f{equation*}{
      \Phi(x,t) := r(t) x, \quad
-     r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})},
+     r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})}.
     \f}
+    \f$r(t)\f$ satiesfies the ODE
+    \f[
+    \dot{r}(t) = r(t)(-k)\left( 1 - \frac{r(t)}{r_{end}}\right),
+    \f]
+    which implies for the velocity
+    \f[
+    v(x,t) = -k \left( 1 - \frac{r(t)}{r_{end}} \right)x 
+    =: \tilde{a} x
+    \f]
+    I do not consider coupling.  For the surface PDE I choose
+    \f[
+    v - \alpha \Delta v - \varepsilon \Delta x = f,
+    \f]
+    where \f$f\f$ must be
+    \f[
+    f = \left( \tilde{a} + 
+    \frac{(\alpha \tilde{a} + \varepsilon)H}{|x|}\right) x,
+    \f]
+    where we have used \f$ \Delta x = - H \vec{n}\f$, where \f$H\f$ is the mean curvature 
+    (without aritmetic mean) and \f$\vec{n}\f$ is the outwards pointing normal, and 
+    \f$ \vec{n} = \frac{x}{|x|}\f$.  It holds \f$H = \frac{n}{|x|}\f$, 
+    where \f$n\f$ is the dimension of the sphere.  Note that \f$|x| = r(t)\f$ 
+    on the exact surface.
     */
     void eoc_sls();
     /*! \name Loop action */

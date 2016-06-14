@@ -22,10 +22,9 @@
 #include "secOrd_op_rhs.h"
 #include "secOrd_op_rhs_impl.h"
 
-//! Implementing this
 using Esfem::SecOrd_op::Rhs;
-//! Implementing this
 using Esfem::SecOrd_op::Vec_rhs;
+using Esfem::SecOrd_op::vRhs;
 //! Dune scalar valued finite element function
 using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 //! Dune vector valued finite element function
@@ -55,6 +54,13 @@ void Vec_rhs::assemble_and_addScaled_to(Grid::Vec_FEfun& vfef){
   assemble_RHS(d_ptr -> rhs, d_ptr -> load_vector);
   Vec_FE_function& dune_vfef = vfef;
   dune_vfef.axpy(d_ptr -> tp.deltaT(), d_ptr -> load_vector);
+}
+
+// ----------------------------------------------------------------------
+// vRhs
+
+vRhs* vRhs::new_sls(Grid::Grid_and_time& gt){
+  return new Impl::sls_rhs {gt};
 }
 
 // ----------------------------------------------------------------------

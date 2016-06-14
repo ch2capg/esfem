@@ -151,6 +151,47 @@ namespace Esfem{
       void update_cache() const;
     };    
 
+    //! Right-hand side for surface logistic sphere experiment
+    /*! \pre Use evaluate() on the exact surface.  
+      I assume that it is a sphere, such that \f$ r(t) = |x|\f$.
+      \sa Esfem::Brusselator_scheme::eoc_sls() */
+    struct sls_rhs 
+      : Dune::Fem::Function
+         <Esfem::Grid::Grid_and_time::Vec_Function_space, sls_rhs>,
+	SecOrd_op::vRhs{
+      //! Dune function 
+      using dBase = Esfem::Grid::Grid_and_time::Vec_Function_space;
+      //! \f$ \R^3\f$
+      using dom = dBase::DomainType;
+      //! \f$ \R^3\f$
+      using ran = dBase::RangeType;
+      //! For my generic algorithm
+      using Range = ran;
+
+      //! Get time and finit element space
+      /*! \post Grid and time outlive this object. */
+      sls_rhs(const Grid::Grid_and_time&);
+      sls_rhs* clone() override{ return new sls_rhs {*this}; }
+      void addScaled_to(Grid::Vec_FEfun& rhs) override;
+      //! Needed for interpolation 
+      ran operator()(const dom&) const;
+    private:
+      //! Manifold dimension
+      static constexpr int dim {2};
+      //! Time step
+      const Dune::Fem::TimeProviderBase& tp;      
+      //! Load vector
+      Esfem::Grid::Vec_FEfun::Dune_FEfun lvec;
+      //! Carrying capacity
+      double r_end;
+      //! \f$alpha\f$
+      double a;
+      //! \f$\varepsilon\f$
+      double e;
+      //! Growth rate
+      double k;
+    };
+
     //! Assemble load vector
     /*! \tparam Rhs Deduce Rhs_fun or Vec_rhs_fun
       \tparam Fef Deduce 

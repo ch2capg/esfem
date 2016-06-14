@@ -19,6 +19,7 @@
  */
 
 #include <cmath>
+#include <numeric>
 #include "config.h"
 #include <dune/fem/io/parameter.hh>
 #include <dassert.h>
@@ -39,7 +40,10 @@
 // using Quadrature = Dune::Fem::CachingQuadrature<Grid_part, 0>;
 using Esfem::Impl::Rhs_fun;
 using Esfem::Impl::Vec_rhs_fun;
+using Esfem::Impl::sls_rhs;
 using Dune::Fem::Parameter;
+using namespace std;
+
 // ----------------------------------------------------------------------
 // Implementation of Rhs_fun
 
@@ -144,3 +148,28 @@ Vec_rhs_fun::Range Vec_rhs_fun::operator()(const Domain& d) const{
   evaluate(d,r);
   return r;
 }
+
+sls_rhs::sls_rhs(const Grid::Grid_and_time& gt) 
+  :tp {gt.time_provider()},
+   lvec {"lvec", gt.vec_fe_space()},
+   r_end {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
+   a {Parameter::getValue<double>("tumor_growth.surface.alpha", 1e-3)},
+   e {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
+   k {Parameter::getValue<double>("logistic_growth.steepness", .5)}
+{}
+auto sls_rhs::operator()(const dom& d) const -> ran{
+  const auto 
+    norm = sqrt(inner_product(&d[0], &d[0]+ dom::dimension, &d[0], 0.)),
+    a_til = -k * (1 - norm/r_end),
+    mc = dim / norm,
+    factor = a_til + (a * a_til + e ) * mc / norm;
+  ran r = d;
+  r *= factor;
+  return r;
+}
+void sls_rhs::addScaled_to(Grid::Vec_FEfun& rhs){
+  assemble_RHS(*this, lvec);
+  Grid::Vec_FEfun::Dune_FEfun& fef = rhs;
+  fef.axpy(tp.deltaT(), lvec);
+}
+
