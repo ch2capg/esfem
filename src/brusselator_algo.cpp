@@ -51,8 +51,9 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.final_action();
   // fem.standard_esfem(); // c++ code works flawless
   // fem.eoc_logisticSphere(); // does not work
-  fem.eoc_mcf(); // code works
+  // fem.eoc_mcf(); // code works
   // fem.eoc_sls(); // code does not work
+  fem.sd();
 }
 
 // ----------------------------------------------------------------------
@@ -196,6 +197,28 @@ void Brusselator_scheme::eoc_sls(){
     // les_rhs += tau load_vector^n
     X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
     // (M_3 + (alpha + tau * epsilon) A_3) X^n+1 = les_rhs
+    next_timeStep();
+    fix_grid.new_nodes(fef.surface.exact);
+    ex_ptr->interpolate(fef.surface.exact);
+    io.surface << fix_grid.time_provider().deltaT() << ' '
+	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
+	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
+	       << std::endl;
+    fix_grid.new_nodes(fef.surface.fun);
+  }
+}
+
+void Brusselator_scheme::sd(){
+  using namespace SecOrd_op;
+  std::unique_ptr<vRhs> vRhs_ptr {vRhs::new_sd(fix_grid)};
+  std::unique_ptr<vIdata> ex_ptr {vIdata::new_sd(fix_grid)};
+  Solution_driven X_solver {data, fix_grid, fef.u.app};
+  ex_ptr->interpolate(fef.surface.fun);
+  fef.surface.exact = fef.surface.fun;
+  for(long it = 0; it < pattern_timeSteps(); ++it){
+    X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
+    vRhs_ptr->addScaled_to(fef.surface.rhs_les);
+    X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
     next_timeStep();
     fix_grid.new_nodes(fef.surface.exact);
     ex_ptr->interpolate(fef.surface.exact);

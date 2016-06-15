@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power June 2016
           Revised by Christian Power April 2016
           Originally written by Christian Power
                (power22c@gmail.com) Februar 2016
@@ -14,7 +15,7 @@
      Implementing `Explicit_initial_data` and `Random_initial_data`.
 
      \author Christian Power 
-     \date 22. April 2016
+     \date 15. June 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -40,6 +41,7 @@ using Esfem::Impl::sphere_3EF;
 using Esfem::Impl::sphere_eigenFun;
 using Esfem::Impl::sphere_mcf_sol;
 using Esfem::Impl::sls_iData;
+using Esfem::Impl::sd_iData;
 using Dune::Fem::Parameter;
 using namespace std;
 //! \f$ \R^3 \f$
@@ -200,6 +202,18 @@ void sls_iData::evaluate(const Domain& x, Range& y) const{
   y *= lgf / norm;
 }
 
+sd_iData::sd_iData(const Grid::Grid_and_time& gt) :tp {gt.time_provider()} {}
+void sd_iData::interpolate(Grid::Vec_FEfun& rhs) const{
+  using vfef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<vfef>::interpolateFunction(*this, rhs);
+}
+void sd_iData::evaluate(const Domain& x, Range& y) const{
+  const auto
+    norm = sqrt(inner_product(&x[0], &x[0]+Domain::dimension, &x[0], 0.)),
+    fac = exp(tp.time()) / norm;
+  y = x;
+  y *= fac;
+}
 // ----------------------------------------------------------------------
 // Analytic_velocity
 

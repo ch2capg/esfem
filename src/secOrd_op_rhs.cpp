@@ -62,6 +62,9 @@ void Vec_rhs::assemble_and_addScaled_to(Grid::Vec_FEfun& vfef){
 vRhs* vRhs::new_sls(Grid::Grid_and_time& gt){
   return new Impl::sls_rhs {gt};
 }
+vRhs* vRhs::new_sd(Grid::Grid_and_time& gt){
+  return new Impl::sd_rhs {gt};
+}
 
 // ----------------------------------------------------------------------
 // Implementation of Rhs::Data and Vec_rhs::Data

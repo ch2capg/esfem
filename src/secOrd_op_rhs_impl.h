@@ -192,6 +192,38 @@ namespace Esfem{
       double k;
     };
 
+    //! Right-hand side for surface Dalquist test equation
+    /*! \pre Grid_and_time must outlive this object.
+      \sa Esfem::Brusselator_scheme::sd() */
+    struct sd_rhs
+      : Dune::Fem::Function
+         <Esfem::Grid::Grid_and_time::Vec_Function_space, sd_rhs>,
+	SecOrd_op::vRhs{
+      //! Dune function 
+      using dBase = Esfem::Grid::Grid_and_time::Vec_Function_space;
+      //! \f$ \R^3\f$
+      using dom = dBase::DomainType;
+      //! \f$ \R^3\f$
+      using ran = dBase::RangeType;
+      //! For my generic algorithm
+      using Range = ran;
+
+      //! Get time and finit element space
+      /*! \post Grid and time outlive this object. */
+      sd_rhs(const Grid::Grid_and_time&);
+      sd_rhs* clone() override{ return new sd_rhs {*this}; }
+      void addScaled_to(Grid::Vec_FEfun& rhs) override;
+      //! Needed for interpolation 
+      ran operator()(const dom&) const;
+    private:
+      //! Manifold dimension
+      static constexpr int dim {2};
+      //! Time step
+      const Dune::Fem::TimeProviderBase& tp;      
+      //! Load vector
+      Esfem::Grid::Vec_FEfun::Dune_FEfun lvec;
+    };    
+    
     //! Assemble load vector
     /*! \tparam Rhs Deduce Rhs_fun or Vec_rhs_fun
       \tparam Fef Deduce 

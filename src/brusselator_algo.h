@@ -205,6 +205,17 @@ namespace Esfem{
     */
     void eoc_mcf();
 
+    //! Sphere Dalquist
+    /*! Initial surface is unit sphere in \f$\R^3\f$.  Exact solution is
+     \f[
+     \Phi(x,t) := r(t)x,\quad r(t):= e^t
+     \f]
+     The PDE is 
+     \f[
+     v - \Delta x = f(x,t) = (1 + 2 e^{-2t})x.
+     \f]
+    */
+    void sd();
     //! Surface logistic sphere
     /*! As exact solution of the surface evolution I choose
     \f{equation*}{

@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power June 2016
           Revised by Christian Power April 2016
           Originally written by Christian Power
                (power22c@gmail.com) February 2016
@@ -14,7 +15,7 @@
      Actual implementation of Initial data.
 
      \author Christian Power 
-     \date 26. April 2016
+     \date 15. June 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
@@ -259,6 +260,34 @@ namespace Esfem{
       double rE;
       //! Growth rate
       double k;
+    };
+    
+    //! Sphere growing via na logistic growth function
+    /*! \pre I assume that I am on the exact surface, which is a sphere.
+      \sa Esfem::Brusselator_scheme::eoc_sd() */
+    struct sd_iData
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Vec_Function_space,
+			    sd_iData>,
+        SecOrd_op::vIdata{
+      //! \f$f\colon \R^3\to\R^3\f$
+      using Fun_space = Esfem::Grid::Grid_and_time::Vec_Function_space;
+      //! \f$\R^3\f$
+      using Domain = typename Fun_space::DomainType;
+      //! \f$\R^3\f$
+      using Range = typename Fun_space::RangeType;
+
+      static_assert(Domain::dimension == 3, "Bad Domain dimension");
+      static_assert(Range::dimension == 3, "Bad Range dimension");
+
+      //! Get time provider 
+      sd_iData(const Grid::Grid_and_time&);
+      sd_iData* clone() override{ return new sd_iData {*this}; }
+      void interpolate(Grid::Vec_FEfun&) const override; 
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const Domain&, Range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;
     };
     
     //! The actual implementation of the velocity

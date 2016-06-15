@@ -90,6 +90,9 @@ vIdata* vIdata::new_sls(const Grid::Grid_and_time& gt){
   return new Impl::sls_iData {gt};
 }
 
+vIdata* vIdata::new_sd(const Grid::Grid_and_time& gt){
+  return new Impl::sd_iData {gt};
+}
 // ----------------------------------------------------------------------
 // Exact_velocity
 
