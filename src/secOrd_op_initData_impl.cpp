@@ -189,12 +189,15 @@ void sls_iData::interpolate(Grid::Vec_FEfun& rhs) const{
   Dune::LagrangeInterpolation<vfef>::interpolateFunction(*this, rhs);
 }
 void sls_iData::evaluate(const Domain& x, Range& y) const{
+  auto norm = 0.;
+  for(int i = 0; i < Domain::dimension; ++i) norm += x[i]*x[i];
+  norm = sqrt(norm);
   const auto 
-    norm = sqrt(inner_product(&x[0], &x[0]+Domain::dimension, &x[0], 0.)),
+    // norm = sqrt(inner_product(&x[0], &x[0]+Domain::dimension, &x[0], 0.)),
     ekt = exp(-k*tp.time()),
     lgf = rE*rA/(rE * ekt + rA * (1 - ekt));
   y = x;
-  y = lgf / norm;
+  y *= lgf / norm;
 }
 
 // ----------------------------------------------------------------------

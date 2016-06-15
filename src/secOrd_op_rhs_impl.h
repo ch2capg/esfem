@@ -184,7 +184,7 @@ namespace Esfem{
       Esfem::Grid::Vec_FEfun::Dune_FEfun lvec;
       //! Carrying capacity
       double r_end;
-      //! \f$alpha\f$
+      //! \f$\alpha\f$
       double a;
       //! \f$\varepsilon\f$
       double e;

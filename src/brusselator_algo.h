@@ -234,6 +234,7 @@ namespace Esfem{
     \f$ \vec{n} = \frac{x}{|x|}\f$.  It holds \f$H = \frac{n}{|x|}\f$, 
     where \f$n\f$ is the dimension of the sphere.  Note that \f$|x| = r(t)\f$ 
     on the exact surface.
+    \sa Esfem::SecOrd_op::vRhs::new_sls(), Esfem::SecOrd_op::vIdata::new_sls()
     */
     void eoc_sls();
     /*! \name Loop action */
