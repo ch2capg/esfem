@@ -176,10 +176,12 @@ void sls_rhs::addScaled_to(Grid::Vec_FEfun& rhs){
 
 sd_rhs::sd_rhs(const Grid::Grid_and_time& gt)
   :tp {gt.time_provider()},
-   lvec {"lvec", gt.vec_fe_space()}
+   lvec {"lvec", gt.vec_fe_space()},
+   a {Parameter::getValue<double>("tumor_growth.surface.alpha", 1e-3)},
+   e {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)}
 {}
 auto sd_rhs::operator()(const dom& d) const -> ran{
-  const auto fac = (1. + dim * exp(-2. * tp.time()));
+  const auto fac = (1. + (a+e)*dim*exp(-2. * tp.time()));
   ran r {d};
   r *= fac;
   return r;

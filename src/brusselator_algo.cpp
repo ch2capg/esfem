@@ -221,7 +221,7 @@ void Brusselator_scheme::sd(){
     X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
     next_timeStep();
     fix_grid.new_nodes(fef.surface.exact);
-    ex_ptr->interpolate(fef.surface.exact);
+    ex_ptr->interpolate(fef.surface.exact); 
     io.surface << fix_grid.time_provider().deltaT() << ' '
 	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
 	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 

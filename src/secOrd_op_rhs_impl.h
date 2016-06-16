@@ -222,6 +222,10 @@ namespace Esfem{
       const Dune::Fem::TimeProviderBase& tp;      
       //! Load vector
       Esfem::Grid::Vec_FEfun::Dune_FEfun lvec;
+      //! \f$\alpha\f$
+      double a;
+      //! \f$\varepsilon\f$
+      double e;
     };    
     
     //! Assemble load vector
