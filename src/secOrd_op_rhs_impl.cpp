@@ -161,7 +161,7 @@ sls_rhs::sls_rhs(const Grid::Grid_and_time& gt)
 auto sls_rhs::operator()(const dom& d) const -> ran{
   const auto 
     norm = sqrt(inner_product(&d[0], &d[0]+ dom::dimension, &d[0], 0.)),
-    a_til = -k * (1 - norm/r_end),
+    a_til = k * (1 - norm/r_end),
     mc = dim / norm,
     factor = a_til + (a * a_til + e ) * mc / norm;
   ran r = d;
