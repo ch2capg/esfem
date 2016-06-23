@@ -212,7 +212,8 @@ namespace Esfem{
      \f]
      The PDE is 
      \f[
-     v - \Delta x = f(x,t) = (1 + 2 e^{-2t})x.
+     v - \alpha \Delta v - \varepsilon \Delta x 
+     = f(x,t) = (1 + (\alpha + \varepsilon) 2 e^{-2t})x.
      \f]
     */
     void sd();

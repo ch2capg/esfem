@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power June 2016
           Revised by Christian Power May 2016
           Revised by Christian Power April 2016
           Revised by Christian Power March 2016
@@ -17,7 +18,7 @@
      the class `Esfem::Brusselator_scheme`
 
      \author Christian Power 
-     \date 12. May 2016
+     \date 16. June 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
@@ -52,8 +53,8 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.standard_esfem(); // c++ code works flawless
   // fem.eoc_logisticSphere(); // does not work
   // fem.eoc_mcf(); // code works
-  // fem.eoc_sls(); // code does not work
-  fem.sd();
+  fem.eoc_sls(); // code does not work
+  // fem.sd(); // code works
 }
 
 // ----------------------------------------------------------------------

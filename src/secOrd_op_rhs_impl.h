@@ -182,8 +182,10 @@ namespace Esfem{
       const Dune::Fem::TimeProviderBase& tp;      
       //! Load vector
       Esfem::Grid::Vec_FEfun::Dune_FEfun lvec;
+      //! Initial radius (population)
+      double rA;
       //! Carrying capacity
-      double r_end;
+      double rE;
       //! \f$\alpha\f$
       double a;
       //! \f$\varepsilon\f$
