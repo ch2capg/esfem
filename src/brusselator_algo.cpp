@@ -52,8 +52,8 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.final_action();
   // fem.standard_esfem(); // c++ code works flawless
   // fem.eoc_logisticSphere(); // does not work
-  // fem.eoc_mcf(); // code works
-  fem.eoc_sls(); // code works
+  fem.eoc_mcf(); // code works
+  // fem.eoc_sls(); // code works
   // fem.sd(); // code works
 }
 
