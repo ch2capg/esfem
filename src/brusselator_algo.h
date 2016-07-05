@@ -218,7 +218,7 @@ namespace Esfem{
     */
     void sd();
     //! Surface logistic sphere
-    /*! As exact solution of the surface evolution I choose
+    /*! As exact solution for the surface evolution I choose
     \f{equation*}{
      \Phi(x,t) := r(t) x, \quad
      r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})}.
@@ -234,12 +234,12 @@ namespace Esfem{
     \f]
     I do not consider coupling.  For the surface PDE I choose
     \f[
-    v - \alpha \Delta v - \varepsilon \Delta x = f,
+    v - \alpha \Delta v - \varepsilon \Delta x - \delta u \vec{n} = f,
     \f]
     where \f$f\f$ must be
     \f[
     f = \left( \tilde{a} + 
-    \frac{(\alpha \tilde{a} + \varepsilon)H}{|x|}\right) x,
+    \frac{(\alpha \tilde{a} + \varepsilon)H - \delta u}{|x|}\right) x,
     \f]
     where we have used \f$ \Delta x = - H \vec{n}\f$, where \f$H\f$ 
     is the mean curvature  
@@ -250,6 +250,30 @@ namespace Esfem{
     \sa Esfem::SecOrd_op::vRhs::new_sls(), Esfem::SecOrd_op::vIdata::new_sls()
     */
     void eoc_sls();
+
+    //! EOC experiment for solution driven paper
+    /*! As exact solution for the surface evolution I choose
+    \f{equation*}{
+     \Phi(x,t) := r(t) x, \quad
+     r(t) := \frac{r_{end} r_0}{r_{end} e^{-kt} + r_0 (1-e^{-kt})}.
+    \f}
+    \f$r(t)\f$ satiesfies the ODE
+    \f[
+    \dot{r}(t) = k \left( 1 - \frac{r(t)}{r_{end}}\right) r(t),
+    \f]
+    which implies for the velocity
+    \f[
+    v(x,t) = k \left( 1 - \frac{r(t)}{r_{end}} \right)x 
+    =: \tilde{a} x
+    \f]
+    As exact solution for the scalar diffusion equation I choose
+    \f[
+    u(x,t) := x_1 x_2 e^{-6t},
+    \f]
+    which has the property
+     \sa eoc_sls()
+    */
+    void eoc_sdp();
     /*! \name Loop action */
     //@{
     void prePattern_loop();

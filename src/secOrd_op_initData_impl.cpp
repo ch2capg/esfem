@@ -126,20 +126,24 @@ Random_initial_data(const double hom_value,
 {}
 
 // ----------------------------------------------------------------------
-// sphere_eigenFun
+// sphere_1EF
 
-sphere_3EF::sphere_3EF(const Grid::Grid_and_time& gt)
+sphere_1EF::sphere_1EF(const Grid::Grid_and_time& gt)
   :tp {gt.time_provider()} {}
-sphere_3EF* sphere_3EF::clone(){
-  return new sphere_3EF {*this};
+sphere_1EF* sphere_1EF::clone(){
+  return new sphere_1EF {*this};
 }
-void sphere_3EF::interpolate(Grid::Scal_FEfun& fef) const{
-  using Fef = Esfem::Grid::Scal_FEfun::Dune_FEfun;
+void sphere_1EF::interpolate(Grid::Scal_FEfun& fef) const{
+  using Fef = Grid::Scal_FEfun::Dune_FEfun;
   Dune::LagrangeInterpolation<Fef>::interpolateFunction(*this, fef); 
 }
-void sphere_3EF::evaluate(const domain& x, range& y)const{
+void sphere_1EF::evaluate(const domain& x, range& y)const{
   y = x[0]*x[1]*exp(-6*tp.time());
 }
+
+// ----------------------------------------------------------------------
+// sphere_eigenFun
+
 sphere_eigenFun::sphere_eigenFun(const Grid::Grid_and_time& gt)
   :tp {gt.time_provider()} {}
 sphere_eigenFun* sphere_eigenFun::clone(){

@@ -192,6 +192,8 @@ namespace Esfem{
       double e;
       //! Growth rate
       double k;
+      //! Growth rate scalar function
+      double delta;
     };
 
     //! Right-hand side for surface Dalquist test equation

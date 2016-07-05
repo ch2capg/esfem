@@ -157,14 +157,18 @@ sls_rhs::sls_rhs(const Grid::Grid_and_time& gt)
    rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
    a {Parameter::getValue<double>("tumor_growth.surface.alpha", 1e-3)},
    e {Parameter::getValue<double>("tumor_growth.surface.epsilon", .01)},
-   k {Parameter::getValue<double>("logistic_growth.steepness", .5)}
+   k {Parameter::getValue<double>("logistic_growth.steepness", .5)},
+   delta {Parameter::getValue<double>("tumor_growth.surface.delta", .4)}
 {}
 auto sls_rhs::operator()(const dom& d) const -> ran{
+  auto u_fun = [&tp = tp](auto x, auto y){
+    return x * y * exp(-6.*tp.time());
+  };
   const auto 
     norm = sqrt(inner_product(&d[0], &d[0]+ dom::dimension, &d[0], 0.)),
     a_til = k * (1 - norm/rE),
     mc = dim / norm,
-    factor = a_til + (a * a_til + e ) * mc / norm;
+    factor = a_til + ((a * a_til + e ) * mc - delta *u_fun(d[0], d[1]) )/ norm;
   ran r = d;
   r *= factor;
   return r;
