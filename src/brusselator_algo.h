@@ -268,12 +268,23 @@ namespace Esfem{
     \f]
     As exact solution for the scalar diffusion equation I choose
     \f[
-    u(x,t) := x_1 x_2 e^{-6t},
+    u(x,t) := x_1 x_2 e^{-6t}.
     \f]
-    which has the property
+    The coupled PDE equations reads as
+    \f{gather*}{
+    \partial^{\bullet} u + u \nabla\cdot v - \Delta u = f \\
+    v - \Delta v - \Delta X - \delta u = g,
+    \f}
+    where \f$g\f$ is given via
+    \f[
+    g = \left( \tilde{a} + 
+    \frac{(\alpha \tilde{a} + \varepsilon)H - \delta u}{|x|}\right) x,    
+    \f]
+    and \f$f\f$ is computed via an Sage.
      \sa eoc_sls()
     */
     void eoc_sdp();
+    
     /*! \name Loop action */
     //@{
     void prePattern_loop();

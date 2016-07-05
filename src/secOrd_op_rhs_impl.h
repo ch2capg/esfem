@@ -231,6 +231,51 @@ namespace Esfem{
       //! \f$\varepsilon\f$
       double e;
     };    
+
+    //! Right-hand side for surface logistic sphere experiment
+    /*! \pre Use evaluate() on the exact surface.  
+      I assume that it is a sphere, such that \f$ r(t) = |x|\f$.
+      \sa Esfem::Brusselator_scheme::eoc_sls() */
+    struct sdp_u_rhs 
+      : Dune::Fem::Function
+         <Esfem::Grid::Grid_and_time::Function_space, sdp_u_rhs>,
+	SecOrd_op::sRhs{
+      //! Dune function 
+      using dBase = Esfem::Grid::Grid_and_time::Function_space;
+      //! \f$ \R^3\f$
+      using dom = dBase::DomainType;
+      //! \f$ \R\f$
+      using ran = dBase::RangeType;
+      //! For my generic algorithm
+      using Range = ran;
+
+      //! Get time and finit element space
+      /*! \post Grid and time outlive this object. */
+      sdp_u_rhs(const Grid::Grid_and_time&);
+      sdp_u_rhs* clone() override{ return new sdp_u_rhs {*this}; }
+      void addScaled_to(Grid::Scal_FEfun& rhs) override;
+      //! Needed for interpolation 
+      ran operator()(const dom&) const;
+    private:
+      //! Manifold dimension
+      static constexpr int dim {2};
+      //! Time step
+      const Dune::Fem::TimeProviderBase& tp;      
+      //! Load vector
+      Esfem::Grid::Vec_FEfun::Dune_FEfun lvec;
+      //! Initial radius (population)
+      double rA;
+      //! Carrying capacity
+      double rE;
+      //! \f$\alpha\f$
+      double a;
+      //! \f$\varepsilon\f$
+      double e;
+      //! Growth rate
+      double k;
+      //! Growth rate scalar function
+      double delta;
+    };
     
     //! Assemble load vector
     /*! \tparam Rhs Deduce Rhs_fun or Vec_rhs_fun

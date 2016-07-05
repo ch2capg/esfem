@@ -42,6 +42,7 @@ using Esfem::Impl::Rhs_fun;
 using Esfem::Impl::Vec_rhs_fun;
 using Esfem::Impl::sls_rhs;
 using Esfem::Impl::sd_rhs;
+using Esfem::Impl::sdp_u_rhs;
 using Dune::Fem::Parameter;
 using namespace std;
 
@@ -194,5 +195,15 @@ auto sd_rhs::operator()(const dom& d) const -> ran{
 void sd_rhs::addScaled_to(Grid::Vec_FEfun& rhs){
   assemble_RHS(*this, lvec);
   Grid::Vec_FEfun::Dune_FEfun& fef = rhs;
+  fef.axpy(tp.deltaT(), lvec);
+}
+
+sdp_u_rhs::sdp_u_rhs(const Grid::Grid_and_time& gt){}
+auto sdp_u_rhs::operator(const dom& d) const -> ran{
+  
+}
+void sdp_u_rhs::addScaled_to(Grid::Scal_FEfuN& rhs){
+  assemble_RHS(*this, lvec);
+  Grid::Scal_FEfun::Dune_FEfun& fef = rhs;
   fef.axpy(tp.deltaT(), lvec);
 }

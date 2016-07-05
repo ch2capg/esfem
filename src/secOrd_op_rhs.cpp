@@ -24,6 +24,7 @@
 
 using Esfem::SecOrd_op::Rhs;
 using Esfem::SecOrd_op::Vec_rhs;
+using Esfem::SecOrd_op::sRhs;
 using Esfem::SecOrd_op::vRhs;
 //! Dune scalar valued finite element function
 using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
@@ -54,6 +55,13 @@ void Vec_rhs::assemble_and_addScaled_to(Grid::Vec_FEfun& vfef){
   assemble_RHS(d_ptr -> rhs, d_ptr -> load_vector);
   Vec_FE_function& dune_vfef = vfef;
   dune_vfef.axpy(d_ptr -> tp.deltaT(), d_ptr -> load_vector);
+}
+
+// ----------------------------------------------------------------------
+// sRhs
+
+sRhs* sRhs::new_sdp_u(Grid::Grid_and_time&){
+  return nullptr;
 }
 
 // ----------------------------------------------------------------------

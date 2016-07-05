@@ -73,6 +73,18 @@ namespace Esfem{
       std::unique_ptr<Data> d_ptr;
     };
 
+    //! Abstract scalar valued load vector base class
+    struct sRhs{
+      //! For Brusselator_scheme::eoc_sdp()
+      static sRhs* new_sdp_u(Grid::Grid_and_time&);
+      //! Virtual copy constructor
+      virtual sRhs* clone() =0;
+      //! Assemble load vector with some factor and add to finit element function
+      virtual void addScaled_to(Grid::Scal_FEfun&) =0;
+      //! Abstract base class
+      virtual ~sRhs(){}
+    };
+    
     //! Abstract vector valued load vector base class
     struct vRhs{
       //! For Brusselator_scheme::eoc_sls()

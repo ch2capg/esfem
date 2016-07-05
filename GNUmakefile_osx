@@ -76,7 +76,7 @@ endif
 CXXFLAGS ?= -std=c++1y $(addprefix -W, all extra) -g -O3 -stdlib=libc++
 LDFLAGS ?= $(addprefix -L, ${DUNE_DIR}/build/lib ${ALU_DIR}/lib \
              ${ALBERTA_DIR}/lib ${HOME}/cpp/alberta-3.0.1/build/lib \
-	${HOME}/cpp/dune/build/lib) \
+	${HOME}/cpp/dune/build/lib ${HOME}/dune/install-prefix/lib/ ) \
  $(addprefix -l, dunecommon dunegeometry dunegrid \
    dunealugrid dunefem alugrid alugrid_serial dunealbertagrid_3d \
    lapack blas z m gmp gmpxx alberta_utilities)
