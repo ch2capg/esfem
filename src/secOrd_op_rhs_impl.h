@@ -260,21 +260,15 @@ namespace Esfem{
       //! Manifold dimension
       static constexpr int dim {2};
       //! Time step
-      const Dune::Fem::TimeProviderBase& tp;      
+      const Dune::Fem::TimeProviderBase& tp; 
       //! Load vector
-      Esfem::Grid::Vec_FEfun::Dune_FEfun lvec;
+      Esfem::Grid::Scal_FEfun::Dune_FEfun lscal;
       //! Initial radius (population)
       double rA;
       //! Carrying capacity
       double rE;
-      //! \f$\alpha\f$
-      double a;
-      //! \f$\varepsilon\f$
-      double e;
       //! Growth rate
       double k;
-      //! Growth rate scalar function
-      double delta;
     };
     
     //! Assemble load vector

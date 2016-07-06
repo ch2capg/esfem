@@ -280,8 +280,11 @@ namespace Esfem{
     g = \left( \tilde{a} + 
     \frac{(\alpha \tilde{a} + \varepsilon)H - \delta u}{|x|}\right) x,    
     \f]
-    and \f$f\f$ is computed via an Sage.
-     \sa eoc_sls()
+    and the complicated \f$f\f$ is computed via Sage.
+    \pre Parameter \f$\gamma\f$ has to be zero.
+    \sa eoc_sls(), Esfem::SecOrd_op::vRhs::new_sls(), 
+    Esfem::SecOrd_op::sRhs::new_sdp_u(), Esfem::SecOrd_op::vIdata::new_sls(),
+    Esfem::SecOrd_op::sIdata::new_1ssef()
     */
     void eoc_sdp();
     

@@ -60,8 +60,8 @@ void Vec_rhs::assemble_and_addScaled_to(Grid::Vec_FEfun& vfef){
 // ----------------------------------------------------------------------
 // sRhs
 
-sRhs* sRhs::new_sdp_u(Grid::Grid_and_time&){
-  return nullptr;
+sRhs* sRhs::new_sdp_u(Grid::Grid_and_time& gt){
+  return new Impl::sdp_u_rhs {gt};
 }
 
 // ----------------------------------------------------------------------

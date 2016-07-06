@@ -53,8 +53,9 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.standard_esfem(); // c++ code works flawless
   // fem.eoc_logisticSphere(); // does not work
   // fem.eoc_mcf(); // code works
-  fem.eoc_sls(); // code works
+  // fem.eoc_sls(); // code works
   // fem.sd(); // code works
+  fem.eoc_sdp(); // not finished
 }
 
 // ----------------------------------------------------------------------
@@ -233,6 +234,42 @@ void Brusselator_scheme::sd(){
 	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
 	       << std::endl;
     fix_grid.new_nodes(fef.surface.fun);
+  }
+}
+
+void Brusselator_scheme::eoc_sdp(){
+  using namespace SecOrd_op;
+  using std::unique_ptr;
+  unique_ptr<vRhs> g_load {vRhs::new_sls(fix_grid)};
+  unique_ptr<sRhs> f_load {sRhs::new_sdp_u(fix_grid)};
+  unique_ptr<vIdata> X_ex {vIdata::new_sls(fix_grid)};
+  unique_ptr<sIdata> u_ex {sIdata::new_1ssef(fix_grid)};
+  Scalar_solver solver {data, fix_grid, fef.u, fef.w}; // I just need `solver.u`
+  Solution_driven X_solver {data, fix_grid, fef.u.app};
+  X_ex->interpolate(fef.surface.fun);
+  u_ex->interpolate(fef.u.app);
+  fef.surface.exact = fef.surface.fun;
+  fef.u.fun = fef.u.app;
+  for(long it = 0; it < pattern_timeSteps(); ++it){
+    // X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
+    // vRhs_ptr->addScaled_to(fef.surface.rhs_les);
+    // X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
+    solver.u.mass_matrix(fef.u.fun, fef.u.rhs_les);
+    next_timeStep(); // next surface
+    X_ex->interpolate(fef.surface.exact);
+    // fix_grid.new_nodes(fef.surface.fun);
+    fix_grid.new_nodes(fef.surface.exact); // postpone this to the ostream part
+    f_load->addScaled_to(fef.u.rhs_les);
+    solver.u.solve(fef.u.rhs_les, fef.u.fun);
+    u_ex->interpolate(fef.u.exact);
+    io.u << fix_grid.time_provider().deltaT() << ' '
+	 << norm.l2_err(fef.u.fun, fef.u.exact) << ' '
+	 << norm.h1_err(fef.u.fun, fef.u.exact)
+	 << std::endl;
+//     io.surface << fix_grid.time_provider().deltaT() << ' '
+//  	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
+//  	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
+// 	       << std::endl;
   }
 }
 

@@ -34,7 +34,7 @@ logistic_growth.r_end: 2.
 logistic_growth.steepness: .5
 
 fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surface/data/sphere/Sphere_1.dgf
-fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/sphere1_slsv02.log
+fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/sphere1_sdpv00.log
 
 fem.prefix: /Users/christianpower/cpp/DISS_surfaces
 fem.io.path: output/eoc_experiment/eoc00

@@ -198,12 +198,19 @@ void sd_rhs::addScaled_to(Grid::Vec_FEfun& rhs){
   fef.axpy(tp.deltaT(), lvec);
 }
 
-sdp_u_rhs::sdp_u_rhs(const Grid::Grid_and_time& gt){}
-auto sdp_u_rhs::operator(const dom& d) const -> ran{
-  
+sdp_u_rhs::sdp_u_rhs(const Grid::Grid_and_time& gt)
+  :tp {gt.time_provider()},
+   lscal {"lscal", gt.fe_space()},
+   rA {Parameter::getValue<double>("logistic_growth.r_start")},
+   rE {Parameter::getValue<double>("logistic_growth.r_end")},
+   k {Parameter::getValue<double>("logistic_growth.steepness")}
+{}
+auto sdp_u_rhs::operator()(const dom& d) const -> ran{
+  const auto x = d[0], y = d[1], z = d[2], t = tp.time();
+  return 2*k*x*y*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1)*exp(-6*t) - (k*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1) + k*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*(rA/(rA*(exp(-k*t) - 1) - rE*exp(-k*t)) + 1))*x*y*exp(-6*t) + 4*pow(x,3)*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) + 4*x*pow(y,3)*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),3) - 6*x*y*exp(-6*t) + 2*(pow(x,3)*y*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + (pow(x,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x/(pow(x,2) + pow(y,2) + pow(z,2)))*y*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(x,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(x,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + (4*pow(x,2)*pow(y,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - pow(y,2)*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)) - (pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1)*exp(-6*t))*x*y/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(x*pow(y,3)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) + x*(pow(y,3)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y/(pow(x,2) + pow(y,2) + pow(z,2)))*exp(-6*t) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(y,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1) + 2*(2*pow(x,2)*y*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - y*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*x*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*pow(y,2)*z*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*z*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*y*z/(pow(x,2) + pow(y,2) + pow(z,2)) + 2*(2*x*y*pow(z,2)*exp(-6*t)/pow(pow(x,2) + pow(y,2) + pow(z,2),2) - x*y*exp(-6*t)/(pow(x,2) + pow(y,2) + pow(z,2)))*(pow(z,2)/(pow(x,2) + pow(y,2) + pow(z,2)) - 1);
 }
-void sdp_u_rhs::addScaled_to(Grid::Scal_FEfuN& rhs){
-  assemble_RHS(*this, lvec);
+void sdp_u_rhs::addScaled_to(Grid::Scal_FEfun& rhs){
+  assemble_RHS(*this, lscal);
   Grid::Scal_FEfun::Dune_FEfun& fef = rhs;
-  fef.axpy(tp.deltaT(), lvec);
+  fef.axpy(tp.deltaT(), lscal);
 }
