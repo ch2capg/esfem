@@ -201,9 +201,9 @@ void sd_rhs::addScaled_to(Grid::Vec_FEfun& rhs){
 sdp_u_rhs::sdp_u_rhs(const Grid::Grid_and_time& gt)
   :tp {gt.time_provider()},
    lscal {"lscal", gt.fe_space()},
-   rA {Parameter::getValue<double>("logistic_growth.r_start")},
-   rE {Parameter::getValue<double>("logistic_growth.r_end")},
-   k {Parameter::getValue<double>("logistic_growth.steepness")}
+   rA {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
+   rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
+   k {Parameter::getValue<double>("logistic_growth.steepness", .5)}
 {}
 auto sdp_u_rhs::operator()(const dom& d) const -> ran{
   const auto x = d[0], y = d[1], z = d[2], t = tp.time();
