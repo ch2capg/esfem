@@ -41,6 +41,7 @@ using Esfem::Impl::sphere_3EF;
 using Esfem::Impl::sphere_eigenFun;
 using Esfem::Impl::sphere_mcf_sol;
 using Esfem::Impl::sls_iData;
+using Esfem::Impl::sls_v_iData;
 using Esfem::Impl::sd_iData;
 using Dune::Fem::Parameter;
 using namespace std;
@@ -201,6 +202,24 @@ void sls_iData::evaluate(const Domain& x, Range& y) const{
     lgf = rE*rA/(rE * ekt + rA * (1 - ekt));
   y = x;
   y *= lgf / norm;
+}
+
+sls_v_iData::sls_v_iData(const Grid::Grid_and_time& gt)
+  :tp {gt.time_provider()},
+   rA {Parameter::getValue<double>("logistic_growth.r_start", 1.)},
+   rE {Parameter::getValue<double>("logistic_growth.r_end", 2.)},
+   k {Parameter::getValue<double>("logistic_growth.steepness", .5)}
+{}  
+void sls_v_iData::interpolate(Grid::Vec_FEfun& rhs) const{
+  using vfef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<vfef>::interpolateFunction(*this, rhs);
+}
+void sls_v_iData::evaluate(const Domain& x, Range& y) const{
+  const auto 
+    ekt = exp(-k*tp.time()),
+    rt = rE*rA/(rE * ekt + rA * (1 - ekt));
+  y = x;
+  y *= k * (1 - rt/ rE);
 }
 
 sd_iData::sd_iData(const Grid::Grid_and_time& gt) :tp {gt.time_provider()} {}

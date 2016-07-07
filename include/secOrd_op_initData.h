@@ -83,6 +83,8 @@ namespace Esfem{
       static vIdata* new_sms(const Grid::Grid_and_time&);
       //! For Brusselator_scheme::eoc_sls()
       static vIdata* new_sls(const Grid::Grid_and_time&);
+      //! Exact velocity for Brusselator_scheme::eoc_sls()
+      static vIdata* new_v_sls(const Grid::Grid_and_time&);
       //! For Brusselator_scheme::sd()
       static vIdata* new_sd(const Grid::Grid_and_time&);
       //! Virtual copy constructor

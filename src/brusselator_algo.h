@@ -418,6 +418,18 @@ namespace Esfem{
     //! Assign a new value to `fef.u.exact` and `fef.w.exact`
     void update_scalar_solution();
 
+    //! Lifted printing 
+    template<class F>
+    void print(Esfem::Io::Error_stream& os, const F& fem){
+      os << fix_grid.time_provider().deltaT() << ' '
+	 << norm.l2_err(fem.fun, fem.exact) << ' '
+	 << norm.h1_err(fem.fun, fem.exact) << std::endl;
+    }
+
+    //! Cycle dof and apply simple differential quotient
+    /*! \pre fef.velocity.rhs_les has the old surface value. */
+    void calculate_velocity();
+    
     //! Plot error of `fef` on the interpolated surface
     /*! \pre The exact solution has been updated.
       \sa update_exact_surface(), update_exact_velocity(),

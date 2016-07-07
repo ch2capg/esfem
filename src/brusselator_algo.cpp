@@ -243,12 +243,13 @@ void Brusselator_scheme::eoc_sdp(){
   unique_ptr<vRhs> g_load {vRhs::new_sls(fix_grid)};
   unique_ptr<sRhs> f_load {sRhs::new_sdp_u(fix_grid)};
   unique_ptr<vIdata> X_ex {vIdata::new_sls(fix_grid)};
+  unique_ptr<vIdata> V_ex {vIdata::new_v_sls(fix_grid)};
   unique_ptr<sIdata> u_ex {sIdata::new_1ssef(fix_grid)};
   Scalar_solver solver {data, fix_grid, fef.u, fef.w}; // I just need `solver.u`
   Solution_driven X_solver {data, fix_grid, fef.u.app};
   X_ex->interpolate(fef.surface.fun);
   u_ex->interpolate(fef.u.app);
-  fef.surface.exact = fef.surface.fun;
+  fef.velocity.rhs_les = fef.surface.exact = fef.surface.fun;
   fef.u.fun = fef.u.app;
   for(long it = 0; it < pattern_timeSteps(); ++it){
     X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
@@ -259,20 +260,29 @@ void Brusselator_scheme::eoc_sdp(){
     fix_grid.new_nodes(fef.surface.fun);    
     f_load->addScaled_to(fef.u.rhs_les);
     solver.u.solve(fef.u.rhs_les, fef.u.fun);
+    calculate_velocity();
     fef.u.app = fef.u.fun;
+
     X_ex->interpolate(fef.surface.exact);
     fix_grid.new_nodes(fef.surface.exact); 
     u_ex->interpolate(fef.u.exact);
-    io.u << fix_grid.time_provider().deltaT() << ' '
-	 << norm.l2_err(fef.u.fun, fef.u.exact) << ' '
-	 << norm.h1_err(fef.u.fun, fef.u.exact)
-	 << std::endl;
-    io.surface << fix_grid.time_provider().deltaT() << ' '
-  	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
-  	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
- 	       << std::endl;
+    V_ex->interpolate(fef.velocity.exact);
+    print(io.u, fef.u);
+    print(io.surface, fef.surface);
+    print(io.velocity, fef.velocity);
     fix_grid.new_nodes(fef.surface.fun);
   }
+}
+
+void Brusselator_scheme::calculate_velocity(){
+  using dunefef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
+  dunefef& v = fef.velocity.fun, x_old = fef.velocity.rhs_les;
+  const dunefef& x_new = fef.surface.fun;
+  const double dT = fix_grid.time_provider().deltaT();
+  v.clear();
+  v.axpy(1./dT, x_new);
+  v.axpy(1./dT, x_old);
+  x_old.assign(x_new);
 }
 
 // --------------------------------------------------
