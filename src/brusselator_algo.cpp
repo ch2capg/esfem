@@ -279,10 +279,13 @@ void Brusselator_scheme::calculate_velocity(){
   dunefef& v = fef.velocity.fun, x_old = fef.velocity.rhs_les;
   const dunefef& x_new = fef.surface.fun;
   const double dT = fix_grid.time_provider().deltaT();
-  v.clear();
-  v.axpy(1./dT, x_new);
-  v.axpy(1./dT, x_old);
-  x_old.assign(x_new);
+
+  auto it_v = v.dbegin(), it_xo = x_old.dbegin();
+  auto it_xn = x_new.dbegin();
+  for(; it_v != v.dend(); ++it_v, ++it_xo, ++it_xn){
+    *it_v = (*it_xn - *it_xo)/dT;
+    *it_xo = *it_xn;
+  }
 }
 
 // --------------------------------------------------
