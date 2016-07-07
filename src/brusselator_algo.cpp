@@ -251,25 +251,27 @@ void Brusselator_scheme::eoc_sdp(){
   fef.surface.exact = fef.surface.fun;
   fef.u.fun = fef.u.app;
   for(long it = 0; it < pattern_timeSteps(); ++it){
-    // X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
-    // vRhs_ptr->addScaled_to(fef.surface.rhs_les);
-    // X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
+    X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
+    g_load->addScaled_to(fef.surface.rhs_les);
+    X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
     solver.u.mass_matrix(fef.u.fun, fef.u.rhs_les);
     next_timeStep(); // next surface
-    X_ex->interpolate(fef.surface.exact);
-    // fix_grid.new_nodes(fef.surface.fun);
-    fix_grid.new_nodes(fef.surface.exact); // postpone this to the ostream part
+    fix_grid.new_nodes(fef.surface.fun);    
     f_load->addScaled_to(fef.u.rhs_les);
     solver.u.solve(fef.u.rhs_les, fef.u.fun);
+    fef.u.app = fef.u.fun;
+    X_ex->interpolate(fef.surface.exact);
+    fix_grid.new_nodes(fef.surface.exact); 
     u_ex->interpolate(fef.u.exact);
     io.u << fix_grid.time_provider().deltaT() << ' '
 	 << norm.l2_err(fef.u.fun, fef.u.exact) << ' '
 	 << norm.h1_err(fef.u.fun, fef.u.exact)
 	 << std::endl;
-//     io.surface << fix_grid.time_provider().deltaT() << ' '
-//  	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
-//  	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
-// 	       << std::endl;
+    io.surface << fix_grid.time_provider().deltaT() << ' '
+  	       << norm.l2_err(fef.surface.fun, fef.surface.exact) << ' '
+  	       << norm.h1_err(fef.surface.fun, fef.surface.exact) 
+ 	       << std::endl;
+    fix_grid.new_nodes(fef.surface.fun);
   }
 }
 

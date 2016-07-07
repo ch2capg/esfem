@@ -87,7 +87,7 @@ LDFLAGS ?= $(addprefix -L, ${DUNE_DIR}/build/lib ${ALU_DIR}/lib \
 .SUFFIXES:
 .SUFFIXES: .o .cpp .h
 
-targets = brusselator
+targets = brusselator max_h
 
 .PHONY:	all ${targets} doc clean help checkDirs FORCEMAKE
 all: checkDirs ${targets} 
@@ -294,6 +294,31 @@ ${PROG4_name}: LDFLAGS += #$(addprefix -L${BUILD_DIR}/, lib) -l${LIB1}
 
 PROG4_obj := $(addprefix ${BUILD_DIR}/obj/, \
                $(patsubst %.cpp, %_esfem.o, \
+                 $(notdir ${PROG4_SRC})))
+-include $(patsubst %.o, %.d, ${PROG4_obj})
+
+PROG4_bin := ${BIN_DIR}/${PROG4_name}
+
+${PROG4_name}: ${PROG4_bin}
+${PROG4_bin}: ${PROG4_obj}
+	${CXX} -o $@ $^ ${CXXFLAGS} ${LDFLAGS} 
+
+# ----------------------------------------------------------------------
+# PROG4
+
+PROG4 := ${PROJECT_DIR}/src/max_h
+PROG4_SRC := $(addprefix $(dir ${PROG4}), \
+ maxH_main.cpp)
+PROG4_MSG = ${PROG4_name} - No special flags
+
+PROG4_name := $(basename $(notdir ${PROG4}))
+${PROG4_name}: CPPFLAGS += -DSPHEREPATH="\"/Users/christianpower/cpp/DISS_surface/data/sphere\"" 
+
+# ------------------------------------------------------------
+# do not change
+
+PROG4_obj := $(addprefix ${DEPS_DIR}/, \
+               $(patsubst %.cpp, %.o, \
                  $(notdir ${PROG4_SRC})))
 -include $(patsubst %.o, %.d, ${PROG4_obj})
 
