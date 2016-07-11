@@ -51,6 +51,10 @@ namespace Esfem{
       long prePattern_timeSteps() const;
       long pattern_timeSteps() const; 
       //@}
+
+      //! Step size of the last step
+      /*! If this is smaller then eps(), you should do nothing. */
+      double last_step() const;
       
       double eps() const noexcept;
       /*!< \brief Generic precision */

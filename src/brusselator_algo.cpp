@@ -46,16 +46,17 @@ void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
   constexpr auto parameter_file = PFILE;
   Brusselator_scheme fem {argc, argv, parameter_file};
+  fem.test_param();
   // fem.prePattern_loop();
   // fem.intermediate_action(); 
   // fem.pattern_loop();
   // fem.final_action();
-  // fem.standard_esfem(); // c++ code works flawless
+  // fem.standard_esfem(); // code works
   // fem.eoc_logisticSphere(); // does not work
   // fem.eoc_mcf(); // code works
   // fem.eoc_sls(); // code works
   // fem.sd(); // code works
-  fem.eoc_sdp(); // not finished
+  // fem.eoc_sdp(); // code works
 }
 
 // ----------------------------------------------------------------------
@@ -249,18 +250,21 @@ void Brusselator_scheme::eoc_sdp(){
   Solution_driven X_solver {data, fix_grid, fef.u.app};
   X_ex->interpolate(fef.surface.fun);
   u_ex->interpolate(fef.u.app);
-  fef.velocity.rhs_les = fef.surface.exact = fef.surface.fun;
+  fef.surface.exact = fef.surface.fun;
   fef.u.fun = fef.u.app;
   for(long it = 0; it < pattern_timeSteps(); ++it){
+    fef.velocity.rhs_les = fef.surface.fun; // old surface for velocity
     X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
     g_load->addScaled_to(fef.surface.rhs_les);
     X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
+    fef.velocity.app = fef.surface.fun; // new surface for velocity 
     solver.u.mass_matrix(fef.u.fun, fef.u.rhs_les);
+    calculate_velocity(fef.velocity.app.cbegin(), fef.velocity.app.cend(),
+		       fef.velocity.rhs_les.cbegin(), fef.velocity.fun.begin());
     next_timeStep(); // next surface
     fix_grid.new_nodes(fef.surface.fun);    
     f_load->addScaled_to(fef.u.rhs_les);
     solver.u.solve(fef.u.rhs_les, fef.u.fun);
-    calculate_velocity();
     fef.u.app = fef.u.fun;
 
     X_ex->interpolate(fef.surface.exact);
@@ -271,20 +275,6 @@ void Brusselator_scheme::eoc_sdp(){
     print(io.surface, fef.surface);
     print(io.velocity, fef.velocity);
     fix_grid.new_nodes(fef.surface.fun);
-  }
-}
-
-void Brusselator_scheme::calculate_velocity(){
-  using dunefef = Esfem::Grid::Vec_FEfun::Dune_FEfun;
-  dunefef& v = fef.velocity.fun, x_old = fef.velocity.rhs_les;
-  const dunefef& x_new = fef.surface.fun;
-  const double dT = fix_grid.time_provider().deltaT();
-
-  auto it_v = v.dbegin(), it_xo = x_old.dbegin();
-  auto it_xn = x_new.dbegin();
-  for(; it_v != v.dend(); ++it_v, ++it_xo, ++it_xn){
-    *it_v = (*it_xn - *it_xo)/dT;
-    *it_xo = *it_xn;
   }
 }
 
@@ -318,7 +308,7 @@ void Brusselator_scheme::pattern_loop(){
     update_surface();
     update_scalar_solution();
     rhs_and_solve_SPDE();
-    update_velocity();    
+    // update_velocity(); // does not exists anymore
     error_on_intSurface(); // Error on surface(t_n)
     next_timeStep();
     Pattern_helper helper {*this};
@@ -342,18 +332,6 @@ void Brusselator_scheme::update_surface(){
 
   // Save old surface for the velocity
   fef.surface.app = fef.surface.fun; 
-}
-void Brusselator_scheme::update_velocity(){
-  exact.v.interpolate(fef.velocity.exact);
-
-  // update fef.velocity.fun
-  const auto dT = fix_grid.time_provider().deltaT();
-  auto xNew_ptr = fef.surface.fun.cbegin();
-  auto xOld_ptr = fef.surface.app.cbegin();
-  for(auto v_ptr = fef.velocity.fun.begin();
-      v_ptr != fef.velocity.fun.end();
-      ++v_ptr, ++xNew_ptr, ++xOld_ptr)
-    *v_ptr = (*xNew_ptr - *xOld_ptr)/ dT;
 }
 void Brusselator_scheme::update_scalar_solution(){
   exact.u.interpolate(fef.u.exact);

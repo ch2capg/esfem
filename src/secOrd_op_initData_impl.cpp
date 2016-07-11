@@ -217,9 +217,9 @@ void sls_v_iData::interpolate(Grid::Vec_FEfun& rhs) const{
 void sls_v_iData::evaluate(const Domain& x, Range& y) const{
   const auto 
     ekt = exp(-k*tp.time()),
-    rt = rE*rA/(rE * ekt + rA * (1 - ekt));
+    rt = rE*rA/(rE * ekt + rA * (1. - ekt));
   y = x;
-  y *= k * (1 - rt/ rE);
+  y *= k * (1. - rt/ rE);
 }
 
 sd_iData::sd_iData(const Grid::Grid_and_time& gt) :tp {gt.time_provider()} {}

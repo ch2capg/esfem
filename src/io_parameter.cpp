@@ -187,6 +187,10 @@ long Esfem::Io::Parameter::pattern_timeSteps() const{
   const auto t_0 = d_ptr->t_end_pattern;
   return (t_n - t_0)/d_ptr->dT + .1;
 }
+double Esfem::Io::Parameter::last_step() const{
+  const double rv = d_ptr->t_end - global_timeStep() * max_timeSteps();
+  return rv > 0 ? rv : 0;
+}
 double Esfem::Io::Parameter::eps() const noexcept{
   return d_ptr -> eps;
 }

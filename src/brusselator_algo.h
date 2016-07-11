@@ -410,11 +410,6 @@ namespace Esfem{
 
     //! Assign a new value to `fef.surface.exact` and `fef.surface.app`
     void update_surface();
-    //! Assign a new value to `fef.velocity.exact` and `fef.velocity.fun`
-    /*! \pre The `fef.surface.fun` represents the new surface and
-      `fef.surface.app` represents the old surface.
-    */
-    void update_velocity();
     //! Assign a new value to `fef.u.exact` and `fef.w.exact`
     void update_scalar_solution();
 
@@ -426,9 +421,21 @@ namespace Esfem{
 	 << norm.h1_err(fem.fun, fem.exact) << std::endl;
     }
 
-    //! Cycle dof and apply simple differential quotient
-    /*! \pre fef.velocity.rhs_les has the old surface value. */
-    void calculate_velocity();
+    //! Calculate the velocity via simple differential quotient
+    /*! \param[in] xn_first Iterator to first point of the new surface
+      \param[in] xn_last Iterator to last point of the new surface
+      \param[in] xo_first Iterator to first point of the previous surface
+      \param[out] v_first Iterator to the first value of the velocity
+      \pre Both `xo_first` and `v_first` point to as many elements as 
+      `xn_first` does. 
+    */
+    template<class It1, class It2>
+    void calculate_velocity(It1 xn_first, It1 xn_last, It1 xo_first, It2 v_first){
+      const double dT = fix_grid.time_provider().deltaT();
+      for(; xn_first != xn_last; ++xn_first, ++xo_first, ++v_first)
+	*v_first = (*xn_first - *xo_first)/dT;
+    }
+
     
     //! Plot error of `fef` on the interpolated surface
     /*! \pre The exact solution has been updated.
@@ -458,7 +465,7 @@ namespace Esfem{
     long time_steps() const;
     //@}
   };
-
+  
   // ----------------------------------------------------------------------
   // Inline implementation
 
