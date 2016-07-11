@@ -46,7 +46,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
   constexpr auto parameter_file = PFILE;
   Brusselator_scheme fem {argc, argv, parameter_file};
-  fem.test_param();
+  fem.test();
   // fem.prePattern_loop();
   // fem.intermediate_action(); 
   // fem.pattern_loop();
@@ -252,7 +252,9 @@ void Brusselator_scheme::eoc_sdp(){
   u_ex->interpolate(fef.u.app);
   fef.surface.exact = fef.surface.fun;
   fef.u.fun = fef.u.app;
-  for(long it = 0; it < pattern_timeSteps(); ++it){
+  const long end_steps = pattern_timeSteps()
+    + (data.last_step() >data.eps() ? 1 : 0 );
+  for(long it = 0; it < end_steps; ++it){
     fef.velocity.rhs_les = fef.surface.fun; // old surface for velocity
     X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
     g_load->addScaled_to(fef.surface.rhs_les);
@@ -379,6 +381,27 @@ void Brusselator_scheme::rhs_and_solve_SPDE(){
   helper.addScaled_surfaceLoadVector();
   helper.solve_surface_and_save();
 }
+
+void Brusselator_scheme::test(){
+  const auto it_end = pattern_timeSteps() + (data.last_step() >data.eps() ? 1 : 0 );
+  std::cout << "t0: " << data.start_time() << '\n'
+	    << "dT: " << data.global_timeStep() << '\n'
+	    << "step no: " << it_end << '\n'
+	    << "last dT: " << data.last_step() << std::endl;
+  std::cout << "time: " << fix_grid.time_provider().time() << std::endl;
+  for(long it = 0; it < it_end; ++it){
+    if(it < it_end-2){
+      std::cout << "it < it_end-1" << std::endl;
+      next_timeStep();
+    }
+    else{
+      std::cout << "it >= it_end-1" << std::endl;
+      fix_grid.next_timeStep(data.last_step());
+    }
+    std::cout << "time: " << fix_grid.time_provider().time() << std::endl;
+  }
+}
+
 // ----------------------------------------------------------------------
 // Implementation of structs
 // Brusselator_scheme::Fef and Brusselator_scheme::Io

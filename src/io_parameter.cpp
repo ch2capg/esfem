@@ -185,7 +185,7 @@ long Esfem::Io::Parameter::prePattern_timeSteps() const{
 long Esfem::Io::Parameter::pattern_timeSteps() const{
   const auto t_n = d_ptr->t_end;
   const auto t_0 = d_ptr->t_end_pattern;
-  return (t_n - t_0)/d_ptr->dT + .1;
+  return (t_n - t_0)/d_ptr->dT; // may narrow
 }
 double Esfem::Io::Parameter::last_step() const{
   const double rv = d_ptr->t_end - global_timeStep() * max_timeSteps();

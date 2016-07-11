@@ -287,6 +287,9 @@ namespace Esfem{
     Esfem::SecOrd_op::sIdata::new_1ssef()
     */
     void eoc_sdp();
+
+    //! Run a simple test
+    void test();
     
     /*! \name Loop action */
     //@{
@@ -452,7 +455,7 @@ namespace Esfem{
       SPDE.  Then solves the vector SPDE and prints out a dgf file.
      */
     void rhs_and_solve_SPDE();
-    
+
     /*! \name Flow control */
     //@{ 
     void next_timeStep(); 
