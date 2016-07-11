@@ -252,8 +252,7 @@ void Brusselator_scheme::eoc_sdp(){
   u_ex->interpolate(fef.u.app);
   fef.surface.exact = fef.surface.fun;
   fef.u.fun = fef.u.app;
-  const long end_steps = pattern_timeSteps()
-    + (data.last_step() >data.eps() ? 1 : 0 );
+  const long end_steps = pattern_timeSteps() + (data.last_step() > data.eps() ? 1 : 0 );
   for(long it = 0; it < end_steps; ++it){
     fef.velocity.rhs_les = fef.surface.fun; // old surface for velocity
     X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
@@ -263,7 +262,11 @@ void Brusselator_scheme::eoc_sdp(){
     solver.u.mass_matrix(fef.u.fun, fef.u.rhs_les);
     calculate_velocity(fef.velocity.app.cbegin(), fef.velocity.app.cend(),
 		       fef.velocity.rhs_les.cbegin(), fef.velocity.fun.begin());
-    next_timeStep(); // next surface
+
+    // next surface
+    if(it < end_steps - 2) next_timeStep();
+    else fix_grid.next_timeStep(data.last_step());
+    
     fix_grid.new_nodes(fef.surface.fun);    
     f_load->addScaled_to(fef.u.rhs_les);
     solver.u.solve(fef.u.rhs_les, fef.u.fun);
