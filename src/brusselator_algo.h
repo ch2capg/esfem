@@ -322,7 +322,9 @@ namespace Esfem{
       
       const Esfem::Io::Dgf::Handler dgf_handler;
       /*!< \brief Converts finite element function into dgf file. */
-      
+
+      //! File to capture PDE parameter
+      Esfem::Io::Error_stream para;
       Esfem::Io::Error_stream u;
       /*!< \brief File to record errors of u. */
       Esfem::Io::Error_stream w;
