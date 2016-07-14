@@ -1,3 +1,4 @@
+# Do not edit this automatic generated file!
 fem.verboserank: 0
 fem.solver.verbose: 0
 
@@ -5,11 +6,11 @@ fem.timeprovider.factor: 1
 
 fem.io.savestep: 0.001
 
-heat.starttime: 0. # 10. 
+heat.starttime: 0.
 tumor_growth.surface.start_growth: .000
-heat.endtime:  0.02
-heat.pattern.endtime: 0. # 10.
-heat.timestep: 3.90625e-05
+heat.endtime:  1.
+heat.pattern.endtime: 0.
+heat.timestep: 0.00249388
 heat.bdf: 1
 heat.solvereps: 1e-9
 
@@ -20,16 +21,16 @@ tumor_growth.heat.b: .9
 tumor_growth.heat.Dc: 1. # 10.
 tumor_growth.heat.gamma: 0. # 30. 
 
-tumor_growth.surface.epsilon: 1.
-tumor_growth.surface.alpha: 0.
-tumor_growth.surface.delta: 0. # .4
+tumor_growth.surface.epsilon: 0
+tumor_growth.surface.alpha: 1.
+tumor_growth.surface.delta: 0
 
 logistic_growth.r_start: 1.
 logistic_growth.r_end: 2.
 logistic_growth.steepness: .5
 
 fem.io.macroGridFile_2d: /home/power/cpp/DISS_surfaces/data/sphere/Sphere_5.dgf
-fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere5smsv0.log
+fem.io.errorFile: /scratch/na31/power/numerische_experimente/solution_driven/eoc_experiment/sphere5sdpv06.log
 
 fem.prefix: /scratch/na31/power/numerische_experimente/solution_driven
 fem.io.path: eoc_experiment/eoc01
