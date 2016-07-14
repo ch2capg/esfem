@@ -12,9 +12,9 @@ fem.io.savestep: 0.01
 
 heat.starttime: 0.
 tumor_growth.surface.start_growth: 0.000
-heat.endtime:  1.
+heat.endtime:  .02
 heat.pattern.endtime: 0.
-heat.timestep: .3
+heat.timestep: .01
 heat.bdf: 1
 heat.solvereps: 1e-9
 
