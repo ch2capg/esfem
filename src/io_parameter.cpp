@@ -241,6 +241,7 @@ const std::string& Esfem::Io::Parameter::w_init_dof() const noexcept{
 }
 
 std::ostream& Esfem::Io::operator<<(std::ostream& os, const Parameter& d){
+  using Dune::Fem::Parameter;
   const auto& p = d.d_ptr;
   os << "t_0: " << p->t_0 << '\n'
      << "dT: " << p->dT << '\n'
@@ -264,7 +265,13 @@ std::ostream& Esfem::Io::operator<<(std::ostream& os, const Parameter& d){
      << "u_pertubation: " << p -> u_pertubation << '\n'
      << "w_pertubation: " << p -> w_pertubation << '\n'
      << "u_init_dof: " << p -> u_init_dof << '\n'
-     << "w_init_dof: " << p -> w_init_dof
+     << "w_init_dof: " << p -> w_init_dof << '\n'
+     << "logistic_growth.r_start: "
+     << Parameter::getValue<double>("logistic_growth.r_start", 1.) << '\n'
+     << "logistic_growth.r_end: "
+     << Parameter::getValue<double>("logistic_growth.r_end", 2.) << '\n'
+     << "logistic_growth.steepness: "
+     << Parameter::getValue<double>("logistic_growth.steepness", .5)
     ;
   return os;
 }

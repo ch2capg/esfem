@@ -1,18 +1,19 @@
 /*! \file io_parameter.h
+    \brief Initialize dune parameter facilities
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power July 2016
           Originally written by Christian Power
                (power22c@gmail.com) Januar 2016
 
      This programm implements a basic expression calculator.
      Input from cin; output to cout.  The grammar for input is: etc.
 
-     Created by Christian Power on 27.01.2016
-     Copyright (c) 2016 Christian Power.  All rights reserved.
+     \author Christian Power 
+     \date 13. July 2016
+     \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
  */
 
 #ifndef IO_PARAMETER_H
@@ -98,6 +99,3 @@ namespace Esfem{
 }
 
 #endif // IO_PARAMETER_H
-
-/*! Log:
- */
