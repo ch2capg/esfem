@@ -4,6 +4,7 @@
      Revision history
      --------------------------------------------------
 
+          Revised by Christian Power July 2016
           Revised by Christian Power June 2016
           Revised by Christian Power May 2016
           Revised by Christian Power April 2016
@@ -18,7 +19,7 @@
      the class `Esfem::Brusselator_scheme`
 
      \author Christian Power 
-     \date 16. June 2016
+     \date 13. July 2016
      \copyright Copyright (c) 2016 Christian Power.  All rights reserved.
 */
 
@@ -46,7 +47,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
   Dune::Fem::MPIManager::initialize(argc, argv);
   constexpr auto parameter_file = PFILE;
   Brusselator_scheme fem {argc, argv, parameter_file};
-  fem.test();
+  // fem.test();
   // fem.prePattern_loop();
   // fem.intermediate_action(); 
   // fem.pattern_loop();
@@ -56,7 +57,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.eoc_mcf(); // code works
   // fem.eoc_sls(); // code works
   // fem.sd(); // code works
-  // fem.eoc_sdp(); // code works
+  fem.eoc_sdp(); // code works
 }
 
 // ----------------------------------------------------------------------
@@ -264,8 +265,9 @@ void Brusselator_scheme::eoc_sdp(){
 		       fef.velocity.rhs_les.cbegin(), fef.velocity.fun.begin());
 
     // next surface
-    if(it < end_steps - 2) next_timeStep();
-    else fix_grid.next_timeStep(data.last_step());
+    next_timeStep();
+    // if(it < end_steps - 2) next_timeStep();
+    // else fix_grid.next_timeStep(data.last_step());
     
     fix_grid.new_nodes(fef.surface.fun);    
     f_load->addScaled_to(fef.u.rhs_les);
@@ -376,6 +378,7 @@ void Brusselator_scheme::pre_loop_action(){
   // helper.plot_errors_in_errFile();
   // helper.plot_paraview();
   // next_timeStep();
+  io.para << data << std::endl;
 }
 void Brusselator_scheme::rhs_and_solve_SPDE(){
   RhsAndSolve_helper helper {*this};
@@ -415,7 +418,7 @@ Brusselator_scheme::Fef::Fef(const Esfem::Grid::Grid_and_time& gt)
 {}
 
 Brusselator_scheme::Io::Io(const Esfem::Io::Parameter& p)
-  :dgf_handler {p.grid()}, u {"_u", p}, w {"_w", p},
+  :dgf_handler {p.grid()}, para {p}, u {"_u", p}, w {"_w", p},
    surface {"_X", p}, velocity {"_v",p}
 {}
 
