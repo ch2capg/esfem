@@ -48,8 +48,8 @@ void Esfem::brusselator_algo(int argc, char** argv){
   constexpr auto parameter_file = PFILE;
   Brusselator_scheme fem {argc, argv, parameter_file};
   // fem.test();
-  // fem.prePattern_loop();
-  // fem.intermediate_action(); 
+  fem.prePattern_loop();
+  fem.intermediate_action(); 
   // fem.pattern_loop();
   // fem.final_action();
   // fem.standard_esfem(); // code works
@@ -57,7 +57,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.eoc_mcf(); // code works
   // fem.eoc_sls(); // code works
   // fem.sd(); // code works
-  fem.eoc_sdp(); // code works
+  // fem.eoc_sdp(); // code works
 }
 
 // ----------------------------------------------------------------------
@@ -75,8 +75,8 @@ try :data {argc, argv, parameter_fname},
   fix_grid {data},
   norm {fix_grid},  
   fef {fix_grid}, 
-  // exact {fix_grid, data} // constructor for random initial data
-  exact {fix_grid} // constructor for analytic initial data
+  exact {fix_grid, data} // constructor for random initial data
+// exact {fix_grid} // constructor for analytic initial data
 {
   pre_loop_action(); // initialize member fef
 }
@@ -290,9 +290,11 @@ void Brusselator_scheme::eoc_sdp(){
 
 void Brusselator_scheme::prePattern_loop(){
   PrePattern_helper helper {*this};
+  
+
   for(long it = 0; it < prePattern_timeSteps(); ++it, next_timeStep()){
     helper.rhs();
-    // helper.solve_pde(); // Does this make any sense?
+    helper.solve_pde(); // Does this make any sense?
     helper.plot_paraview();
   }
 }
@@ -306,12 +308,31 @@ void Brusselator_scheme::intermediate_action(){
   default:
     fef.u.write(io.dgf_handler, uw_path);
     fef.w.write(io.dgf_handler, uw_path);
-    // fef.surface.write(io.dgf_handler, fef.tmpFile_path);
-    break;
+    fef.surface.write(io.dgf_handler, fef.tmpFile_path);
   };
 }
 void Brusselator_scheme::pattern_loop(){
+  using namespace SecOrd_op;
+  Scalar_solver solver {data, fix_grid, fef.u, fef.w}; 
+  Solution_driven X_solver {data, fix_grid, fef.u.app};
+  Esfem::Io::Paraview paraview {data, fix_grid, fef.u.fun, fef.w.fun};
   for(long it = 0; it < pattern_timeSteps(); ++it){
+    X_solver.brusselator_rhs(fef.surface.fun, fef.surface.rhs_les);
+    X_solver.solve(fef.surface.rhs_les, fef.surface.fun);
+    solver.u.mass_matrix(fef.u.fun, fef.u.rhs_les);
+    solver.w.mass_matrix(fef.w.fun, fef.w.rhs_les);
+
+    next_timeStep(); // next surface
+    fix_grid.new_nodes(fef.surface.fun);    
+    solver.u.add_massMatrixConstOne_to(fef.u.rhs_les);
+    solver.w.add_massMatrixConstOne_to(fef.w.rhs_les);
+    solver.u.solve(fef.u.rhs_les, fef.u.fun);
+    fef.u.app = fef.u.fun;
+    solver.w.solve(fef.w.rhs_les, fef.w.fun);
+    fef.w.app = fef.w.fun;
+    paraview.write();
+    
+    /*
     update_surface();
     update_scalar_solution();
     rhs_and_solve_SPDE();
@@ -323,6 +344,7 @@ void Brusselator_scheme::pattern_loop(){
     helper.solve_scalarPDE();
     // helper.errors_on_numSurface();
     // helper.plot_paraview();
+    */
   }
 }
 void Brusselator_scheme::final_action(){
@@ -370,11 +392,12 @@ void Brusselator_scheme::error_on_intSurface(){
 
 void Brusselator_scheme::pre_loop_action(){
   PreLoop_helper helper {*this};
-  // helper.random_initialValues();
-  helper.analytic_initialValues();
+  helper.random_initialValues();
+  // helper.analytic_initialValues();
   exact.X_ptr->interpolate(fef.surface.fun);
   helper.headLine_in_errFile();
   helper.save_surface();
+  io.identity.interpolate(fef.surface.fun);
   // helper.plot_errors_in_errFile();
   // helper.plot_paraview();
   // next_timeStep();
