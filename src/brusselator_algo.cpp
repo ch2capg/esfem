@@ -50,8 +50,8 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.test();
   fem.prePattern_loop();
   fem.intermediate_action(); 
-  // fem.pattern_loop();
-  // fem.final_action();
+  fem.pattern_loop();
+  fem.final_action();
   // fem.standard_esfem(); // code works
   // fem.eoc_logisticSphere(); // does not work
   // fem.eoc_mcf(); // code works
