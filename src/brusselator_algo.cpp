@@ -48,16 +48,16 @@ void Esfem::brusselator_algo(int argc, char** argv){
   constexpr auto parameter_file = PFILE;
   Brusselator_scheme fem {argc, argv, parameter_file};
   // fem.test();
-  fem.prePattern_loop();
-  fem.intermediate_action(); 
-  fem.pattern_loop();
-  fem.final_action();
+  // fem.prePattern_loop();
+  // fem.intermediate_action(); 
+  // fem.pattern_loop();
+  // fem.final_action();
   // fem.standard_esfem(); // code works
   // fem.eoc_logisticSphere(); // does not work
   // fem.eoc_mcf(); // code works
   // fem.eoc_sls(); // code works
   // fem.sd(); // code works
-  // fem.eoc_sdp(); // code works
+  fem.eoc_sdp(); // code works
 }
 
 // ----------------------------------------------------------------------

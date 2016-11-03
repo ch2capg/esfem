@@ -8,8 +8,8 @@ fem.io.savestep: 0.1
 
 heat.starttime: 0.
 tumor_growth.surface.start_growth: .000
-heat.endtime:  5.
-heat.pattern.endtime: 5.
+heat.endtime:  1.
+heat.pattern.endtime: 0.
 heat.timestep: 0.001
 heat.bdf: 1
 heat.solvereps: 1e-9
@@ -19,7 +19,7 @@ tumor_growth.heat.init_data.pertubation: .01
 tumor_growth.heat.a: .1
 tumor_growth.heat.b: .9
 tumor_growth.heat.Dc: 10. 
-tumor_growth.heat.gamma: 30. 
+tumor_growth.heat.gamma: 0. # 30. 
 
 tumor_growth.surface.epsilon: 0.01
 tumor_growth.surface.alpha: 0
