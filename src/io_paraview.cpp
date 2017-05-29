@@ -51,7 +51,7 @@ struct Esfem::Io::Paraview::Data{
        Grid::Scal_FEfun& fef1, Grid::Scal_FEfun& fef2,
        const int refinement_label)
     : tp {gt.time_provider()},
-      tuple {&static_cast<FEfun&>(fef1), &static_cast<FEfun&>(fef2)},
+      tuple {fef1.data_ptr(), fef2.data_ptr()}, // &static_cast<FEfun&>(fef2)
       dop {p, refinement_label}, plotter {gt.grid(), tuple, dop}
   {}
 };

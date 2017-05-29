@@ -35,6 +35,40 @@ static_assert(Esfem::Grid::Deformation::Domain::dimension == 3,
 static_assert(Esfem::Grid::Deformation::Range::dimension == 3,
 	      "Bad range dimension.");
 
+namespace{
+  //! x-axis is a bouncing sinus
+  void bouncing_ellipsoid(const Domain& x, Range& y, double t) noexcept{
+    const double at = 1. + .25 * sin(M_PI * 2.0 * t);
+    y[0] = at * x[0];
+    y[1] = x[1];
+    y[2] = x[2];
+  }
+  //! final picture looks like a baseball bat
+  void baseball_bat(const Domain& x, Range& y, double t) noexcept{
+    // const double newtime = 
+    //   (t < 0.5 ? 0.0 : (t < 0.75 ? 4*(t - 0.5) : 1.0));
+    const double newtime = std::min( t, 1.0 );
+
+    const double r1 = std::abs( x[ 0 ] );
+    const double target = (1.0 - (r1*r1))*((r1*r1) + 0.05) 
+      + (r1*r1)*sqrt(1.0 - (r1*r1)); 
+
+    const double r2 = std::sqrt( x[1]*x[1] + x[2]*x[2] );
+    const double factor = std::exp( -2*newtime )*r2 
+      + (1.0 - std::exp( -2*newtime ))*target;
+
+    y[ 0 ] = 
+      1.0 * x[ 0 ] + newtime*(x[ 0 ] > 0 ? 1.0 : -.5 )*x[ 0 ];
+    y[ 1 ] = factor * x[ 1 ] / (r2 + 0.000001);
+    y[ 2 ] = factor * x[ 2 ] / (r2 + 0.000001);
+  }
+  //! Ball is shrinking
+  void linear_decrease(const Domain& x, Range& y, double t) noexcept{
+    y = x;
+    y *= 1. - t/2.;
+  }
+}
+
 //! \f$id\colon \R^3 \to \R^3\f$
 static inline void identity(const Domain& x, Range& y) noexcept{  
   y[0] = x[0]; 
@@ -100,7 +134,7 @@ set_timeProvider(const Dune::Fem::TimeProviderBase& tp){
   d_ptr -> tp_ptr = &tp;
 }
 void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
-  // const double t = d_ptr -> tp_ptr->time();
+  const double t = d_ptr -> tp_ptr->time();
 
   // mcf_sphere(t, x, y);
 
@@ -109,8 +143,11 @@ void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
   // logistic_growth(t, x, y);
 
   // identity(x, y);
-  
-  y = d_ptr->hg[x];
+  // bouncing_ellipsoid(x, y, t);
+  // baseball_bat(x, y, t);
+  linear_decrease(x, y, t);
+
+  // y = d_ptr->hg[x];
 
   // const auto eg = *(d_ptr -> eg_ptr);
   // y = eg[x];

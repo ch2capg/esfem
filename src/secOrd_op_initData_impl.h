@@ -176,7 +176,30 @@ namespace Esfem{
       //! Current time
       const Dune::Fem::TimeProviderBase& tp;      
     };
-
+    //! First eigen function of the sphere
+    /*! \f$xye^{-6t}\f$*/
+    struct const_fct
+      : Dune::Fem::Function<Esfem::Grid::Grid_and_time::Function_space,
+			    sphere_1EF>,
+	SecOrd_op::sIdata{
+      //! \f$f\colon \R^3\to\R^1\f$
+      using fspace = Esfem::Grid::Grid_and_time::Function_space;
+      //! \f$ \R^3\f$
+      using domain = typename fspace::DomainType;
+      //! \f$\R^1\f$
+      using range = typename fspace::RangeType;
+      static_assert(domain::dimension == 3, "Bad Domain dimension");
+      static_assert(range::dimension == 1, "Bad Range dimension");
+      //! Get time provider
+      const_fct(const Grid::Grid_and_time&);
+      const_fct* clone() override;
+      void interpolate(Grid::Scal_FEfun&) const override; 
+      //! \copybrief Explicit_initial_data::evaluate()
+      void evaluate(const domain&, range&) const;
+    private:
+      //! Current time
+      const Dune::Fem::TimeProviderBase& tp;      
+    };
 
     //! Implementation of SecOrd_op::vIdata::ssef()
     struct sphere_eigenFun

@@ -38,6 +38,7 @@ using Esfem::Impl::Analytic_velocity;
 using Esfem::Impl::sphere_1EF;
 using Esfem::Impl::sphere_2EF;
 using Esfem::Impl::sphere_3EF;
+using Esfem::Impl::const_fct;
 using Esfem::Impl::sphere_eigenFun;
 using Esfem::Impl::sphere_mcf_sol;
 using Esfem::Impl::sls_iData;
@@ -140,6 +141,22 @@ void sphere_1EF::interpolate(Grid::Scal_FEfun& fef) const{
 }
 void sphere_1EF::evaluate(const domain& x, range& y)const{
   y = x[0]*x[1]*exp(-6*tp.time());
+}
+
+// ----------------------------------------------------------------------
+// const_fct
+
+const_fct::const_fct(const Grid::Grid_and_time& gt)
+  :tp {gt.time_provider()} {}
+const_fct* const_fct::clone(){
+  return new const_fct {*this};
+}
+void const_fct::interpolate(Grid::Scal_FEfun& fef) const{
+  using Fef = Grid::Scal_FEfun::Dune_FEfun;
+  Dune::LagrangeInterpolation<Fef>::interpolateFunction(*this, fef); 
+}
+void const_fct::evaluate(const domain&, range& y)const{
+  y = 1.;
 }
 
 // ----------------------------------------------------------------------

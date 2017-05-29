@@ -57,6 +57,8 @@ namespace Esfem{
       static sIdata* new_2ssef(const Grid::Grid_and_time&);
       //! \copydoc new_1ssef()
       static sIdata* new_3ssef(const Grid::Grid_and_time&);
+      //! Create constant 1 function
+      static std::unique_ptr<sIdata> new_constFct(const Grid::Grid_and_time&);
       //! Virtual copy constructor
       virtual sIdata* clone() =0;
       //! Abstract base class

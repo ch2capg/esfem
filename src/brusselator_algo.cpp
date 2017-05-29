@@ -53,6 +53,7 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.pattern_loop();
   // fem.final_action();
   // fem.standard_esfem(); // code works
+  fem.maxnorm_esfem(); 
   // fem.eoc_logisticSphere(); // does not work
   // fem.eoc_mcf(); // code works
   // fem.eoc_sls(); // code works
@@ -110,6 +111,58 @@ void Brusselator_scheme::standard_esfem(){
     exact.u.interpolate(fef.u.exact);
     exact.w.interpolate(fef.w.exact);
     error_on_intSurface(); // error on t_n+1
+  }
+}
+
+void Brusselator_scheme::maxnorm_esfem(){
+  Esfem::Io::Paraview paraview {data, fix_grid, fef.u.fun, fef.w.fun};
+  // unique_ptr<sRhs> f_load {sRhs::new_sdp_u(fix_grid)};
+  auto u_ex = SecOrd_op::sIdata::new_constFct(fix_grid);
+  Scalar_solver solver {data, fix_grid, fef.u, fef.w};
+  // Rhs load_vector {fix_grid};
+
+  u_ex->interpolate(fef.u.fun);
+  paraview.write();
+  // error_on_intSurface(); // error on t_0
+  const std::string name {"linear_decrease"};
+    // {"baseball_bat"};
+    // {"bouncing_ellipsoid"};
+  // fef.u.write(io.dgf_handler, "00-" + name);
+  
+  for(long it = 0; it < time_steps(); ++it){
+    // rhs = M^n u^n
+    solver.u.mass_matrix(fef.u.fun, fef.u.rhs_les);
+    // solver.w.mass_matrix(fef.w.fun, fef.w.rhs_les);
+    next_timeStep(); // next surface
+
+    // rhs += M^{n+1} 1
+    // solver.u.add_massMatrixConstOne_to(fef.u.rhs_les);
+    // solver.w.add_massMatrixConstOne_to(fef.w.rhs_les);
+    // rhs += load_vector
+    // f_load->addScaled_to(fef.u.rhs_les);
+    // f_load->addScaled_to(fef.w.rhs_les);
+    // load_vector.u.assemble_and_addScaled_to(fef.u.rhs_les);
+    // load_vector.w.assemble_and_addScaled_to(fef.w.rhs_les);
+
+    solver.u.solve(fef.u.rhs_les, fef.u.fun);
+    // fef.u.app = fef.u.fun;    
+    // solver.w.solve(fef.w.rhs_les, fef.w.fun);
+    // fef.w.app = fef.w.fun;
+
+    // paraview.write();
+    
+    // exact.u.interpolate(fef.u.exact);
+    // exact.w.interpolate(fef.w.exact);
+    // error_on_intSurface(); // error on t_n+1
+
+    switch(it){
+      // case 25: case 50: case 75: case 99:
+    case 75:
+      std::ostringstream oss;
+      oss << it << "-" << name;
+      fef.u.write(io.dgf_handler, oss.str());
+      break;
+    }
   }
 }
 

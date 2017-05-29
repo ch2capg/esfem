@@ -75,6 +75,9 @@ sIdata* sIdata::new_1ssef(const Grid::Grid_and_time& gt){
 // sIdata* new_3ssef(const Grid::Grid_and_time&){
 //   return new Impl::sphere_3EF {gt};
 // }
+std::unique_ptr<sIdata> sIdata::new_constFct(const Esfem::Grid::Grid_and_time& gt){
+  return std::make_unique<Esfem::Impl::const_fct>(gt);
+}
 
 // ----------------------------------------------------------------------
 // vIdata

@@ -33,18 +33,18 @@ logistic_growth.r_start: 1.
 logistic_growth.r_end: 2.
 logistic_growth.steepness: .5
 
-fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surface/data/sphere/Sphere_3.dgf
-fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/a1b1/sphere3_svd.log
+fem.io.macroGridFile_2d: /Users/christianpower/cpp/DISS_surface/data/sphere/Sphere_2.dgf
+fem.io.errorFile: /Users/christianpower/cpp/DISS_surface/output/video/sphere2_svd.log
 
 fem.prefix: /Users/christianpower/cpp/DISS_surfaces
-fem.io.path: output/eoc_experiment/eoc01
-fem.io.outputName: brusselator-
+fem.io.path: output/video/mn1
+fem.io.outputName: spheere2-
 
 tumor_growth.io.u_init_dof: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/u_dof.log
 tumor_growth.io.w_init_dof: /Users/christianpower/cpp/DISS_surface/output/eoc_experiment/w_dof.log
 
 tumor_growth.prefix: /Users/christianpower/cpp/DISS_surfaces/
-tumor_growth.io.u_prefix: output/test_video/u_Sphere_4.txt
-tumor_growth.io.w_prefix: output/test_video/w_Sphere_4.txt
-tumor_growth.io.X_prefix: output/test_video/X_Sphere_4.txt
+tumor_growth.io.u_prefix: output/video/u_Sphere_4.txt
+tumor_growth.io.w_prefix: output/video/w_Sphere_4.txt
+tumor_growth.io.X_prefix: output/video/X_Sphere_4.txt
 tumor_growth.io.uw.output_name: output/test00/uw_Sphere_4-

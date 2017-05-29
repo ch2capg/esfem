@@ -160,6 +160,8 @@ namespace Esfem{
     //@{
     //! Standard Dziuk Elliott evolving surface finite element method 
     void standard_esfem();
+    //! Experiment for the maximum norm paper
+    void maxnorm_esfem();
     //@}
 
     //! Experiment, where right-hand side is calculated for a known solution
