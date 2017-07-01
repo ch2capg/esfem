@@ -53,12 +53,14 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.pattern_loop();
   // fem.final_action();
   // fem.standard_esfem(); // code works
-  fem.maxnorm_esfem(); 
+  // fem.maxnorm_esfem(); 
   // fem.eoc_logisticSphere(); // does not work
   // fem.eoc_mcf(); // code works
   // fem.eoc_sls(); // code works
   // fem.sd(); // code works
-  fem.eoc_sdp(); // code works
+  // fem.eoc_sdp(); // code works
+  fem.ale_aleMovement(); // to do
+  // fem.ale_normalMovement(); // to do
 }
 
 // ----------------------------------------------------------------------
@@ -165,6 +167,25 @@ void Brusselator_scheme::maxnorm_esfem(){
     }
   }
 }
+
+void Brusselator_scheme::ale_aleMovement(){
+  using namespace SecOrd_op;
+  using std::unique_ptr;
+  Esfem::Io::Paraview paraview {data, fix_grid, fef.u.fun, fef.w.fun};
+  // unique_ptr<sIdata> u_ex {sIdata::new_1ssef(fix_grid)};
+  Linear_heat solver {data, fix_grid};
+  fef.u.fun = 1.0; // initial value
+  paraview.write();
+  const long end_steps = pattern_timeSteps() + 
+    (data.last_step() > data.eps() ? 1 : 0 ); 
+  for(long it = 0; it < end_steps; ++it){
+    solver.mass_matrix(fef.u.fun, fef.u.rhs_les);
+    next_timeStep();
+    solver.solve(fef.u.rhs_les, fef.u.fun);
+    paraview.write();
+  }  
+}
+// void Brusselator_scheme::ale_aleMovement();
 
 void Brusselator_scheme::eoc_logisticSphere(){  
   io.identity.interpolate(fef.surface.fun);

@@ -169,34 +169,6 @@ namespace Esfem{
       = 
       0
       \f}
-      with initial data \f$u(0)= 1\f$.  We consider no ALE movement.
-      A levelset for our evolution reads as
-      \f{equation*}
-      d(x,t) := x_1^2 + x_2^2 + K(t)^2 G\Big( \frac{x_3^2}{L(t)^2} \Big)-K(t)^2,
-      \f}
-      with the functions \f$G\f$, \f$L\f$ and \f$K\f$ given as
-      \f{align*}
-      G(s)={}& 200s\Big( s - \frac{199}{200}\Big),\\
-      L(t)={}& 1 + 0.2\sin(4\pi t),\\
-      K(t)={}& 0.1 + 0.05\sin(2\pi t).
-      \f}
-      We define the velocity \f$v\f$ as the normal velocity 
-      of the surface defined by
-      the differential equation (formulated for the nodes): 
-      \f{equation*}
-      \dot{a}_j = V_j \nu_j, \quad \textnormal{where} 
-      \quad V_j=\frac{-\partial_t d(a_j,t)}{|\nabla d(a_j,t)|}, 
-      \quad \nu_j=\frac{\nabla d(a_j,t)}{|\nabla d(a_j,t)|}.
-      \f}
-     */
-    void ale_aleMovement();
-    //! Elliott and Styles ALE example
-    /*! Standard linear parabolic equation 
-      \f{equation*}{
-      \matd u + u \diver(v) - \laplaceBeltrami u 
-      = 
-      0
-      \f}
       with initial data \f$u(0)= 1\f$.  
       We consider the levelset function 
       \f{equation*}
@@ -208,7 +180,8 @@ namespace Esfem{
       L(t)={}& 1 + 0.2\sin(4\pi t),\\
       K(t)={}& 0.1 + 0.05\sin(2\pi t).
       \f}
-      The velocity \f$v\f$ is the normal velocity of the surface defined by
+      Initial surface is \f$d(x,t)=0\f$
+      The normal velocity \f$v\f$ is given by
       the differential equation (formulated for the nodes): 
       \f{equation*}
       \dot{a}_j = V_j \nu_j, \quad \textnormal{where} 
@@ -224,12 +197,41 @@ namespace Esfem{
       \f}
       As an ALE movement we define 
       \f{equation*}
-      (a_i(t))_1= (a_0(t))_1 \frac{K(t)}{K(0)}, 
-      \quad (a_i(t))_2= (a_0(t))_2 \frac{K(t)}{K(0)}, 
-      \quad (a_i(t))_3= (a_0(t))_3 \frac{L(t)}{L(0)}, 
+      (a_i(t))_1= (a_0)_1 \frac{K(t)}{K(0)}, 
+      \quad (a_i(t))_2= (a_0)_2 \frac{K(t)}{K(0)}, 
+      \quad (a_i(t))_3= (a_0)_3 \frac{L(t)}{L(0)}, 
       \f}
       Note that \f$d(a_i(t) ,t)=0\f$ for every 
       \f$t\in[0,T]\f$, for \f$i=1,2,\dotsc,N\f$.
+     */
+    void ale_aleMovement();
+    //! Elliott and Styles ALE example
+    /*! Standard linear parabolic equation 
+      \f{equation*}{
+      \matd u + u \diver(v) - \laplaceBeltrami u 
+      = 
+      0
+      \f}
+      with initial data \f$u(0)= 1\f$.  We consider no ALE movement.
+      A levelset for our evolution reads as
+      \f{equation*}
+      d(x,t) := x_1^2 + x_2^2 + K(t)^2 G\Big( \frac{x_3^2}{L(t)^2} \Big)-K(t)^2,
+      \f}
+      with the functions \f$G\f$, \f$L\f$ and \f$K\f$ given as
+      \f{align*}
+      G(s)={}& 200s\Big( s - \frac{199}{200}\Big),\\
+      L(t)={}& 1 + 0.2\sin(4\pi t),\\
+      K(t)={}& 0.1 + 0.05\sin(2\pi t).
+      \f}
+      Initial surface is \f$d(x,t)=0\f$
+      We define the velocity \f$v\f$ as the normal velocity 
+      of the surface defined by
+      the differential equation (formulated for the nodes): 
+      \f{equation*}
+      \dot{a}_j = V_j \nu_j, \quad \textnormal{where} 
+      \quad V_j=\frac{-\partial_t d(a_j,t)}{|\nabla d(a_j,t)|}, 
+      \quad \nu_j=\frac{\nabla d(a_j,t)}{|\nabla d(a_j,t)|}.
+      \f}
      */
     void ale_normalMovement();
     //@}

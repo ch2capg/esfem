@@ -155,10 +155,14 @@ namespace Esfem{
       auto cbegin() const { return fun.dbegin(); }
       auto cend() const { return fun.dend(); }
       auto name() const { return fun.name(); }
+      Dune_FEfun& data() { return fun; }
       const Dune_FEfun& data() const{ return fun; }
       Dune_FEfun* data_ptr(){ return &fun; }
 
-      
+      Scal_FEfun& operator=(const double d) noexcept{
+	for(auto it = fun.dbegin(); it != fun.dend(); ++it) *it = d;
+	return *this;
+      }
       Scal_FEfun& operator+=(const double d);
       Scal_FEfun& operator*=(const double d);
     private:

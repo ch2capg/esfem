@@ -67,6 +67,17 @@ namespace{
     y = x;
     y *= 1. - t/2.;
   }
+  //! Arbitrary-Lagrangian-Eulerian movement of a problem
+  /*! \sa Brusselator_scheme::ale_aleMovement()
+   */
+  void alePaper_aleMovement(const Domain& x, Range& y, double t) noexcept{
+    // auto G = [](double s){ return 200. * s * (s - 199./200.); };
+    auto L = [](double t){ return 1. + .2 * sin(4.*M_PI*t); };
+    auto K = [](double t){ return .1 + .05 * sin(2.*M_PI*t); };
+    y[0]= x[0] * K(t)/K(0);
+    y[1]= x[1] * K(t)/K(0);
+    y[2]= x[2] * L(t)/L(0);
+  }
 }
 
 //! \f$id\colon \R^3 \to \R^3\f$
@@ -145,8 +156,10 @@ void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
   // identity(x, y);
   // bouncing_ellipsoid(x, y, t);
   // baseball_bat(x, y, t);
-  linear_decrease(x, y, t);
+  // linear_decrease(x, y, t);
 
+  alePaper_aleMovement(x, y, t);
+  
   // y = d_ptr->hg[x];
 
   // const auto eg = *(d_ptr -> eg_ptr);
