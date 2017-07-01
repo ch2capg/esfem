@@ -3,7 +3,7 @@
 *.log
 *.png
 intermediate_*
-build/*
+*build*/*
 output/*
 Makefile
 src/doc/capg.config
