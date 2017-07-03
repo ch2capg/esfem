@@ -28,6 +28,7 @@
 #include "brusselator_algo_impl.h"
 #include "secOrd_op_solutionDriven.h"
 #include "esfem_error.h"
+#include "grid_ode.h"
 
 #ifndef PFILE
 #error Give a complete path for parameter file in macro variable PFILE.
@@ -59,9 +60,9 @@ void Esfem::brusselator_algo(int argc, char** argv){
   // fem.eoc_sls(); // code works
   // fem.sd(); // code works
   // fem.eoc_sdp(); // code works
-  fem.ale_aleMovement(); // to do
-  // fem.ale_normalMovement(); // to do
-}
+  // fem.ale_aleMovement(); // to do
+  fem.ale_normalMovement();  // code works
+} 
 
 // ----------------------------------------------------------------------
 // Brusselator_scheme implementation
@@ -185,7 +186,26 @@ void Brusselator_scheme::ale_aleMovement(){
     paraview.write();
   }  
 }
-// void Brusselator_scheme::ale_aleMovement();
+void Brusselator_scheme::ale_normalMovement(){
+  using namespace SecOrd_op;
+  using std::unique_ptr;
+  namespace ode = Esfem::ODE;
+  Esfem::Io::Paraview paraview {data, fix_grid, fef.u.fun, fef.w.fun};
+  // unique_ptr<sIdata> u_ex {sIdata::new_1ssef(fix_grid)};
+  auto time_scheme = ode::capg_ie();
+  Linear_heat solver {data, fix_grid};
+  fef.u.fun = 1.0; // initial value
+  paraview.write();
+  const long end_steps = pattern_timeSteps() + 
+    (data.last_step() > data.eps() ? 1 : 0 ); 
+  for(long it = 0; it < end_steps; ++it){
+    solver.mass_matrix(fef.u.fun, fef.u.rhs_les);
+    fix_grid.step_and_ssInt(data.global_timeStep(),
+			    *time_scheme);
+    solver.solve(fef.u.rhs_les, fef.u.fun);
+    paraview.write();
+  }    
+}
 
 void Brusselator_scheme::eoc_logisticSphere(){  
   io.identity.interpolate(fef.surface.fun);

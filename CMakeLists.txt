@@ -53,7 +53,7 @@ foreach(src brusselator_algo.cpp
   grid_GridAndTime_impl.cpp io_l2h1Calculator.cpp secOrd_op_brusselator.cpp
   secOrd_op_initData_w.cpp secOrd_op_solutionDriven.cpp grid_deformation.cpp
   io_parameter.cpp secOrd_op_brusselator_impl.cpp secOrd_op_linearHeat.cpp
-  secOrd_op_solutionDriven_impl.cpp)
+  secOrd_op_solutionDriven_impl.cpp grid_ode.cpp)
   set(BR_SRC "${BR_SRC}" "src/${src}")
 endforeach(src)
 add_executable(brusselator ${BR_SRC})

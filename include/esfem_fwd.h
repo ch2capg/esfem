@@ -34,6 +34,14 @@ namespace Esfem{
     class Scal_FEfun;
     class Vec_FEfun;
   }
+  //! Single step methods  
+  namespace singleStep_integrator{
+    class ss_int;
+  }
+  //! Some stiff solvers
+  namespace ODE{
+    using namespace singleStep_integrator;
+  }
   namespace SecOrd_op{
     class Identity;
     class Init_data;

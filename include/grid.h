@@ -73,6 +73,8 @@ namespace Esfem{
       void set_timeProvider(const Dune::Fem::TimeProviderBase&);
       //! Update hash map
       Deformation& operator=(const Vec_FEfun&);
+      //! Single step integrate the whole mesh
+      void ss_int_mesh(const ODE::ss_int&);
     private:
       struct Data;
       //! Pointer to implementation
@@ -113,7 +115,15 @@ namespace Esfem{
       void next_timeStep(const double);
       //! Update hash grid
       void new_nodes(const Vec_FEfun&);
-
+      //! Single step ODE integrate
+      /*! \pre Do this after you use next_timeStep(). */
+      void ss_ode_int(const ODE::ss_int&);
+      //! Use next_timeStep() and ss_ode_int() correctly
+      void step_and_ssInt(const double dT, const ODE::ss_int& stepper){
+	next_timeStep(dT);
+	ss_ode_int(stepper);
+      }
+      
       //! Get time provider
       Dune::Fem::TimeProviderBase& time_provider();
       //! Get time provider
