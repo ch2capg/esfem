@@ -115,6 +115,10 @@ void Esfem::Grid::Grid_and_time::next_timeStep(const double dT){
 void Esfem::Grid::Grid_and_time::new_nodes(const Vec_FEfun& rhs){
   d_ptr->d = rhs;
 }
+void Esfem::Grid::Grid_and_time::ss_ode_int(const ODE::ss_int& stepper){
+  d_ptr-> d.ss_int_mesh(stepper);
+}
+
 Dune::Fem::TimeProviderBase& Esfem::Grid::Grid_and_time::time_provider(){
   return d_ptr -> tp;
 }

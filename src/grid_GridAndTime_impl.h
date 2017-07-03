@@ -148,6 +148,42 @@ namespace Esfem{
 	//! Original list
 	seq ol;
       public:
+	//! Restricted hash map iterator
+	class iterator{
+	public:
+	  //! Actual iterator
+	  using iterator_impl = map::iterator;
+	  //! Pseudo copy iterator
+	  explicit iterator(const iterator_impl& it_in) :it {it_in} {}
+	  //! Get range value
+	  range& operator*() const{
+	    return (*it).second;
+	  }
+	  //! Increment
+	  iterator& operator++(){
+	    ++it;
+	    return *this;
+	  }
+	  //! Is equal?
+	  bool operator==(const iterator& other){
+	    return this->it == other.it;
+	  }
+	  //! Is different?
+	  bool operator!=(const iterator& other){
+	    return !(*this == other);
+	  }
+	private:
+	  //! Instance of the actual iterator
+	  iterator_impl it;
+	};
+	//! Range for-loop
+	iterator begin(){
+	  return iterator {m.begin()};
+	}
+	//! Range for-loop
+	iterator end(){
+	  return iterator {m.end()};
+	}	
 	//! Reports errors
 	struct bad : std::runtime_error{
 	  //! Forward error message

@@ -21,19 +21,12 @@
 #include <cmath>
 #include <numeric>
 #include "grid.h"
+#include "grid_ode.h"
 #include "grid_GridAndTime_impl.h"
-#include <boost/numeric/odeint.hpp>
-#include <boost/numeric/ublas/matrix.hpp>
-#include <boost/numeric/ublas/vector.hpp>
-#include <boost/numeric/ublas/io.hpp>
 
 using namespace std;
-using namespace boost::numeric::odeint;
-typedef boost::numeric::ublas::vector< double > vector_type;
-typedef boost::numeric::ublas::matrix< double > matrix_type;
-template<class T>
-using matrix_column = boost::numeric::ublas::matrix_column<T>;
 using Esfem::Grid::Deformation;
+namespace ode = Esfem::ODE;
 //! \f$\R^3\f$
 using Domain = Esfem::Grid::Deformation::Domain;
 //! \f$\R^3\f$
@@ -76,12 +69,6 @@ namespace{
     y = x;
     y *= 1. - t/2.;
   }
-}
-//! Normal and ALE movement 
-/*! \sa Brusselator_scheme::ale_normalMovement(), 
-  Brusselator_scheme::ale_aleMovement()
- */
-namespace alePaper{
   //! Arbitrary-Lagrangian-Eulerian movement of a problem
   void aleMovement(const Domain& x, Range& y, double t) noexcept{
     // auto G = [](double s){ return 200. * s * (s - 199./200.); };
@@ -91,99 +78,7 @@ namespace alePaper{
     y[1]= x[1] * K(t)/K(0);
     y[2]= x[2] * L(t)/L(0);
   }
-  // ODE part
-  // --------------------------------------------------
-  //! Dimension of the world 
-  constexpr int dimWorld {3};
-  //! Step size for finite difference
-  constexpr double fd_step {1e-6};
-  
-  //! Zero set is the manifold
-  /*! \f$ d(x,t) := x_1^2 + x_2^2 + K(t)^2 G\Big( \frac{x_3^2}{L(t)^2} \Big)-K(t)^2. \f$
-   */
-  struct levelset_function{
-    //! Apply it
-    /*! \pre x.size() == 3*/
-    double operator()(const vector_type& x, const double t) const noexcept{
-      auto G = [](double s){ return 200. * s * (s - 199./200.); };
-      auto L = [](double t){ return 1. + .2 * sin(4.*M_PI*t); };
-      auto K = [](double t){ return .1 + .05 * sin(2.*M_PI*t); };
-      return x[0]*x[0] + x[1]*x[1] + K(t)*K(t)*
-	G( x[2]*x[2] / (L(t) * L(t))) - K(t)*K(t);
-    }
-  };
-  //! This is the vector field on the right-hand side
-  /*! It reads as
-      \f{equation*}
-      \dot{a}_j = V_j \nu_j, \quad \textnormal{where} 
-      \quad V_j=\frac{-\partial_t d(a_j,t)}{|\nabla d(a_j,t)|}, 
-      \quad \nu_j=\frac{\nabla d(a_j,t)}{|\nabla d(a_j,t)|}.
-      \f}
-   */
-  struct levelset_grad{
-    //! Use finite differences to calculate the gradient
-    void update_spatial_grad(const vector_type& x,
-			     const double t, vector_type& dx) const noexcept{
-      levelset_function lf;
-      vector_type xh {x};
-      for(int i {0}; i < dimWorld; ++i){
-	xh[i] += fd_step;
-	dx[i] = (lf(xh, t) - lf(x, t))/fd_step;
-	xh[i] = x[i];
-      }
-      cout << "levelset_grad::update_spatial_grad: " << dx << endl;
-    }
-    //! Use a finite difference to calculate the time derivative 
-    double time_grad(const vector_type& x, const double t) const noexcept{
-      cout << "levelset_grad::time_grad()" << endl;
-      levelset_function lf;
-      return (lf(x, t + fd_step) - lf(x,t))/fd_step;
-    }
-    //! Calculate the vector field
-    void operator()(const vector_type& x, vector_type& dxdt, 
-		    const double t) const noexcept{
-      vector_type grad_d(dimWorld);      
-      update_spatial_grad(x, t, grad_d);
-      auto ddist_dt = time_grad(x, t);
-      double norm_d = norm_2(grad_d);
-      dxdt = - ddist_dt / norm_d * grad_d / norm_d;
-      cout << "levelset_grad: " << dxdt << endl;
-    }
-  };
-  //! Calculate Jacobian of the vector field above
-  struct jac_levelset_grad{
-    //! Calculate the Jacobian
-    void operator()(const vector_type& x, matrix_type& dxdt, const double t) 
-      const noexcept{
-      cout << "jac_levelset_grad() begin" << endl;
-      static vector_type fxh(dimWorld);
-      static vector_type fx(dimWorld);
-      vector_type xh {x};
-      levelset_grad lgrad;
-      for(int j{0}; j < dimWorld; ++j){
-	xh(j) += fd_step;
-	lgrad(x, fx, t);
-	lgrad(xh, fxh, t);
-	matrix_column<matrix_type> dxdt_j(dxdt, j);
-	dxdt_j = (fxh - fx)/fd_step;
-	xh(j) = x(j);
-      }
-      cout << dxdt << endl;
-    }
-  };
-  //! Arbitrary-Lagrangian-Eulerian movement of a problem
-  void normalMovement(const Domain&, Range& y, 
-		      const double t, const double dT) noexcept{
-    vector_type start_val(dimWorld);
-    for(int i{0}; i < dimWorld; ++i) start_val[i] = y[i];
-    integrate_n_steps(implicit_euler<double> {}, 
-		      make_pair(levelset_grad{}, jac_levelset_grad {}),
-		      start_val, t, dT, 1);
-    cout << "Integrate once: " << start_val << endl;
-    for(int i{0}; i < dimWorld; ++i) y[i] = start_val[i];
-  }
-} // namespace alePaper
-
+}
 
 //! \f$id\colon \R^3 \to \R^3\f$
 static inline void identity(const Domain& x, Range& y) noexcept{  
@@ -250,7 +145,7 @@ set_timeProvider(const Dune::Fem::TimeProviderBase& tp){
   d_ptr -> tp_ptr = &tp;
 }
 void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
-  const double t = d_ptr -> tp_ptr->time();
+  // const double t = d_ptr -> tp_ptr->time();
 
   // mcf_sphere(t, x, y);
 
@@ -263,11 +158,8 @@ void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
   // baseball_bat(x, y, t);
   // linear_decrease(x, y, t);
 
-  // alePaper::aleMovement(x, y, t);
+  // alePaper::aleMovement(x, y, t); 
   y = d_ptr->hg[x];
-  alePaper::normalMovement(x, y, t, d_ptr->tp_ptr->deltaT());
-  
-  // y = d_ptr->hg[x];
 
   // const auto eg = *(d_ptr -> eg_ptr);
   // y = eg[x];
@@ -275,4 +167,13 @@ void Esfem::Grid::Deformation::evaluate(const Domain& x, Range& y) const{
 Deformation& Deformation::operator=(const Vec_FEfun& rhs){
   d_ptr->hg = rhs;
   return *this;
+}
+void Deformation::ss_int_mesh(const ode::ss_int& stepper){
+  const double t = d_ptr -> tp_ptr -> time();
+  const double dT = d_ptr -> tp_ptr -> deltaT();
+  Range old_vec;
+  for(auto& vec : d_ptr -> hg){
+    old_vec = vec;
+    stepper.integrate(old_vec, vec, t, dT);
+  }
 }

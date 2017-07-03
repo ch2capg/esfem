@@ -1,16 +1,16 @@
 /*! \file secOrd_op_linearHeat.cpp
+    \brief Some linear elliptic operators 
 
-    \brief <Program Name>
+     Revision history
+     --------------------------------------------------
 
-     Revision history:
-
-          Revised by Christian Power dd.mm.yyyy
+          Revised by Christian Power July 2017
           Originally written by Christian Power
                (power22c@gmail.com) 01. Februar 2016
 
-     Implementation details for secOrd_op_linearHeat.h
-     Created by Christian Power on 01.02.2016
-     Copyright (c) 2016 Christian Power. All rights reserved.
+    \author Christian Power 
+    \date 03. Juli 2017
+    \copyright Copyright (c) 2017 Christian Power.  All rights reserved.
  */
 
 #include <stdexcept>
@@ -22,12 +22,16 @@
 #include "secOrd_op_linearHeat.h"
 #include "io_parameter.h"
 #include "grid.h"
+#include "alePaper_impl.h"
 
 using namespace std;
+using namespace Esfem;
+namespace eo = Esfem::elliptic_operators;
+namespace ale = alePaper;
 using FE_function = Esfem::Grid::Scal_FEfun::Dune_FEfun;
 using Solver = Dune::Fem::CGInverseOperator<FE_function>;
-using Geometry
-= FE_function::DiscreteFunctionSpaceType::IteratorType::Entity::Geometry;
+using Entity = FE_function::DiscreteFunctionSpaceType::IteratorType::Entity;
+using Geometry = Entity::Geometry;
 using Grid_part = FE_function::GridPartType;
 using Quadrature = Dune::Fem::CachingQuadrature<Grid_part, 0>;
 using Domain = FE_function::LocalFunctionType::DomainType;
@@ -201,5 +205,131 @@ void massMatrixFree_assembly(const Geometry& g,
   }
 }
 
-/*! Log:
- */
+//! Implementing ale_movement()
+namespace ale_movement_impl{
+  //! Operator for the dune solver
+  class Linear_ale_op : public Dune::Fem::Operator<FE_function>{
+  public:
+    explicit Linear_ale_op(const Esfem::Io::Parameter& p,
+			   const Esfem::Grid::Grid_and_time& gt)
+      :bdf_alpha_lead_coeff {p.bdf_alphas().back()},
+       tp {gt.time_provider()}, tmp_fef {"tmp_fef", gt.fe_space()}
+    {}
+    Linear_ale_op(const Linear_ale_op&) = delete;
+    Linear_ale_op& operator=(const Linear_ale_op&) = delete;
+
+    void operator()(const FE_function& rhs, FE_function& lhs) const override;
+    void mass_matrix(const FE_function& rhs, FE_function& lhs) const;
+  private:
+    double bdf_alpha_lead_coeff {1.};
+    const Dune::Fem::TimeProviderBase& tp;
+    FE_function tmp_fef;
+  };
+
+  //! Cf. Brusselator_scheme::ale_aleMovement()
+  class  ale_operator : public eo::elliptic_op{
+    Linear_ale_op heat_op;
+    Solver heat_solver;
+  public:
+    ale_operator(const Io::Parameter& p,
+		 const Grid::Grid_and_time& gt)
+      :heat_op {p, gt}, heat_solver {heat_op, p.eps(), p.eps()}
+    {}
+    void solve(const Grid::Scal_FEfun& rhs, 
+	       Grid::Scal_FEfun& lhs) const override{
+      const FE_function& fef1 = rhs;
+      FE_function& fef2 = lhs;
+      heat_solver(fef1, fef2);
+    }
+    void mass_matrix(const Grid::Scal_FEfun& rhs, 
+		     Grid::Scal_FEfun& lhs) const override{
+      const FE_function& rhs_ref = rhs;
+      FE_function& lhs_ref = lhs;
+      heat_op.mass_matrix(rhs_ref, lhs_ref);
+    }
+  };  
+  
+  // Implementing Linear_ale_op
+
+  //! Assemble the ALE matrix
+  /*! Formula should be: ∫ Uʰ (Wʰ - Vʰ) · ∇ϕʰ  ∀ϕʰ FE-functions
+   */
+  inline Jacobian_range ale_matrix(const Domain& x, const double t){
+    constexpr int dim = 3;
+    auto L = [](const double t){ return 1. + .2 * sin(4.*M_PI*t); };
+    auto K = [](const double t){ return .1 + .05 * sin(2.*M_PI*t); };
+    auto diff = [dT = 1e-6](auto fun, const double t){ 
+      return (fun(t + dT) - fun(t))/dT;
+    };
+    
+    Jacobian_range wmv; // w - v = v_\ale - v_\usual
+    wmv[0][0] = x[0] * diff(K, t)/ K(t);
+    wmv[0][1] = x[1] * diff(K, t)/ K(t);
+    wmv[0][2] = x[2] * diff(L, t)/ L(t);
+
+    ale::levelset_grad lsg;
+    ale::vector_type v(3);
+    for(int i{}; i < dim; ++i) v(i) = x[i];
+    ale::vector_type res(3);
+    lsg(v, res, t);
+
+    for(int i{}; i < dim; ++i) wmv[0][i] -= res(i);
+    return wmv;
+  }
+  
+  void ale_assembly(const Entity& e, const double t,
+		    const double dT, const Geometry& g,
+		    const Quadrature& q,
+		    const FE_function::LocalFunctionType& cf,
+		    FE_function::LocalFunctionType& f){
+    static_assert(Domain::dimension == 3, "Bad domain dimension.");
+    static_assert(Range::dimension == 1, "Bad range dimension.");
+  
+    for(std::size_t pt = 0; pt < q.nop(); ++pt){
+      // Lu = (M + tau A)u
+      auto Mu = mass_matrix(pt, q, cf);
+      auto Au = stiffness_matrix(pt, q, cf);
+      Domain x_global = g.global(Dune::coordinate(q[pt]));
+      auto Bu = ale_matrix(x_global, t);
+      Au += Bu; // dT comes later
+      
+      const auto& x = q.point(pt);
+      const auto weight = q.weight(pt) * g.integrationElement(x);
+
+      Mu *= weight;
+      Au *= dT * weight;
+      f.axpy(q[pt], Mu, Au);
+    }
+  }
+  
+  void Linear_ale_op::operator()(const FE_function& cfef, FE_function& fef) const{
+    fef.clear();
+    const auto& df_space = fef.space();
+    for(const auto& entity : df_space){
+      const auto& geometry = entity.geometry();
+      const auto cfef_loc = cfef.localFunction(entity);
+      auto fef_loc = fef.localFunction(entity);
+      Quadrature quad {entity, cfef_loc.order() + fef_loc.order()};
+      ale_assembly(entity, tp.time(), tp.deltaT(), geometry, quad,
+		   cfef_loc, fef_loc);
+    }
+    fef.communicate();
+  }
+  void Linear_ale_op::mass_matrix(const FE_function& rhs, FE_function& lhs) const{
+    lhs.clear();
+    const auto& df_space = lhs.space();
+    for(const auto& entity : df_space){
+      const auto& geometry = entity.geometry();
+      const auto& cfef_loc = rhs.localFunction(entity);
+      auto fef_loc = lhs.localFunction(entity);
+      Quadrature quad {entity, fef_loc.order() + cfef_loc.order()};
+      massMatrixFree_assembly(geometry, quad, cfef_loc, fef_loc);
+    }
+  }
+}
+
+std::unique_ptr<eo::elliptic_op> 
+eo::ale_movement(const Io::Parameter& p,
+		 const Grid::Grid_and_time& gt){
+  return make_unique<ale_movement_impl::ale_operator>(p, gt);
+}
